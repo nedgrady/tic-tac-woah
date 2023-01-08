@@ -1,7 +1,7 @@
 import log from "loglevel"
 import { WebSocketServer, WebSocket } from "ws";
 import { IncomingMessage } from 'http'
-import { WebSocketCodes } from "@tic-tac-woah/types";
+import { GameStart, Message, WebSocketCodes } from "@tic-tac-woah/types";
 
 export interface Player {
     name: string
@@ -21,9 +21,13 @@ export interface GameConfiguration {
 
 export class GameServer {
 
-    queue : GameRequest[] = []
+    readonly #queue : GameQueue
 
-    constructor(webSocketServer : WebSocketServer) {
+    constructor(
+        webSocketServer: WebSocketServer,
+        queue: GameQueue
+    ) {
+        this.#queue = queue
         webSocketServer.on('listening', this.listening.bind(this));
         webSocketServer.on('connection', this.connection.bind(this));
     }
@@ -52,6 +56,33 @@ export class GameServer {
             }
         }
 
-        this.queue.push(gameRequest)
+        var gameStartedMessage : GameStart = {
+            type: "GAME_START"
+        }
+
+        //webSocket.send(JSON.stringify(gameStartedMessage))
+
+        this.#queue.enqueue(gameRequest)
+    }
+}
+
+export class GameQueue {
+
+    readonly #items: GameRequest[] = []
+
+    constructor() {
+        
+    }
+
+    enqueue(gameRequest : GameRequest) {
+        this.#items.push(gameRequest)
+    }
+
+    items() : readonly GameRequest[] {
+        return this.#items
+    }
+
+    get(index : number) : GameRequest {
+        return this.#items[index]
     }
 }
