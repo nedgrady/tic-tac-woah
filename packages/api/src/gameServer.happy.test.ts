@@ -1,11 +1,10 @@
-import { expect, it, suite, withCallback, test, vi } from 'vitest'
-import { GameQueue, GameRequest, GameServer } from './gameServer'
+import { expect, it, suite, test, vi } from 'vitest'
+import { GameQueue, GameServer } from './gameServer'
 import { WebSocketServer, WebSocket, Server, AddressInfo, ServerOptions, EventListenerOptions, MessageEvent, CloseEvent, ErrorEvent, Event, RawData } from 'ws'
 import { faker } from '@faker-js/faker'
 import { WebSocketCodes } from '@tic-tac-woah/types'
-import http, { ClientRequest, IncomingMessage } from 'http'
+import { IncomingMessage } from 'http'
 import { Socket } from 'net'
-import { Duplex } from 'stream'
 import { MockWs, MockWss } from './MockWss'
 import log from 'loglevel'
 
@@ -223,27 +222,23 @@ suite("Invalid name", () => {
 
 
 suite('Second person connecting', () => {
-    it.todo('is stored in the queue', async () => {
-        const wss = new WebSocketServer({
-            port: 9999
-        })
-
+    it('is stored in the queue', async () => {
+        const wss = new MockWss()
         const gameQueue = new GameQueue()
-        const gameServer = new GameServer(wss, gameQueue)
-        await new Promise((resolve) => {
-            wss.on('listening', () => {
-                const ws1 = new WebSocket("ws://localhost:9999?name=AnyName&playerCount=2")
-                const ws2 = new WebSocket("ws://localhost:9999?name=AnyName&playerCount=2")
+        const gameServer = new GameServer(wss as any, gameQueue)
 
-                ws2.on('open', () => {
+        const req = new IncomingMessage(new Socket())
+        req.url = "ws://localhost:9999?name=AnyName&playerCount=2"
 
-                    ws1.close()
-                    ws2.close()
-                    wss.close()
-                    resolve("")
-                })
-            })
-            expect(gameQueue.items()).toHaveLength(2)
-        })
+        const ws1 = new WebSocket("ws://nowhere")
+
+        const req2 = new IncomingMessage(new Socket())
+        req2.url = "ws://localhost:9999?name=AnyName&playerCount=2"
+        const ws2 = new WebSocket("ws://nowhere")
+
+        wss.emitConnection(ws1, req)
+        wss.emitConnection(ws2, req2)
+
+        expect(gameQueue.items()).toHaveLength(2)
     })
 })

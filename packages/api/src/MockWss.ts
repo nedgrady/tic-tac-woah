@@ -12,7 +12,7 @@ import { EventEmitter } from 'node:events';
 
 type WssSubsetUsed = Pick<WebSocketServer, "on">
 
-type WsSubsetUsed = Pick<WebSocket, "on" | "close" | "CLOSED" | "OPEN" | "CLOSING" | "CONNECTING" | "bufferedAmount" | "readyState">
+type WsSubsetUsed = Pick<WebSocket, "on" | "close" | "CLOSED" | "OPEN" | "CLOSING" | "CONNECTING" | "bufferedAmount" | "readyState" | "send">
 
 export type WsSubsetUsedRo = WsSubsetUsed
 
@@ -43,8 +43,17 @@ export class MockWs implements WsSubsetUsed {
         // this.close = spy((code?: number | undefined, data?: string | Buffer | undefined) => oldClose(code, data))
     constructor(spyFactory: (...args: any) => GenericSpyFn) {
         const oldClose = this.close.bind(this);
-        this.close = vi.fn((code?: number | undefined, data?: string | Buffer | undefined) => oldClose(code, data))
+        this.close = (spyFactory as any)((code?: number | undefined, data?: string | Buffer | undefined) => oldClose(code, data))
 
+    }
+    send(data: string | number | readonly any[] | Buffer | Uint8Array | ArrayBuffer | DataView | ArrayBufferView | SharedArrayBuffer | readonly number[] | {
+        valueOf(): ArrayBuffer // this.close = spy((code?: number | undefined, data?: string | Buffer | undefined) => oldClose(code, data))
+    } | { valueOf(): SharedArrayBuffer } | { valueOf(): Uint8Array } | { valueOf(): readonly number[] } | { valueOf(): string } | { [Symbol.toPrimitive](hint: string): string }, cb?: ((err?: Error | undefined) => void) | undefined): void
+    send(data: string | number | readonly any[] | Buffer | Uint8Array | ArrayBuffer | DataView | ArrayBufferView | SharedArrayBuffer | readonly number[] | {
+        valueOf(): ArrayBuffer // this.close = spy((code?: number | undefined, data?: string | Buffer | undefined) => oldClose(code, data))
+    } | { valueOf(): SharedArrayBuffer } | { valueOf(): Uint8Array } | { valueOf(): readonly number[] } | { valueOf(): string } | { [Symbol.toPrimitive](hint: string): string }, options: { mask?: boolean | undefined; binary?: boolean | undefined; compress?: boolean | undefined; fin?: boolean | undefined }, cb?: ((err?: Error | undefined) => void) | undefined): void
+    send(data: unknown, options?: unknown, cb?: unknown): void {
+        throw new Error('Method not implemented.')
     }
 
     close(code?: number | undefined, data?: string | Buffer | undefined): void {
