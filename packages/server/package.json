@@ -1,8 +1,9 @@
 {
-  "name": "tic-tac-woah",
+  "name": "server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,10 +16,5 @@
   "bugs": {
     "url": "https://github.com/nedgrady/tic-tac-woah/issues"
   },
-  "homepage": "https://github.com/nedgrady/tic-tac-woah#readme",
-  "workspaces": [
-    "packages\\client",
-    "packages\\server",
-    "packages\\types"
-  ]
+  "homepage": "https://github.com/nedgrady/tic-tac-woah#readme"
 }
