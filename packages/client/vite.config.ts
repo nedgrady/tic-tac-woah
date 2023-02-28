@@ -7,7 +7,7 @@ const commitHash = execSync("git rev-parse HEAD").toString()
 // https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [react()],
-	base: "/tic-tac-woah/#/",
+	base: "/tic-tac-woah/",
 	define: {
 		__COMMIT_HASH__: JSON.stringify(commitHash),
 	},
