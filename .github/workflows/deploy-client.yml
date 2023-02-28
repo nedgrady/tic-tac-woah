@@ -1,0 +1,67 @@
+# Triggers
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+        branches:
+            - master
+# Functions
+jobs:
+    display-variables:
+        name: display-variables
+        runs-on: ubuntu-latest
+        steps:
+            - name: Dump Env Details
+              run: printenv
+
+    # Build Job
+    build:
+        # Name of the job
+        name: Build
+        # The OS to run the job on
+        runs-on: ubuntu-latest
+        # Steps
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v3
+
+            - name: Install node
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 18.x
+
+            - name: Install NPM Dependencies
+              run: npm install -w client
+
+            - name: Build Project
+              run: npm run build -w client
+
+            - name: Upload artifact in order to deploy
+              uses: actions/upload-artifact@v2
+              with:
+                  name: built-files
+                  path: ./client/dist
+
+    deploy:
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+            pages: write
+            contents: read
+        needs: build
+        environment:
+            name: github-pages
+            url: ${{steps.deployment.outputs.page_url}}
+
+        steps:
+            - uses: actions/download-artifact@master
+              with:
+                  name: built-files
+                  path: .
+            - uses: actions/configure-pages@v1
+            - uses: actions/upload-pages-artifact@v1
+              with:
+                  path: .
+            - id: deployment
+              uses: actions/deploy-pages@main
