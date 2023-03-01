@@ -13,6 +13,9 @@ RUN npm run build
 COPY package.json ./dist
 COPY arena.env ./dist
 
+ENV PORT=8080
+
 CMD npm run start:prod
 
 EXPOSE 8080
+EXPOSE 80
