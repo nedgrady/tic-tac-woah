@@ -10,6 +10,6 @@ COPY . .
 
 RUN npm run build
 
-CMD npm run server:prod
+CMD npm run start:prod
 
 EXPOSE 8080
