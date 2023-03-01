@@ -15,4 +15,4 @@ COPY arena.env ./dist
 
 CMD npm run start:prod
 
-EXPOSE 2567
+EXPOSE 8080
