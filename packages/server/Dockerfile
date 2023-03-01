@@ -10,6 +10,9 @@ COPY . .
 
 RUN npm run build
 
+COPY package.json ./dist
+COPY arena.env ./dist
+
 CMD npm run start:prod
 
-EXPOSE 8080
+EXPOSE 2567

@@ -1,24 +1,24 @@
 {
-  "name": "tic-tac-woah",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nedgrady/tic-tac-woah.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/nedgrady/tic-tac-woah/issues"
-  },
-  "homepage": "https://github.com/nedgrady/tic-tac-woah#readme",
-  "workspaces": [
-    "packages\\client",
-    "packages\\server",
-    "packages\\types"
-  ]
+	"name": "tic-tac-woah",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nedgrady/tic-tac-woah.git"
+	},
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/nedgrady/tic-tac-woah/issues"
+	},
+	"homepage": "https://github.com/nedgrady/tic-tac-woah#readme",
+	"workspaces": [
+		"packages\\client",
+		"packages\\types",
+		"packages\\server"
+	]
 }
