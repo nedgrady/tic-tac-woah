@@ -19,6 +19,7 @@ export default Arena({
 
 	initializeExpress: app => {
 		app.use(cors())
+		app.options("*", cors())
 
 		/**
 		 * Bind your custom express routes here:
