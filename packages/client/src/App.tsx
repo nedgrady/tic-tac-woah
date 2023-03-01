@@ -1,6 +1,6 @@
 import * as Colyseus from "colyseus.js" // not necessary if included via <script> tag.
 
-var client = new Colyseus.Client("ws://localhost:2567")
+var client = new Colyseus.Client("ws://server-0mi6.onrender.com:8080")
 
 client
 	.joinOrCreate("room_name")

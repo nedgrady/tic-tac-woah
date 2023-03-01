@@ -15,7 +15,7 @@ RUN npm run build
 COPY package.json ./dist
 COPY arena.env ./dist
 
-CMD npm run start:prod
+CMD ["sh", "start.sh"]
 
 EXPOSE 8080
 EXPOSE 80
