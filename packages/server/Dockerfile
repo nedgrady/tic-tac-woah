@@ -1,6 +1,6 @@
 FROM node:18.14.2-alpine3.17
 
-ENV PORT 8081
+ENV NODE_ENV=production
 
 WORKDIR /app
 
