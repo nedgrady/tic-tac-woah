@@ -10,6 +10,8 @@ COPY . .
 
 RUN npm run build
 
+ENV NODE_ENV=production
+
 COPY package.json ./dist
 COPY arena.env ./dist
 
