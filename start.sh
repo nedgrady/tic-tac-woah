@@ -1,6 +1,6 @@
 printenv
 
-cd client/packages/client
+cd packages/client/
 ls
 
 cd dist
