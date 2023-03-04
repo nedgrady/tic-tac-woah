@@ -1,4 +1,4 @@
-cwd
+pwd
 
 # cd packages/client/
 # ls
