@@ -15,9 +15,10 @@ const app = express()
 app.use(cors())
 
 if (process.env.NODE_ENV === "production") {
-	app.use("tic-tac-woah", express.static(process.env.PATH_TO_CLIENT_BUILT_FOLDER))
+	console.log("==== serving /tic-tac-woah", process.env.PATH_TO_CLIENT_BUILT_FOLDER)
+	app.use("/tic-tac-woah", express.static(process.env.PATH_TO_CLIENT_BUILT_FOLDER))
 
-	app.get("tic-tac-woah", (_, response) =>
+	app.get("/tic-tac-woah*", (_, response) =>
 		response.sendFile(path.join(process.env.PATH_TO_CLIENT_BUILT_FOLDER, "index.html"))
 	)
 }
