@@ -1,11 +1,11 @@
-printenv
+cwd
 
-cd packages/client/
-ls
+# cd packages/client/
+# ls
 
-cd dist
-ls
+# cd dist
+# ls
 
-cd c:/app
+# cd ../../..
 
 npm run start:prod -w server

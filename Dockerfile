@@ -19,7 +19,7 @@ RUN npm install -w client
 COPY packages/client/ packages/client/
 RUN npm run build -w client
 
-ENV PATH_TO_CLIENT_BUILT_FOLDER=c:/app/packages/client/dist
+ENV PATH_TO_CLIENT_BUILT_FOLDER=/app/packages/client/dist
 ENV NODE_ENV=production
 
 # COPY package.json ./dist
