@@ -6,11 +6,13 @@ WORKDIR /app
 # TODO - copy the lockfile?
 COPY package.json .
 
-COPY packages/server/package.json .
+RUN npm install
+
+COPY packages/server/package.json packages/server/package.json
 
 RUN npm install -w server
 
-COPY packages/server/ .
+COPY packages/server/ packages/server/
 
 RUN npm run build -w server
 
