@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Top level
 # TODO - copy the lockfile?
-COPY package.json
+COPY package.json .
 
 COPY packages/server/package.json .
 
