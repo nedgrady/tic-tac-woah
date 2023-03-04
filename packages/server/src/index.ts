@@ -4,14 +4,13 @@ import { listen } from "@colyseus/arena"
 import { createServer } from "http"
 // Import arena config
 import arenaConfig from "./arena.config"
-import cors from "cors"
+import cors, { CorsOptions } from "cors"
 import { monitor } from "@colyseus/monitor"
 import { MyRoom } from "./rooms/MyRoom"
 import { Server } from "colyseus"
 
 const app = express()
 
-app.options("/*", cors())
 app.use(cors())
 /**
  * Bind your custom express routes here:
