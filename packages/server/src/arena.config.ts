@@ -1,6 +1,7 @@
 import Arena from "@colyseus/arena"
 import { monitor } from "@colyseus/monitor"
-import cors from "cors"
+import cors, { CorsOptions } from "cors"
+import { NextFunction, Request, Response } from "express"
 
 /**
  * Import your Room files
@@ -14,27 +15,10 @@ export default Arena({
 		/**
 		 * Define your room handlers:
 		 */
-		gameServer.define("my_room", MyRoom)
+		gameServer.define("room_name", MyRoom)
 	},
 
-	initializeExpress: app => {
-		app.use(cors())
-		app.options("/*", cors())
-
-		/**
-		 * Bind your custom express routes here:
-		 */
-		app.get("/", (req, res) => {
-			res.send("It's time to kick ass and chew bubblegum!")
-		})
-
-		/**
-		 * Bind @colyseus/monitor
-		 * It is recommended to protect this route with a password.
-		 * Read more: https://docs.colyseus.io/tools/monitor/
-		 */
-		app.use("/colyseus", monitor())
-	},
+	initializeExpress: app => {},
 
 	beforeListen: () => {
 		/**
