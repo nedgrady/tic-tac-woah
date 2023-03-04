@@ -8,10 +8,20 @@ import cors, { CorsOptions } from "cors"
 import { monitor } from "@colyseus/monitor"
 import { MyRoom } from "./rooms/MyRoom"
 import { Server } from "colyseus"
+import path from "path"
 
 const app = express()
 
 app.use(cors())
+
+if (process.env.NODE_ENV === "production") {
+	app.use("tic-tac-woah", express.static(process.env.PATH_TO_CLIENT_BUILT_FOLDER))
+
+	app.get("tic-tac-woah", (_, response) =>
+		response.sendFile(path.join(process.env.PATH_TO_CLIENT_BUILT_FOLDER, "index.html"))
+	)
+}
+
 /**
  * Bind your custom express routes here:
  */
