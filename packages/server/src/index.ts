@@ -24,6 +24,10 @@ if (process.env.NODE_ENV === "production") {
 	)
 }
 
+app.get("/version", (_, response) => {
+	response.send(process.env.RENDER_GIT_COMMIT)
+})
+
 /**
  * Bind your custom express routes here:
  */
