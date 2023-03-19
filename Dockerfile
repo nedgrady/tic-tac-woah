@@ -11,6 +11,12 @@ COPY package.json .
 RUN npm install
 
 # Server
+COPY packages/types/types.json packages/types/package.json
+RUN npm install -w types
+COPY packages/types/ packages/types/
+# RUN npm run build -w types
+
+# Server
 COPY packages/server/package.json packages/server/package.json
 RUN npm install -w server
 COPY packages/server/ packages/server/
