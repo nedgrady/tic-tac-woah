@@ -1,22 +1,28 @@
-import { WebSocketTransport } from "@colyseus/ws-transport"
-import express, { NextFunction } from "express"
-import { listen } from "@colyseus/arena"
+import express from "express"
 import { createServer } from "http"
-// Import arena config
-import arenaConfig from "./arena.config"
-import cors, { CorsOptions } from "cors"
-import { monitor } from "@colyseus/monitor"
-import { MyRoom } from "./rooms/MyRoom"
-import { Server } from "colyseus"
+import cors from "cors"
+import { Server, Socket } from "socket.io"
 import path from "path"
+import { QueueResponse } from "types"
 
 const app = express()
+const httpServer = createServer(app)
+
+const io = new Server(httpServer, {
+	cors: {
+		origin: "*",
+		methods: ["GET", "POST"],
+	},
+})
+
+io.on("connection", socket => {
+	socket.join("queue")
+})
 
 app.use(cors())
 
 if (process.env.NODE_ENV === "production") {
 	console.log("==== serving /tic-tac-woah", process.env.PATH_TO_CLIENT_BUILT_FOLDER)
-	//app.use("/tic-tac-woah", (_, response) => response.send("tic-tac-woah"))
 	app.use("/tic-tac-woah", express.static(process.env.PATH_TO_CLIENT_BUILT_FOLDER))
 
 	app.get("/tic-tac-woah*", (_, response) =>
@@ -28,36 +34,38 @@ app.get("/version", (_, response) => {
 	response.send(process.env.RENDER_GIT_COMMIT)
 })
 
-/**
- * Bind your custom express routes here:
- */
-app.get("/", (req, res) => {
-	res.send("It's time to kick ass and chew bubblegum!")
+app.get("/queue", async (_, response) => {
+	const sockets = await io.in("queue").fetchSockets()
+	response.json({
+		depth: sockets.length,
+	})
 })
 
-/**
- * Bind @colyseus/monitor
- * It is recommended to protect this route with a password.
- * Read more: https://docs.colyseus.io/tools/monitor/
- */
-app.use("/colyseus", monitor())
-
-const gameServer = new Server({
-	transport: new WebSocketTransport({
-		server: createServer(app),
-	}),
+app.get("/info", async (_, response) => {
+	const sockets = await io.in("queue").fetchSockets()
+	response.json(
+		sockets.map(socket => ({
+			id: socket.id,
+			rooms: socket.rooms,
+		}))
+	)
 })
 
-gameServer.define("room_name", MyRoom)
+httpServer.listen(8080)
 
-/**
- * IMPORTANT:
- * ---------
- * Do not manually edit this file if you'd like to use Colyseus Arena
- *
- * If you're self-hosting (without Arena), you can manually instantiate a
- * Colyseus Server as documented here: 👉 https://docs.colyseus.io/server/api/#constructor-options
- */
+// /**
+//  * Bind @colyseus/monitor
+//  * It is recommended to protect this route with a password.
+//  * Read more: https://docs.colyseus.io/tools/monitor/
+//  */
+// app.use("/colyseus", monitor())
 
-// Create and listen on 2567 (or PORT environment variable.)
-gameServer.listen(8080)
+// const gameServer = new Server({
+// 	transport: new WebSocketTransport({
+// 		server: createServer(app),
+// 	}),
+// })
+
+// gameServer.define("queue", QueueRoom)
+
+// gameServer.listen(8080)

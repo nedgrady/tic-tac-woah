@@ -1,23 +1,53 @@
-import * as Colyseus from "colyseus.js" // not necessary if included via <script> tag.
+import axios from "axios"
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query"
+import { useEffectOnce } from "react-use"
+import { io } from "socket.io-client"
+import { QueueResponse, QueueSchema } from "types"
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 
-var client = new Colyseus.Client("wss://server-0mi6.onrender.com")
+export const socket = io("localhost:8080", {
+	autoConnect: false,
+})
 
-client
-	.joinOrCreate("room_name")
-	.then(room => {
-		console.log(room.sessionId, "joined", room.name)
+const queryClient = new QueryClient()
+
+function useQueue() {
+	const query = useQuery({
+		queryKey: ["queue"],
+		queryFn: () =>
+			axios
+				.get<QueueResponse>("http://localhost:8080/queue")
+				.then(response => {
+					return QueueSchema.parse(response.data)
+				})
+				.catch(error => console.log(error)),
+		refetchInterval: 5000,
 	})
-	.catch(e => {
-		console.log("JOIN ERROR", e)
-	})
 
-// const client = new WebSocket("ws://server-0mi6.onrender.com")
-
-// client.onopen = () => console.log("OPEN")
-// client.onclose = () => console.log("CLOSE")
+	return { ...query, queue: query.data }
+}
 
 function App() {
-	return <>👀</>
+	useEffectOnce(() => {
+		socket.connect()
+
+		return () => {
+			socket.disconnect()
+		}
+	})
+
+	return (
+		<QueryClientProvider client={queryClient}>
+			<Queue />
+			<ReactQueryDevtools initialIsOpen={false} />
+		</QueryClientProvider>
+	)
+}
+
+function Queue() {
+	const { queue } = useQueue()
+
+	return <>Currently {queue?.depth ?? "?"} people in the queue...</>
 }
 
 export default App

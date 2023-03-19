@@ -1,9 +1,9 @@
 import { Client, Room } from "colyseus"
-import { MyRoomState } from "./schema/MyRoomState"
+import { QueueRoomState } from "./schema/QueueRoomState"
 
-export class MyRoom extends Room<MyRoomState> {
+export class QueueRoom extends Room<QueueRoomState> {
 	onCreate(options: any) {
-		this.setState(new MyRoomState())
+		this.setState(new QueueRoomState())
 
 		this.onMessage("type", (client, message) => {
 			//
@@ -13,11 +13,11 @@ export class MyRoom extends Room<MyRoomState> {
 	}
 
 	onJoin(client: Client, options: any) {
-		console.log(client.sessionId, "joined!")
+		this.state.depth++
 	}
 
 	onLeave(client: Client, consented: boolean) {
-		console.log(client.sessionId, "left!")
+		this.state.depth--
 	}
 
 	onDispose() {

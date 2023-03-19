@@ -6,7 +6,7 @@ import { NextFunction, Request, Response } from "express"
 /**
  * Import your Room files
  */
-import { MyRoom } from "./rooms/MyRoom"
+import { QueueRoom } from "./rooms/QueueRoom"
 
 export default Arena({
 	getId: () => "Your Colyseus App",
@@ -15,7 +15,7 @@ export default Arena({
 		/**
 		 * Define your room handlers:
 		 */
-		gameServer.define("room_name", MyRoom)
+		gameServer.define("queue", QueueRoom)
 	},
 
 	initializeExpress: app => {},
