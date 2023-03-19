@@ -1,9 +1,8 @@
 import express from "express"
 import { createServer } from "http"
 import cors from "cors"
-import { Server, Socket } from "socket.io"
+import { Server } from "socket.io"
 import path from "path"
-import { QueueResponse } from "types"
 
 const app = express()
 const httpServer = createServer(app)
