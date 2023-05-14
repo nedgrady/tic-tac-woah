@@ -69,6 +69,8 @@ io.on("connection", async socket => {
 			io.to(gameId).emit("move", move)
 		})
 
+		game.start()
+
 		queue.clear()
 	}
 })
