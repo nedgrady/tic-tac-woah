@@ -27,10 +27,24 @@ function useQueue() {
 	return { ...query, queue: query.data }
 }
 
+socket.connect()
+
+socket.on("hello", args => {
+	alert(args)
+})
+
+socket.on("hello", data => {
+	console.log(`Received message in room ${data.room}: ${data.message}`)
+})
+
 function App() {
 	useEffectOnce(() => {
-		socket.connect()
-
+		socket.on("game start", args => {
+			alert(args)
+		})
+		socket.on("move", args => {
+			alert(args)
+		})
 		return () => {
 			socket.disconnect()
 		}

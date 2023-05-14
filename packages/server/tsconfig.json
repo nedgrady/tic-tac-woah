@@ -2,14 +2,15 @@
 	"compilerOptions": {
 		"outDir": "dist",
 		"target": "es6",
-		"module": "commonjs",
+		"module": "CommonJS",
 		"strict": true,
 		"allowJs": true,
 		"strictNullChecks": false,
 		"esModuleInterop": true,
 		"experimentalDecorators": true,
 		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true
+		"forceConsistentCasingInFileNames": true,
+		"allowSyntheticDefaultImports": true
 	},
-	"include": ["src"]
+	"include": ["src", "vite.config.ts"]
 }

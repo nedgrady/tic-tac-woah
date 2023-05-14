@@ -1,21 +1,84 @@
 import express from "express"
 import { createServer } from "http"
 import cors from "cors"
-import { Server } from "socket.io"
+import { Server, Socket } from "socket.io"
 import path from "path"
+import { Game } from "./Game"
+import { Participant } from "./Participant"
+import { instrument } from "@socket.io/admin-ui"
+
+interface ParticipantHandle {
+	readonly connection: Socket
+	readonly participant: Participant
+}
 
 const app = express()
 const httpServer = createServer(app)
 
+const queue: Set<Socket> = new Set<Socket>()
+
 const io = new Server(httpServer, {
 	cors: {
-		origin: "*",
+		origin: ["https://admin.socket.io", "http://localhost:5173"],
 		methods: ["GET", "POST"],
+		credentials: true,
 	},
 })
 
-io.on("connection", socket => {
+// const io = new Server(httpServer, {
+// 	cors: {
+// 		origin: ["https://admin.socket.io"],
+// 		credentials: true,
+// 	},
+// })
+
+instrument(io, {
+	auth: false,
+	mode: "development",
+})
+
+io.on("connection", async socket => {
+	queue.add(socket)
 	socket.join("queue")
+
+	socket.on("disconnect", async () => {
+		queue.delete(socket)
+	})
+
+	console.log("Connected.")
+
+	if (queue.size === 3) {
+		const gameId = crypto.randomUUID()
+
+		console.log("Match made.")
+
+		const players: ParticipantHandle[] = Array.from(queue).map(socket => ({
+			connection: socket,
+			participant: new Participant(),
+		}))
+
+		const game = new Game(players.map(player => player.participant))
+
+		game.onStart(() => {
+			players.forEach(player => player.connection.join(gameId))
+
+			io.to(gameId).emit("game start", { id: gameId })
+		})
+
+		game.onMove(move => {
+			io.to(gameId).emit("move", move)
+		})
+
+		queue.clear()
+	}
+})
+
+io.of("/").adapter.on("create-room", room => {
+	console.log(`room ${room} was created`)
+})
+
+io.of("/").adapter.on("join-room", (room, id) => {
+	console.log(`socket ${id} has joined room ${room}`)
 })
 
 app.use(cors())
@@ -36,7 +99,7 @@ app.get("/version", (_, response) => {
 app.get("/queue", async (_, response) => {
 	const sockets = await io.in("queue").fetchSockets()
 	response.json({
-		depth: sockets.length,
+		depth: queue.size,
 	})
 })
 
