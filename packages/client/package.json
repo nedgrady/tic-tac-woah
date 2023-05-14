@@ -6,7 +6,8 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"test": "vitest"
 	},
 	"dependencies": {
 		"@tanstack/react-query": "^4.27.0",
@@ -17,13 +18,16 @@
 		"react-dom": "^18.2.0",
 		"react-use": "^17.4.0",
 		"socket.io-client": "^4.6.1",
+		"vitest": "^0.31.0",
 		"zod": "^3.20.6"
 	},
 	"devDependencies": {
+		"@testing-library/react": "^14.0.0",
 		"@types/node": "^18.14.2",
 		"@types/react": "^18.0.27",
 		"@types/react-dom": "^18.0.10",
 		"@vitejs/plugin-react-swc": "^3.0.0",
+		"happy-dom": "^9.18.3",
 		"server": "file:../server",
 		"types": "file:../types",
 		"typescript": "^4.9.3",

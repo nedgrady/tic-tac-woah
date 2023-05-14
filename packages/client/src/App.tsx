@@ -32,10 +32,10 @@ function App() {
 		socket.connect()
 
 		socket.on("game start", args => {
-			alert(JSON.stringify(args))
+			console.log(JSON.stringify(args))
 		})
 		socket.on("move", args => {
-			alert(JSON.stringify(args))
+			console.log(JSON.stringify(args))
 		})
 		return () => {
 			socket.disconnect()
@@ -44,6 +44,14 @@ function App() {
 
 	return (
 		<QueryClientProvider client={queryClient}>
+			<button
+				onClick={() => {
+					socket.emit("move", "move data")
+					socket.emit("hello", "world")
+				}}
+			>
+				Clik me
+			</button>
 			<Queue />
 			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>

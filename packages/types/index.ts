@@ -5,3 +5,10 @@ export const QueueSchema = z.object({
 })
 
 export type QueueResponse = z.infer<typeof QueueSchema>
+
+export const CoordinatesDtoSchema = z.object({
+	x: z.number(),
+	y: z.number(),
+})
+
+export type CoordinatesDto = z.infer<typeof CoordinatesDtoSchema>

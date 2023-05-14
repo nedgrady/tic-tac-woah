@@ -6,6 +6,9 @@ import path from "path"
 import { Game } from "./Game"
 import { Participant } from "./Participant"
 import { instrument } from "@socket.io/admin-ui"
+import { z } from "zod"
+import { CoordinatesDtoSchema } from "types"
+import { Move } from "./Move"
 
 interface ParticipantHandle {
 	readonly connection: Socket
@@ -25,13 +28,6 @@ const io = new Server(httpServer, {
 	},
 })
 
-// const io = new Server(httpServer, {
-// 	cors: {
-// 		origin: ["https://admin.socket.io"],
-// 		credentials: true,
-// 	},
-// })
-
 instrument(io, {
 	auth: false,
 	mode: "development",
@@ -44,8 +40,6 @@ io.on("connection", async socket => {
 	socket.on("disconnect", async () => {
 		queue.delete(socket)
 	})
-
-	console.log("Connected.")
 
 	if (queue.size === 3) {
 		const gameId = crypto.randomUUID()
@@ -60,7 +54,18 @@ io.on("connection", async socket => {
 		const game = new Game(players.map(player => player.participant))
 
 		game.onStart(() => {
-			players.forEach(player => player.connection.join(gameId))
+			players.forEach(player => {
+				player.connection.join(gameId)
+				player.connection.on("move", payload => {
+					const coordinates = CoordinatesDtoSchema.parse(payload)
+					const move: Move = {
+						mover: player.participant,
+						placement: coordinates,
+					}
+					console.log(`${player.connection.id} Made a move ${JSON.stringify(move)}`)
+					game.submitMove(move)
+				})
+			})
 
 			io.to(gameId).emit("game start", { id: gameId })
 		})
@@ -86,12 +91,14 @@ io.of("/").adapter.on("join-room", (room, id) => {
 app.use(cors())
 
 if (process.env.NODE_ENV === "production") {
-	console.log("==== serving /tic-tac-woah", process.env.PATH_TO_CLIENT_BUILT_FOLDER)
-	app.use("/tic-tac-woah", express.static(process.env.PATH_TO_CLIENT_BUILT_FOLDER))
+	const pathToClientBuiltFolder = process.env.PATH_TO_CLIENT_BUILT_FOLDER
+	console.log("==== serving /tic-tac-woah", pathToClientBuiltFolder)
 
-	app.get("/tic-tac-woah*", (_, response) =>
-		response.sendFile(path.join(process.env.PATH_TO_CLIENT_BUILT_FOLDER, "index.html"))
-	)
+	if (!pathToClientBuiltFolder) throw new Error("PATH_TO_CLIENT_BUILT_FOLDER not set")
+
+	app.use("/tic-tac-woah", express.static(pathToClientBuiltFolder))
+
+	app.get("/tic-tac-woah*", (_, response) => response.sendFile(path.join(pathToClientBuiltFolder, "index.html")))
 }
 
 app.get("/version", (_, response) => {
