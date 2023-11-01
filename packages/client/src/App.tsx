@@ -2,8 +2,11 @@ import axios from "axios"
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query"
 import { useEffectOnce } from "react-use"
 import { io } from "socket.io-client"
-import { QueueResponse, QueueSchema } from "types"
+import { CoordinatesDtoSchema, MoveDtoSchema, QueueResponse, QueueSchema } from "types"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { useAppDispatch, useAppSelector } from "./redux/hooks"
+import { Move, newMove, selectBoardState } from "./redux/boardSlice"
+import { CoordinatesDto } from "types"
 
 export const socket = io("localhost:8080", {
 	autoConnect: false,
@@ -35,33 +38,51 @@ function App() {
 			console.log(JSON.stringify(args))
 		})
 		socket.on("move", args => {
-			console.log(JSON.stringify(args))
+			console.log(args)
+			const move = MoveDtoSchema.parse(args)
+
+			dispatch(newMove(move))
 		})
+
 		return () => {
 			socket.disconnect()
 		}
 	})
 
+	const dispatch = useAppDispatch()
+
 	return (
 		<QueryClientProvider client={queryClient}>
 			<button
 				onClick={() => {
-					socket.emit("move", "move data")
-					socket.emit("hello", "world")
+					const coordinates: CoordinatesDto = {
+						x: Math.floor(Math.random() * 20),
+						y: Math.floor(Math.random() * 20),
+					}
+					socket.emit("move", JSON.stringify(coordinates))
 				}}
 			>
 				Clik me
 			</button>
 			<Queue />
+			<hr />
+			<Game />
 			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>
 	)
 }
 
-function Queue() {
-	const { queue } = useQueue()
+function Game() {
+	const thing = useAppSelector(selectBoardState)
 
-	return <>Currently {queue?.depth ?? "?"} people in the queue...</>
+	return <>{JSON.stringify(thing)}</>
+}
+
+function Queue() {
+	//const { queue } = useQueue()
+
+	//return <>Currently {queue?.depth ?? "?"} people in the queue...</>
+	return <></>
 }
 
 export default App

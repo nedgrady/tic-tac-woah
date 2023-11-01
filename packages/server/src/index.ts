@@ -7,7 +7,7 @@ import { Game } from "./Game"
 import { Participant } from "./Participant"
 import { instrument } from "@socket.io/admin-ui"
 import { z } from "zod"
-import { CoordinatesDtoSchema } from "types"
+import { CoordinatesDtoSchema, MoveDto, MoveDtoSchema } from "types"
 import { Move } from "./Move"
 
 interface ParticipantHandle {
@@ -34,6 +34,9 @@ instrument(io, {
 })
 
 io.on("connection", async socket => {
+	socket.onAny((eventName, ...args) => {
+		console.log(`${socket.id} emitted ${eventName}`, args)
+	})
 	queue.add(socket)
 	socket.join("queue")
 
@@ -46,7 +49,7 @@ io.on("connection", async socket => {
 
 		console.log("Match made.")
 
-		const players: ParticipantHandle[] = Array.from(queue).map(socket => ({
+		const players: readonly ParticipantHandle[] = Array.from(queue).map(socket => ({
 			connection: socket,
 			participant: new Participant(),
 		}))
@@ -57,13 +60,16 @@ io.on("connection", async socket => {
 			players.forEach(player => {
 				player.connection.join(gameId)
 				player.connection.on("move", payload => {
-					const coordinates = CoordinatesDtoSchema.parse(payload)
+					const coordinates = CoordinatesDtoSchema.parse(JSON.parse(payload))
+
 					const move: Move = {
 						mover: player.participant,
 						placement: coordinates,
 					}
-					console.log(`${player.connection.id} Made a move ${JSON.stringify(move)}`)
+
+					// Which one of these?
 					game.submitMove(move)
+					player.participant.makeMove(coordinates)
 				})
 			})
 
@@ -71,11 +77,19 @@ io.on("connection", async socket => {
 		})
 
 		game.onMove(move => {
-			io.to(gameId).emit("move", move)
+			const mover = players.find(player => player.participant == move.mover)
+
+			if (!mover) throw new Error(`Could not locate mover ${move.mover}`)
+
+			const moveDto: MoveDto = {
+				placement: move.placement,
+				mover: mover.connection.id,
+			}
+
+			io.to(gameId).emit("move", moveDto)
 		})
 
 		game.start()
-
 		queue.clear()
 	}
 })
@@ -122,7 +136,14 @@ app.get("/info", async (_, response) => {
 	)
 })
 
+process.on("uncaughtException", (err, origin) => {
+	//code to log the errors
+	console.error(`Caught exception: ${err}\n` + `Exception origin: ${origin}`)
+})
+
 httpServer.listen(8080)
+
+console.log("HERE")
 
 // /**
 //  * Bind @colyseus/monitor

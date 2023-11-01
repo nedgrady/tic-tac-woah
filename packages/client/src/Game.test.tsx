@@ -10,6 +10,13 @@ test("Something", () => {
 })
 
 function Game() {
-	// render a 20x20 grid of cells with test ids
-	return
+	const cells = Array.from({ length: 20 }, (_, y) => (
+		<div>
+			{Array.from({ length: 20 }, (_, x) => (
+				<div key={`cell-${x}-${y}`} data-testid={`cell-${x}-${y}`} />
+			))}
+		</div>
+	))
+
+	return <div>{cells}</div>
 }
