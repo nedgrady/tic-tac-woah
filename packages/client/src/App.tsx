@@ -8,7 +8,9 @@ import { useAppDispatch, useAppSelector } from "./redux/hooks"
 import { Move, newMove, selectBoardState } from "./redux/boardSlice"
 import { CoordinatesDto } from "types"
 
-export const socket = io("localhost:8080", {
+const webSocketUrl = `${import.meta.env.VITE_WEBSOCKET_URL}:${import.meta.env.VITE_WEBSOCKET_PORT}`
+
+export const socket = io(webSocketUrl, {
 	autoConnect: false,
 })
 
