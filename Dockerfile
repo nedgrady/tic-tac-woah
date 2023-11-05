@@ -1,5 +1,8 @@
 FROM node:18.14.2-alpine3.17
 
+ARG RENDER_WEBSOCKET_URL=https://tic-tac-woah.onrender.com/
+ARG RENDER_WEBSOCKET_PORT=80
+
 WORKDIR /app
 
 RUN printenv
@@ -16,8 +19,8 @@ RUN npm install -w types
 COPY packages/types/ packages/types/
 # RUN npm run build -w types
 
-ENV VITE_WEBSOCKET_URL=https://tic-tac-woah.onrender.com/
-ENV VITE_WEBSOCKET_PORT=80
+ENV VITE_WEBSOCKET_URL=$RENDER_WEBSOCKET_URL
+ENV VITE_WEBSOCKET_PORT=$RENDER_WEBSOCKET_PORT
 
 # Server
 COPY packages/server/package.json packages/server/package.json
