@@ -6,9 +6,9 @@ import path from "path"
 import { Game } from "./Game"
 import { Participant } from "./Participant"
 import { instrument } from "@socket.io/admin-ui"
-import { z } from "zod"
 import { CoordinatesDtoSchema, MoveDto, MoveDtoSchema } from "types"
 import { Move } from "./Move"
+import crypto from "crypto"
 
 interface ParticipantHandle {
 	readonly connection: Socket
