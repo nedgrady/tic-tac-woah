@@ -16,6 +16,9 @@ RUN npm install -w types
 COPY packages/types/ packages/types/
 # RUN npm run build -w types
 
+ENV VITE_WEBSOCKET_URL=https://tic-tac-woah.onrender.com/
+ENV VITE_WEBSOCKET_PORT=80
+
 # Server
 COPY packages/server/package.json packages/server/package.json
 RUN npm install -w server
