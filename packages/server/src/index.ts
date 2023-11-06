@@ -181,9 +181,9 @@ const handleSignal = (signal: NodeJS.Signals) => {
 	httpServer.close()
 }
 
-process.on("SIGINT", () => handleSignal("SIGINT"))
-process.on("SIGKILL", () => handleSignal("SIGKILL"))
-process.on("SIGTERM", () => handleSignal("SIGTERM"))
+// process.on("SIGINT", () => handleSignal("SIGINT"))
+// process.on("SIGKILL", () => handleSignal("SIGKILL"))
+// process.on("SIGTERM", () => handleSignal("SIGTERM"))
 
 httpServer.on("listening", () => {
 	applicationInsights.defaultClient.trackEvent({ name: "server start" })
