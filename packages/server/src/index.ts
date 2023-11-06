@@ -7,7 +7,7 @@ import path from "path"
 import { Game } from "./Game"
 import { Participant } from "./Participant"
 import { instrument } from "@socket.io/admin-ui"
-import { CoordinatesDtoSchema, MoveDto, MoveDtoSchema } from "types"
+import { CoordinatesDtoSchema, MoveDto } from "types"
 import { Move } from "./Move"
 import crypto from "crypto"
 import * as applicationInsights from "applicationinsights"
@@ -171,35 +171,30 @@ app.get("/info", async (_, response) => {
 	)
 })
 
-process.on("uncaughtException", (err, origin) => {
-	applicationInsights.defaultClient.trackException({ exception: err })
+process.on("uncaughtException", (error, origin) => {
+	applicationInsights.defaultClient.trackException({ exception: error, properties: { origin } })
+})
+
+const handleSignal = (signal: NodeJS.Signals) => {
+	applicationInsights.defaultClient.trackEvent({ name: "signal received", properties: { signal } })
+	io.close()
+	httpServer.close()
+}
+
+process.on("SIGINT", () => handleSignal("SIGINT"))
+process.on("SIGKILL", () => handleSignal("SIGKILL"))
+process.on("SIGTERM", () => handleSignal("SIGTERM"))
+
+httpServer.on("listening", () => {
+	applicationInsights.defaultClient.trackEvent({ name: "server start" })
+})
+
+httpServer.on("shutdown", () => {
+	applicationInsights.defaultClient.trackEvent({ name: "server shutdown" })
+})
+
+process.on("beforeExit", async () => {
 	applicationInsights.defaultClient.flush()
-})
-
-// TODO - cleanup
-process.on("SIGINT", () => {
-	applicationInsights.defaultClient.flush()
-	console.log("SIGINT signal received: closing HTTP server")
-	httpServer.close(() => {
-		console.log("HTTP server closed")
-	})
-})
-
-process.on("SIGKILL", () => {
-	console.log("SIGKILL signal received: closing HTTP server")
-	httpServer.close(() => {
-		console.log("HTTP server closed")
-	})
-})
-
-process.on("SIGTERM", () => {
-	console.log("SIGTERM signal received: closing HTTP server")
-	httpServer.close(() => {
-		console.log("HTTP server closed")
-	})
 })
 
 httpServer.listen(8080)
-
-applicationInsights.defaultClient.trackTrace({ message: "HERE3" })
-applicationInsights.defaultClient.flush()
