@@ -171,19 +171,20 @@ app.get("/info", async (_, response) => {
 	)
 })
 
+app.get("/health", (_, response) => {
+	const healthInfo = {
+		status: "healthy",
+		uptime: process.uptime(),
+		timestamp: new Date(),
+		memoryUsage: process.memoryUsage(),
+	}
+
+	response.json(healthInfo)
+})
+
 process.on("uncaughtException", (error, origin) => {
 	applicationInsights.defaultClient.trackException({ exception: error, properties: { origin } })
 })
-
-const handleSignal = (signal: NodeJS.Signals) => {
-	applicationInsights.defaultClient.trackEvent({ name: "signal received", properties: { signal } })
-	io.close()
-	httpServer.close()
-}
-
-// process.on("SIGINT", () => handleSignal("SIGINT"))
-// process.on("SIGKILL", () => handleSignal("SIGKILL"))
-// process.on("SIGTERM", () => handleSignal("SIGTERM"))
 
 httpServer.on("listening", () => {
 	applicationInsights.defaultClient.trackEvent({ name: "server start" })
