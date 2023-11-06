@@ -1,3 +1,4 @@
+import "dotenv/config"
 import express from "express"
 import { createServer } from "http"
 import cors from "cors"
@@ -9,10 +10,44 @@ import { instrument } from "@socket.io/admin-ui"
 import { CoordinatesDtoSchema, MoveDto, MoveDtoSchema } from "types"
 import { Move } from "./Move"
 import crypto from "crypto"
+import * as applicationInsights from "applicationinsights"
+import os from "os"
+import debug from "debug"
 
 interface ParticipantHandle {
 	readonly connection: Socket
 	readonly participant: Participant
+}
+
+applicationInsights
+	.setup(
+		"InstrumentationKey=691cf8f7-d5ef-45df-a5ff-385d9429be4b;IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/"
+	)
+	.setAutoCollectConsole(true, false)
+	.start()
+
+applicationInsights.defaultClient.context.tags[applicationInsights.defaultClient.context.keys.cloudRole] =
+	"tic-tac-woah.server"
+applicationInsights.defaultClient.context.tags[
+	applicationInsights.defaultClient.context.keys.cloudRoleInstance
+] = `${os.hostname()}@${process.env.CONTAINER_NAME ?? "Bare Metal"}`
+
+applicationInsights.defaultClient.commonProperties = {
+	"tic-tac-woah.source": "default",
+}
+
+debug.log = (message: any, ...args: any[]) => {
+	console.log(message)
+	console.log(typeof message)
+	applicationInsights.defaultClient.trackTrace({
+		message: message,
+		properties: {
+			...args,
+			"tic-tac-woah.source": "debug",
+		},
+	})
+
+	applicationInsights.defaultClient.flush()
 }
 
 const app = express()
@@ -94,13 +129,13 @@ io.on("connection", async socket => {
 	}
 })
 
-io.of("/").adapter.on("create-room", room => {
-	console.log(`room ${room} was created`)
-})
+// io.of("/").adapter.on("create-room", room => {
+// 	console.log(`room ${room} was created`)
+// })
 
-io.of("/").adapter.on("join-room", (room, id) => {
-	console.log(`socket ${id} has joined room ${room}`)
-})
+// io.of("/").adapter.on("join-room", (room, id) => {
+// 	console.log(`socket ${id} has joined room ${room}`)
+// })
 
 app.use(cors())
 
@@ -137,27 +172,34 @@ app.get("/info", async (_, response) => {
 })
 
 process.on("uncaughtException", (err, origin) => {
-	//code to log the errors
-	console.error(`Caught exception: ${err}\n` + `Exception origin: ${origin}`)
+	applicationInsights.defaultClient.trackException({ exception: err })
+	applicationInsights.defaultClient.flush()
+})
+
+// TODO - cleanup
+process.on("SIGINT", () => {
+	applicationInsights.defaultClient.flush()
+	console.log("SIGINT signal received: closing HTTP server")
+	httpServer.close(() => {
+		console.log("HTTP server closed")
+	})
+})
+
+process.on("SIGKILL", () => {
+	console.log("SIGKILL signal received: closing HTTP server")
+	httpServer.close(() => {
+		console.log("HTTP server closed")
+	})
+})
+
+process.on("SIGTERM", () => {
+	console.log("SIGTERM signal received: closing HTTP server")
+	httpServer.close(() => {
+		console.log("HTTP server closed")
+	})
 })
 
 httpServer.listen(8080)
 
-console.log("HERE")
-
-// /**
-//  * Bind @colyseus/monitor
-//  * It is recommended to protect this route with a password.
-//  * Read more: https://docs.colyseus.io/tools/monitor/
-//  */
-// app.use("/colyseus", monitor())
-
-// const gameServer = new Server({
-// 	transport: new WebSocketTransport({
-// 		server: createServer(app),
-// 	}),
-// })
-
-// gameServer.define("queue", QueueRoom)
-
-// gameServer.listen(8080)
+applicationInsights.defaultClient.trackTrace({ message: "HERE3" })
+applicationInsights.defaultClient.flush()

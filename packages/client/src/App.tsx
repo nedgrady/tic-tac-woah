@@ -1,11 +1,10 @@
-import axios from "axios"
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useEffectOnce } from "react-use"
 import { io } from "socket.io-client"
-import { CoordinatesDtoSchema, MoveDtoSchema, QueueResponse, QueueSchema } from "types"
+import { MoveDtoSchema } from "types"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { useAppDispatch, useAppSelector } from "./redux/hooks"
-import { Move, newMove, selectBoardState } from "./redux/boardSlice"
+import { newMove, selectBoardState } from "./redux/boardSlice"
 import { CoordinatesDto } from "types"
 
 const webSocketUrl = `${import.meta.env.VITE_WEBSOCKET_URL}:${import.meta.env.VITE_WEBSOCKET_PORT}`
@@ -15,22 +14,6 @@ export const socket = io(webSocketUrl, {
 })
 
 const queryClient = new QueryClient()
-
-function useQueue() {
-	const query = useQuery({
-		queryKey: ["queue"],
-		queryFn: () =>
-			axios
-				.get<QueueResponse>("http://localhost:8080/queue")
-				.then(response => {
-					return QueueSchema.parse(response.data)
-				})
-				.catch(error => console.log(error)),
-		refetchInterval: 5000,
-	})
-
-	return { ...query, queue: query.data }
-}
 
 function App() {
 	useEffectOnce(() => {
