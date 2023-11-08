@@ -30,7 +30,7 @@ applicationInsights.defaultClient.context.tags[applicationInsights.defaultClient
 	"tic-tac-woah.server"
 applicationInsights.defaultClient.context.tags[
 	applicationInsights.defaultClient.context.keys.cloudRoleInstance
-] = `${os.hostname()}@${process.env.CONTAINER_NAME ?? "Bare Metal"}`
+] = `${os.hostname()}`
 
 applicationInsights.defaultClient.commonProperties = {
 	"tic-tac-woah.source": "default",
@@ -174,7 +174,7 @@ app.get("/info", async (_, response) => {
 app.get("/health", (_, response) => {
 	const healthInfo = {
 		status: "healthy",
-		uptime: process.uptime(),
+		uptime: process.uptime() + "s",
 		timestamp: new Date(),
 		memoryUsage: process.memoryUsage(),
 	}
