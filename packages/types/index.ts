@@ -19,3 +19,10 @@ export const MoveDtoSchema = z.object({
 })
 
 export type MoveDto = z.infer<typeof MoveDtoSchema>
+
+export const GameStartDtoSchema = z.object({
+	id: z.string(),
+	players: z.array(z.string()),
+})
+
+export type GameStartDto = z.infer<typeof GameStartDtoSchema>

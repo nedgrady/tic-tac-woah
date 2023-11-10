@@ -1,9 +1,9 @@
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit"
-import movesReducer from "./boardSlice"
+import gameReducer from "./gameSlice"
 
 export const store = configureStore({
 	reducer: {
-		movesReducer: movesReducer,
+		gameReducer: gameReducer,
 	},
 })
 

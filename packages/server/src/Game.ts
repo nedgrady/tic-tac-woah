@@ -26,7 +26,7 @@ export class Game {
 		return this.#movesReal
 	}
 
-	constructor(participants: Participant[]) {
+	constructor(participants: readonly Participant[]) {
 		participants.forEach(participant => (participant.game = this))
 	}
 }

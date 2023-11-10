@@ -1,15 +1,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useEffectOnce } from "react-use"
 import { io } from "socket.io-client"
-import { MoveDtoSchema } from "types"
+import { GameStartDtoSchema, MoveDtoSchema } from "types"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-import { useAppDispatch, useAppSelector } from "./redux/hooks"
-import { newMove, selectBoardState } from "./redux/boardSlice"
+import { useAppDispatch } from "./redux/hooks"
+// import { newMove } from "./redux/boardSlice"
 import { CoordinatesDto } from "types"
-import React from "react"
 import { ApplicationInsights } from "@microsoft/applicationinsights-web"
 import { ReactPlugin, withAITracking } from "@microsoft/applicationinsights-react-js"
-import * as applicationInsightsCore from "applicationinsights"
+import { Game } from "./Game"
+import { newMove, startGame } from "./redux/gameSlice"
 
 const webSocketUrl = `${import.meta.env.VITE_WEBSOCKET_URL}:${import.meta.env.VITE_WEBSOCKET_PORT}`
 
@@ -31,27 +31,27 @@ appInsights.addTelemetryInitializer(item => {
 	if (!item.tags) item.tags = []
 	if (!item.ext) item.ext = []
 
-	item.tags[applicationInsightsCore.defaultClient.context.keys.cloudRole] = "tic-tac-woah.client"
-	item.tags[applicationInsightsCore.defaultClient.context.keys.cloudRoleInstance] = window.location.hostname
+	item.tags["ai.cloud.role"] = "tic-tac-woah.client"
+	item.tags["ai.cloud.roleInstance"] = window.location.hostname
 	item.ext["tic-tac-woah.source"] = "default"
 	return true
 })
 
-const thing = appInsights.loadAppInsights()
-
-thing.trackEvent({ name: "test" })
+appInsights.loadAppInsights()
 
 function App() {
+	const dispatch = useAppDispatch()
+
 	useEffectOnce(() => {
 		socket.connect()
 
 		socket.on("game start", args => {
-			console.log(JSON.stringify(args))
+			const gameStart = GameStartDtoSchema.parse(args)
+			dispatch(startGame(gameStart))
 		})
-		socket.on("move", args => {
-			console.log(args)
-			const move = MoveDtoSchema.parse(args)
 
+		socket.on("move", args => {
+			const move = MoveDtoSchema.parse(args)
 			dispatch(newMove(move))
 		})
 
@@ -59,8 +59,6 @@ function App() {
 			socket.disconnect()
 		}
 	})
-
-	const dispatch = useAppDispatch()
 
 	return (
 		<QueryClientProvider client={queryClient}>
@@ -75,25 +73,10 @@ function App() {
 			>
 				Clik me
 			</button>
-			<Queue />
-			<hr />
 			<Game />
 			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>
 	)
-}
-
-function Game() {
-	const thing = useAppSelector(selectBoardState)
-
-	return <>{JSON.stringify(thing)}</>
-}
-
-function Queue() {
-	//const { queue } = useQueue()
-
-	//return <>Currently {queue?.depth ?? "?"} people in the queue...</>
-	return <></>
 }
 
 export default App

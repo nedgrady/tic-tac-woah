@@ -1,9 +1,12 @@
 import { expect, test } from "vitest"
-import { Move, selectBoardState } from "./boardSlice"
+import { selectBoardState } from "./gameSlice"
+import { Move } from "./gameSlice"
 
 test("All slots are initially null", () => {
 	const boardState = selectBoardState({
-		movesReducer: {
+		gameReducer: {
+			id: "Any Game",
+			players: [],
 			moves: [],
 		},
 	})
@@ -14,7 +17,9 @@ test("All slots are initially null", () => {
 
 test("Moves are reflected in the board", () => {
 	const boardState = selectBoardState({
-		movesReducer: {
+		gameReducer: {
+			id: "Any Game",
+			players: [],
 			moves: [
 				{
 					mover: "player1",
@@ -57,7 +62,9 @@ const threeMoves: Move[] = [
 
 test.each(threeMoves)("Move $placement by $mover is reflected in the board", move => {
 	const boardState = selectBoardState({
-		movesReducer: {
+		gameReducer: {
+			id: "Any Game",
+			players: [],
 			moves: threeMoves,
 		},
 	})
@@ -68,7 +75,9 @@ test.each(threeMoves)("Move $placement by $mover is reflected in the board", mov
 
 test("Other slots on the board remain null after a move", () => {
 	const boardState = selectBoardState({
-		movesReducer: {
+		gameReducer: {
+			id: "Any Game",
+			players: [],
 			moves: [
 				{
 					mover: "any player",

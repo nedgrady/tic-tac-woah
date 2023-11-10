@@ -7,7 +7,7 @@ import path from "path"
 import { Game } from "./Game"
 import { Participant } from "./Participant"
 import { instrument } from "@socket.io/admin-ui"
-import { CoordinatesDtoSchema, MoveDto } from "types"
+import { CoordinatesDtoSchema, GameStartDto, MoveDto } from "types"
 import { Move } from "./Move"
 import crypto from "crypto"
 import * as applicationInsights from "applicationinsights"
@@ -89,7 +89,9 @@ io.on("connection", async socket => {
 			participant: new Participant(),
 		}))
 
-		const game = new Game(players.map(player => player.participant))
+		const participants = Object.freeze(players.map(player => player.participant))
+
+		const game = new Game(participants)
 
 		game.onStart(() => {
 			players.forEach(player => {
@@ -108,7 +110,12 @@ io.on("connection", async socket => {
 				})
 			})
 
-			io.to(gameId).emit("game start", { id: gameId })
+			const gameStartDto: GameStartDto = {
+				id: gameId,
+				players: players.map(player => player.connection.id),
+			}
+
+			io.to(gameId).emit("game start", gameStartDto)
 		})
 
 		game.onMove(move => {
