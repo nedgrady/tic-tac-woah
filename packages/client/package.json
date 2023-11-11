@@ -38,7 +38,6 @@
 		"@types/react-dom": "^18.0.10",
 		"@vitejs/plugin-react-swc": "^3.0.0",
 		"happy-dom": "^9.18.3",
-		"server": "file:../server",
 		"types": "file:../types",
 		"typescript": "^4.9.3",
 		"vite": "^4.1.0"
