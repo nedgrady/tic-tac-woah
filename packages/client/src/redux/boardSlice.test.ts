@@ -5,9 +5,11 @@ import { Move } from "./gameSlice"
 test("All slots are initially null", () => {
 	const boardState = selectBoardState({
 		gameReducer: {
-			id: "Any Game",
-			players: [],
-			moves: [],
+			game: {
+				id: "Any Game",
+				players: [],
+				moves: [],
+			},
 		},
 	})
 
@@ -18,17 +20,19 @@ test("All slots are initially null", () => {
 test("Moves are reflected in the board", () => {
 	const boardState = selectBoardState({
 		gameReducer: {
-			id: "Any Game",
-			players: [],
-			moves: [
-				{
-					mover: "player1",
-					placement: {
-						x: 0,
-						y: 0,
+			game: {
+				id: "Any Game",
+				players: [],
+				moves: [
+					{
+						mover: "player1",
+						placement: {
+							x: 0,
+							y: 0,
+						},
 					},
-				},
-			],
+				],
+			},
 		},
 	})
 
@@ -63,9 +67,11 @@ const threeMoves: Move[] = [
 test.each(threeMoves)("Move $placement by $mover is reflected in the board", move => {
 	const boardState = selectBoardState({
 		gameReducer: {
-			id: "Any Game",
-			players: [],
-			moves: threeMoves,
+			game: {
+				id: "Any Game",
+				players: [],
+				moves: threeMoves,
+			},
 		},
 	})
 
@@ -76,17 +82,19 @@ test.each(threeMoves)("Move $placement by $mover is reflected in the board", mov
 test("Other slots on the board remain null after a move", () => {
 	const boardState = selectBoardState({
 		gameReducer: {
-			id: "Any Game",
-			players: [],
-			moves: [
-				{
-					mover: "any player",
-					placement: {
-						x: 0,
-						y: 0,
+			game: {
+				id: "Any Game",
+				players: [],
+				moves: [
+					{
+						mover: "any player",
+						placement: {
+							x: 0,
+							y: 0,
+						},
 					},
-				},
-			],
+				],
+			},
 		},
 	})
 
