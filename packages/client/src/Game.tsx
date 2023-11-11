@@ -18,8 +18,8 @@ const FlexyGameContainer = styled.div`
 	}
 
 	text-align: center;
-	height: 100%;
-	max-height: 100%;
+	flex-grow: 1;
+	max-height: 100dvh;
 `
 
 type Token = string

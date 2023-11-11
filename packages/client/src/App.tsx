@@ -7,6 +7,8 @@ import { useAppDispatch } from "./redux/hooks"
 import { CoordinatesDto } from "types"
 import { Game } from "./Game"
 import { Coordinate, newMove, startGame } from "./redux/gameSlice"
+import { createTheme, CssBaseline, ThemeProvider, useMediaQuery } from "@mui/material"
+import { useMemo } from "react"
 
 const webSocketUrl = `${import.meta.env.VITE_WEBSOCKET_URL}:${import.meta.env.VITE_WEBSOCKET_PORT}`
 
@@ -17,6 +19,18 @@ export const socket = io(webSocketUrl, {
 const queryClient = new QueryClient()
 
 function App() {
+	const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
+
+	const theme = useMemo(
+		() =>
+			createTheme({
+				palette: {
+					mode: prefersDarkMode ? "dark" : "light",
+				},
+			}),
+		[prefersDarkMode]
+	)
+
 	const dispatch = useAppDispatch()
 
 	useEffectOnce(() => {
@@ -46,8 +60,11 @@ function App() {
 
 	return (
 		<QueryClientProvider client={queryClient}>
-			<Game submitMove={submitMove} />
-			<ReactQueryDevtools initialIsOpen={false} />
+			<ThemeProvider theme={theme}>
+				<CssBaseline />
+				<Game submitMove={submitMove} />
+				<ReactQueryDevtools initialIsOpen={false} />
+			</ThemeProvider>
 		</QueryClientProvider>
 	)
 }

@@ -45,7 +45,6 @@ export default function Board({ boardState, onPiecePlaced, limitingDimensionInPi
 								data-testid={`square-${columnIndex}-${rowIndex}`}
 								onClick={() => onPiecePlaced(rowIndex, columnIndex)}
 								style={css}
-								className="winner"
 							>
 								{piece}
 							</Square>
