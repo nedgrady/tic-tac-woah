@@ -7,47 +7,14 @@ import path from "path"
 import { Game } from "./Game"
 import { Participant } from "./Participant"
 import { instrument } from "@socket.io/admin-ui"
-import { CoordinatesDtoSchema, GameStartDto, MoveDto } from "types"
+import { CoordinatesDtoSchema, GameStartDto, MoveDto, QueueResponse } from "types"
 import { Move } from "./Move"
 import crypto from "crypto"
-import * as applicationInsights from "applicationinsights"
-import os from "os"
-import debug from "debug"
+import applicationInsights from "./logging/applicationInsights"
 
 interface ParticipantHandle {
 	readonly connection: Socket
 	readonly participant: Participant
-}
-
-applicationInsights
-	.setup(
-		"InstrumentationKey=691cf8f7-d5ef-45df-a5ff-385d9429be4b;IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/"
-	)
-	.setAutoCollectConsole(true, false)
-	.start()
-
-applicationInsights.defaultClient.context.tags[applicationInsights.defaultClient.context.keys.cloudRole] =
-	"tic-tac-woah.server"
-applicationInsights.defaultClient.context.tags[
-	applicationInsights.defaultClient.context.keys.cloudRoleInstance
-] = `${os.hostname()}`
-
-applicationInsights.defaultClient.commonProperties = {
-	"tic-tac-woah.source": "default",
-}
-
-debug.log = (message: any, ...args: any[]) => {
-	console.log(message)
-	console.log(typeof message)
-	applicationInsights.defaultClient.trackTrace({
-		message: message,
-		properties: {
-			...args,
-			"tic-tac-woah.source": "debug",
-		},
-	})
-
-	applicationInsights.defaultClient.flush()
 }
 
 const app = express()
@@ -77,6 +44,7 @@ io.on("connection", async socket => {
 
 	socket.on("disconnect", async () => {
 		queue.delete(socket)
+		socket.leave("queue")
 	})
 
 	if (queue.size === 3) {
@@ -163,9 +131,13 @@ app.get("/version", (_, response) => {
 
 app.get("/queue", async (_, response) => {
 	const sockets = await io.in("queue").fetchSockets()
-	response.json({
+
+	const queueResponse: QueueResponse & { socketsDepth: number } = {
 		depth: queue.size,
-	})
+		socketsDepth: sockets.length,
+	}
+
+	response.json(queueResponse)
 })
 
 app.get("/info", async (_, response) => {
@@ -190,19 +162,19 @@ app.get("/health", (_, response) => {
 })
 
 process.on("uncaughtException", (error, origin) => {
-	applicationInsights.defaultClient.trackException({ exception: error, properties: { origin } })
+	applicationInsights.trackException({ exception: error, properties: { origin } })
 })
 
 httpServer.on("listening", () => {
-	applicationInsights.defaultClient.trackEvent({ name: "server start" })
+	applicationInsights.trackEvent({ name: "server start" })
 })
 
 httpServer.on("shutdown", () => {
-	applicationInsights.defaultClient.trackEvent({ name: "server shutdown" })
+	applicationInsights.trackEvent({ name: "server shutdown" })
 })
 
 process.on("beforeExit", async () => {
-	applicationInsights.defaultClient.flush()
+	applicationInsights.flush()
 })
 
 httpServer.listen(8080)

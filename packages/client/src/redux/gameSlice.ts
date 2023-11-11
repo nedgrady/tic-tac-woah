@@ -13,16 +13,26 @@ export type Coordinate = {
 	y: number
 }
 
-export interface GameState {
-	readonly players: string[]
+export type GameState = { game: PopulatedGame | EmptyGame }
+
+type EmptyGame = {
+	readonly id: "Empty Game"
+	readonly moves: []
+	readonly players: []
+}
+
+type PopulatedGame = {
 	readonly id: string
+	readonly players: string[]
 	readonly moves: Move[]
 }
 
 const initialState: GameState = {
-	id: "Empty Game",
-	moves: [],
-	players: [],
+	game: {
+		id: "Empty Game",
+		moves: [],
+		players: [],
+	},
 }
 
 export const gameSlice = createSlice({
@@ -32,12 +42,14 @@ export const gameSlice = createSlice({
 	reducers: {
 		// Use the PayloadAction type to declare the contents of `action.payload`
 		startGame: (state, action: PayloadAction<GameStart>) => {
-			state.id = action.payload.id
-			state.players = action.payload.players
-			state.moves = []
+			state.game = {
+				id: action.payload.id,
+				players: action.payload.players,
+				moves: [],
+			}
 		},
 		newMove: (state, action: PayloadAction<Move>) => {
-			state.moves = [...state.moves, action.payload]
+			state.game.moves = [...state.game.moves, action.payload]
 		},
 	},
 })
@@ -49,7 +61,7 @@ export function selectBoardState(state: RootState): readonly (string | null)[][]
 		.fill(null)
 		.map(() => Array(20).fill(null))
 
-	for (const move of state.gameReducer.moves) {
+	for (const move of state.gameReducer.game.moves) {
 		board[move.placement.x][move.placement.y] = move.mover
 	}
 	return board
