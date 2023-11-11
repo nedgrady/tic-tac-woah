@@ -5,7 +5,7 @@ import styled from "styled-components"
 const Table = styled.table`
 	border-collapse: collapse;
 `
-const Square = styled.td`
+const Td = styled.td`
 	vertical-align: middle;
 	text-align: center;
 
@@ -37,14 +37,14 @@ export default function Board({ boardState, onPiecePlaced, limitingDimensionInPi
 				{boardState.map((row, rowIndex) => (
 					<tr key={rowIndex}>
 						{row.map((piece, columnIndex) => (
-							<Square
+							<Td
 								key={`${columnIndex}-${rowIndex}`}
 								data-testid={`square-${columnIndex}-${rowIndex}`}
 								onClick={() => onPiecePlaced(rowIndex, columnIndex)}
 								style={css}
 							>
 								<Box>{piece}</Box>
-							</Square>
+							</Td>
 						))}
 					</tr>
 				))}
