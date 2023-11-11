@@ -2,6 +2,8 @@ FROM node:18.14.2-alpine3.17
 
 ARG RENDER_WEBSOCKET_URL=https://tic-tac-woah.onrender.com/
 ARG RENDER_WEBSOCKET_PORT=80
+ARG RENDER_API_URL=https://tic-tac-woah.onrender.com/
+ARG RENDER_API_PORT=80
 
 WORKDIR /app
 
@@ -21,6 +23,8 @@ COPY packages/types/ packages/types/
 
 ENV VITE_WEBSOCKET_URL=$RENDER_WEBSOCKET_URL
 ENV VITE_WEBSOCKET_PORT=$RENDER_WEBSOCKET_PORT
+ENV VITE_API_URL=$RENDER_API_URL
+ENV VITE_API_PORT=$RENDER_API_PORT
 
 # Server
 COPY packages/server/package.json packages/server/package.json
