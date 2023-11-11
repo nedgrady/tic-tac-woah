@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux"
-import { selectBoardState } from "./redux/gameSlice"
+import { Coordinate, Move, selectBoardState } from "./redux/gameSlice"
 import { useAppSelector } from "./redux/hooks"
 import React, { useState } from "react"
 import styled from "styled-components"
@@ -50,8 +50,13 @@ function useGameDisplay() {
 	return { board }
 }
 
-export function Game() {
+interface GameProps {
+	submitMove: (coordinates: Coordinate) => void
+}
+
+export function Game({ submitMove }: GameProps) {
 	const { board } = useGameDisplay()
+	// TODO -why does the size jump around
 	const [elementSizeRef, { width, height }] = useElementSize()
 	const limitingDimensionInPixels = Math.min(width, height)
 
@@ -59,7 +64,7 @@ export function Game() {
 		<FlexyGameContainer ref={elementSizeRef}>
 			<Board
 				boardState={board}
-				onPiecePlaced={() => {}}
+				onPiecePlaced={(x, y) => submitMove({ x, y })}
 				limitingDimensionInPixels={limitingDimensionInPixels || 1000}
 			/>
 		</FlexyGameContainer>

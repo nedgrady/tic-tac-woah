@@ -9,7 +9,7 @@ import { CoordinatesDto } from "types"
 import { ApplicationInsights } from "@microsoft/applicationinsights-web"
 import { ReactPlugin, withAITracking } from "@microsoft/applicationinsights-react-js"
 import { Game } from "./Game"
-import { newMove, startGame } from "./redux/gameSlice"
+import { Coordinate, Move, newMove, startGame } from "./redux/gameSlice"
 
 const webSocketUrl = `${import.meta.env.VITE_WEBSOCKET_URL}:${import.meta.env.VITE_WEBSOCKET_PORT}`
 
@@ -60,20 +60,16 @@ function App() {
 		}
 	})
 
+	function submitMove(coordinates: Coordinate) {
+		const coordinatesDto: CoordinatesDto = {
+			...coordinates,
+		}
+		socket.emit("move", JSON.stringify(coordinatesDto))
+	}
+
 	return (
 		<QueryClientProvider client={queryClient}>
-			<button
-				onClick={() => {
-					const coordinates: CoordinatesDto = {
-						x: Math.floor(Math.random() * 20),
-						y: Math.floor(Math.random() * 20),
-					}
-					socket.emit("move", JSON.stringify(coordinates))
-				}}
-			>
-				Clik me
-			</button>
-			<Game />
+			<Game submitMove={submitMove} />
 			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>
 	)

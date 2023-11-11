@@ -3,7 +3,15 @@ import { RootState } from "./store"
 import { GameStartDto, MoveDto } from "types"
 
 export type GameStart = GameStartDto
-export type Move = MoveDto
+export type Move = {
+	mover: string
+	placement: Coordinate
+}
+
+export type Coordinate = {
+	x: number
+	y: number
+}
 
 export interface GameState {
 	readonly players: string[]
