@@ -43,7 +43,7 @@ export default function Board({ boardState, onPiecePlaced, limitingDimensionInPi
 								onClick={() => onPiecePlaced(rowIndex, columnIndex)}
 								style={css}
 							>
-								<Box>{piece}</Box>
+								<Box key={`${columnIndex}-${rowIndex}`}>{piece}</Box>
 							</Td>
 						))}
 					</tr>
