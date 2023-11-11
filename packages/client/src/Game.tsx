@@ -19,7 +19,7 @@ const FlexyGameContainer = styled.div`
 
 	text-align: center;
 	flex-grow: 1;
-	max-height: 100dvh;
+	max-height: 99dvh;
 `
 
 type Token = string

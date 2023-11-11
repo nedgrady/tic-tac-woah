@@ -1,3 +1,4 @@
+import Box from "@mui/material/Box"
 import React from "react"
 import styled from "styled-components"
 
@@ -7,10 +8,6 @@ const Table = styled.table`
 const Square = styled.td`
 	vertical-align: middle;
 	text-align: center;
-
-	border-color: black;
-	padding: 0;
-	margin: 0;
 
 	border-width: 1px 1px 1px 1px;
 	border-style: solid;
@@ -46,7 +43,7 @@ export default function Board({ boardState, onPiecePlaced, limitingDimensionInPi
 								onClick={() => onPiecePlaced(rowIndex, columnIndex)}
 								style={css}
 							>
-								{piece}
+								<Box>{piece}</Box>
 							</Square>
 						))}
 					</tr>
