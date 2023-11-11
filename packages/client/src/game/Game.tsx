@@ -1,10 +1,11 @@
 import { useSelector } from "react-redux"
-import { Coordinate, Move, selectBoardState } from "./redux/gameSlice"
-import { useAppSelector } from "./redux/hooks"
+import { Coordinate, Move, selectBoardState } from "../redux/gameSlice"
+import { useAppSelector } from "../redux/hooks"
 import React, { useState } from "react"
 import styled from "styled-components"
 import { useElementSize } from "usehooks-ts"
-import Board from "./Board"
+import Board from "../Board"
+import { useMakeMove } from "../useMakeMove"
 
 const FlexyGameContainer = styled.div`
 	@media all and (orientation: portrait) {
@@ -42,13 +43,10 @@ function useGameDisplay() {
 	return { board }
 }
 
-interface GameProps {
-	submitMove: (coordinates: Coordinate) => void
-}
-
-export function Game({ submitMove }: GameProps) {
+export function Game() {
 	const { board } = useGameDisplay()
-	// TODO -why does the size jump around
+	const makeMove = useMakeMove()
+
 	const [elementSizeRef, { width, height }] = useElementSize()
 	const limitingDimensionInPixels = Math.min(width, height)
 
@@ -56,7 +54,7 @@ export function Game({ submitMove }: GameProps) {
 		<FlexyGameContainer ref={elementSizeRef}>
 			<Board
 				boardState={board}
-				onPiecePlaced={(x, y) => submitMove({ x, y })}
+				onPiecePlaced={(x, y) => makeMove({ x, y })}
 				limitingDimensionInPixels={limitingDimensionInPixels || 1000}
 			/>
 		</FlexyGameContainer>
