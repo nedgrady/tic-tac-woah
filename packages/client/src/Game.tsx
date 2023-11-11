@@ -1,6 +1,26 @@
 import { useSelector } from "react-redux"
 import { selectBoardState } from "./redux/gameSlice"
 import { useAppSelector } from "./redux/hooks"
+import React, { useState } from "react"
+import styled from "styled-components"
+import { useElementSize } from "usehooks-ts"
+import Board from "./Board"
+
+const FlexyGameContainer = styled.div`
+	@media all and (orientation: portrait) {
+		display: flex;
+		flex-direction: column;
+	}
+
+	@media all and (orientation: landscape) {
+		display: flex;
+		flex-direction: row;
+	}
+
+	text-align: center;
+	height: 100%;
+	max-height: 100%;
+`
 
 type Token = string
 const tokens: readonly Token[] = ["❌", "⭕", "🟥"]
@@ -25,23 +45,23 @@ function useGameDisplay() {
 
 	console.log(playerTokens)
 	// TODO - how to remove the undefined from the type?
-	const board = boardState.map(row => row.map(cell => playerTokens.get(cell)))
+	const board: readonly (string | undefined)[][] = boardState.map(row => row.map(cell => playerTokens.get(cell)))
 
 	return { board }
 }
 
 export function Game() {
 	const { board } = useGameDisplay()
+	const [elementSizeRef, { width, height }] = useElementSize()
+	const limitingDimensionInPixels = Math.min(width, height)
 
 	return (
-		<div className="game">
-			{board.map((row, rowIndex) => (
-				<div key={rowIndex}>
-					{row.map((cell, cellIndex) => (
-						<div key={cellIndex}>{cell}</div>
-					))}
-				</div>
-			))}
-		</div>
+		<FlexyGameContainer ref={elementSizeRef}>
+			<Board
+				boardState={board}
+				onPiecePlaced={() => {}}
+				limitingDimensionInPixels={limitingDimensionInPixels || 1000}
+			/>
+		</FlexyGameContainer>
 	)
 }
