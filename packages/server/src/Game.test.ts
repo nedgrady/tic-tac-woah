@@ -3,17 +3,24 @@ import { Game } from "./Game"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
 
+function gameWithParticipants() {
+	const participants: readonly Participant[] = [new Participant(), new Participant(), new Participant()]
+
+	return { game: new Game(participants), participants: participants }
+}
+
 it("New games start with an empty set of moves", () => {
-	const participants: Participant[] = [new Participant(), new Participant(), new Participant()]
-	const game = new Game(participants)
+	const { game } = gameWithParticipants()
 
 	expect(game.moves()).toHaveLength(0)
 })
 
 it("Participant one making a move is captured", () => {
-	const participantOne = new Participant()
-	const participants: Participant[] = [participantOne, new Participant(), new Participant()]
-	const game = new Game(participants)
+	const {
+		game,
+		participants: [participantOne],
+	} = gameWithParticipants()
+
 	participantOne.makeMove({ x: 0, y: 0 })
 
 	const expectedMove = { placement: { x: 0, y: 0 }, mover: participantOne }
@@ -21,10 +28,10 @@ it("Participant one making a move is captured", () => {
 })
 
 it("Participant two making a move is captured", () => {
-	const participantOne = new Participant()
-	const participantTwo = new Participant()
-	const participants: Participant[] = [participantOne, participantTwo, new Participant()]
-	const game = new Game(participants)
+	const {
+		game,
+		participants: [participantOne, participantTwo],
+	} = gameWithParticipants()
 
 	participantOne.makeMove({ x: 0, y: 0 })
 	participantTwo.makeMove({ x: 1, y: 1 })
@@ -34,24 +41,22 @@ it("Participant two making a move is captured", () => {
 })
 
 it("Participant three making a move is captured", () => {
-	const participantOne = new Participant()
-	const participantTwo = new Participant()
-	const participantThree = new Participant()
-	const participants: Participant[] = [participantOne, participantTwo, participantThree]
-	const game = new Game(participants)
+	const {
+		game,
+		participants: [participantOne, participantTwo, participantThree],
+	} = gameWithParticipants()
 
 	participantOne.makeMove({ x: 0, y: 0 })
 	participantTwo.makeMove({ x: 1, y: 1 })
 	participantThree.makeMove({ x: 2, y: 2 })
+
 	const expectedMove = { placement: { x: 2, y: 2 }, mover: participantThree }
 	expect(game.moves()[2]).toEqual<Move>(expectedMove)
 })
 
 it("Emits a GameStart event", () => {
-	const game = new Game([new Participant(), new Participant()])
-
+	const { game } = gameWithParticipants()
 	const mockStartListener = vitest.fn()
-
 	game.onStart(mockStartListener)
 
 	game.start()
@@ -60,9 +65,11 @@ it("Emits a GameStart event", () => {
 })
 
 it("Emits move made events", () => {
-	const participantOne = new Participant()
-	const participants: Participant[] = [participantOne, new Participant(), new Participant()]
-	const game = new Game(participants)
+	const {
+		game,
+		participants: [participantOne],
+	} = gameWithParticipants()
+
 	const onMoveListener = vitest.fn<[Move], void>()
 	game.onMove(onMoveListener)
 	participantOne.makeMove({ x: 0, y: 0 })
@@ -71,9 +78,11 @@ it("Emits move made events", () => {
 })
 
 it("Participant one makes a turn out of order", () => {
-	const participantOne = new Participant()
-	const participants: Participant[] = [participantOne, new Participant(), new Participant()]
-	const game = new Game(participants)
+	const {
+		game,
+		participants: [participantOne],
+	} = gameWithParticipants()
+
 	participantOne.makeMove({ x: 0, y: 0 })
 
 	const outOfTurnMove = { x: 1, y: 1 }
@@ -83,10 +92,11 @@ it("Participant one makes a turn out of order", () => {
 })
 
 it("Participant two makes a turn out of order", () => {
-	const participantOne = new Participant()
-	const participantTwo = new Participant()
-	const participants: Participant[] = [participantOne, participantTwo, new Participant()]
-	const game = new Game(participants)
+	const {
+		game,
+		participants: [participantOne, participantTwo],
+	} = gameWithParticipants()
+
 	participantOne.makeMove({ x: 0, y: 0 })
 	participantTwo.makeMove({ x: 1, y: 1 })
 
@@ -97,24 +107,26 @@ it("Participant two makes a turn out of order", () => {
 })
 
 it("Participant two makes a second turn out of order", () => {
-	const participantOne = new Participant()
-	const participantTwo = new Participant()
-	const participantThree = new Participant()
-	const participants: Participant[] = [participantOne, participantTwo, participantThree]
-	const game = new Game(participants)
+	const {
+		game,
+		participants: [participantOne, participantTwo, participantThree],
+	} = gameWithParticipants()
+
 	participantOne.makeMove({ x: 0, y: 0 })
 	participantTwo.makeMove({ x: 1, y: 1 })
 	participantThree.makeMove({ x: 2, y: 2 })
+
 	participantTwo.makeMove({ x: 3, y: 3 })
 
 	expect(game.moves()).toHaveLength(3)
 })
 
 it("Patricipant two makes the first turn out of order", () => {
-	const participantOne = new Participant()
-	const participantTwo = new Participant()
-	const participants: Participant[] = [participantOne, participantTwo, new Participant()]
-	const game = new Game(participants)
+	const {
+		game,
+		participants: [_, participantTwo],
+	} = gameWithParticipants()
+
 	participantTwo.makeMove({ x: 0, y: 0 })
 
 	expect(game.moves()).toHaveLength(0)
