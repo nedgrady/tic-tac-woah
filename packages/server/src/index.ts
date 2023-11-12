@@ -64,16 +64,9 @@ io.on("connection", async socket => {
 		game.onStart(() => {
 			players.forEach(player => {
 				player.connection.join(gameId)
+
 				player.connection.on("move", payload => {
 					const coordinates = CoordinatesDtoSchema.parse(JSON.parse(payload))
-
-					const move: Move = {
-						mover: player.participant,
-						placement: coordinates,
-					}
-
-					// Which one of these?
-					game.submitMove(move)
 					player.participant.makeMove(coordinates)
 				})
 			})
