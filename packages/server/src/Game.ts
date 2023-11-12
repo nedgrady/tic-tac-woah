@@ -19,18 +19,28 @@ export class Game {
 		this.#emitter.emit("Start")
 	}
 
-	submitMove(move: Move) {
-		if (move.placement.x < 0 || move.placement.y < 0) return
+	submitMove(newMove: Move) {
+		if (newMove.placement.x < 0 || newMove.placement.y < 0) return
 
-		if (move.placement.x >= this.#boardSize || move.placement.y >= this.#boardSize) return
+		if (newMove.placement.x >= this.#boardSize || newMove.placement.y >= this.#boardSize) return
 
 		// Ensure the move is made by the correct participant
-		if (move.mover !== this.#participants[this.#movesReal.length % this.#participants.length]) {
+		if (newMove.mover !== this.#participants[this.#movesReal.length % this.#participants.length]) {
 			return
 		}
 
-		this.#movesReal.push(move)
-		this.#emitter.emit("Move", move)
+		// Ensure the square is not already taken
+		if (
+			this.#movesReal.some(
+				existingMove =>
+					existingMove.placement.x === newMove.placement.x && existingMove.placement.y === newMove.placement.y
+			)
+		) {
+			return
+		}
+
+		this.#movesReal.push(newMove)
+		this.#emitter.emit("Move", newMove)
 	}
 
 	moves() {

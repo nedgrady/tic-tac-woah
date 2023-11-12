@@ -188,3 +188,16 @@ describe("Making an out of bound move", () => {
 		expect(game.moves()).toHaveLength(0)
 	})
 })
+
+it("Making a move in a taken square", () => {
+	// Ensure player can't move in a square that's already been taken
+	const {
+		game,
+		participants: [participantOne, participantTwo],
+	} = gameWithParticipants()
+
+	participantOne.makeMove({ x: 0, y: 0 })
+	participantTwo.makeMove({ x: 0, y: 0 })
+
+	expect(game.moves()).toHaveLength(1)
+})
