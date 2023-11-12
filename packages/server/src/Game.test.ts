@@ -5,25 +5,25 @@ import { Participant } from "./Participant"
 import { faker } from "@faker-js/faker"
 import Coordinates from "./Coordinates"
 import _ from "lodash"
+import { GameConfiguration, GameRuleFunction, standardRules } from "./gameRules"
 
-interface GameRules {
-	gridSize?: number
-	consecutiveTarget?: number
-}
-
-type GameTestDefinition = GameRules & {
+type GameTestDefinition = GameConfiguration & {
 	participantCount?: number
+	rules: readonly GameRuleFunction[]
 }
 
 function gameWithParticipants({
-	gridSize = 20,
+	boardSize: gridSize = 20,
 	consecutiveTarget = 4,
 	participantCount = 3,
+	rules = standardRules,
 }: Partial<GameTestDefinition> = {}) {
 	const participants = Array.from({ length: participantCount }, () => new Participant())
 
-	return { game: new Game(participants, gridSize, consecutiveTarget), participants: participants }
+	return { game: new Game(participants, gridSize, consecutiveTarget, rules), participants: participants }
 }
+
+const anyMoveValid: GameRuleFunction = () => true
 
 it("New games start with an empty set of moves", () => {
 	const { game } = gameWithParticipants()
@@ -32,23 +32,47 @@ it("New games start with an empty set of moves", () => {
 })
 
 type PlacementSpecification = (Participant | Empty)[][]
-type Empty = "."
+type Empty = ""
 
-// TODO - ensure this apples ALL moves regardless of order
+/*
+Here is a 3x3 grid for your convenience
+
+["", "", ""],
+["", "", ""],
+["", "", ""]
+
+... and a  20x20 empty grid for your inconvenience
+
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+*/
+
 function makeMoves(placementDefinitions: PlacementSpecification) {
-	const placementDefinitionsClone = placementDefinitions.map(placementSpecifications => [...placementSpecifications])
+	placementDefinitions.forEach((row, rowIndex) => {
+		row.forEach((participant, columnIndex) => {
+			if (participant === "") return
 
-	while (_.flatMap(placementDefinitionsClone).some(participant => participant !== ".")) {
-		placementDefinitionsClone.forEach((row, rowIndex) => {
-			row.forEach((participant, columnIndex) => {
-				//console.log("Applying move", { rowIndex, columnIndex, participant })
-				if (participant === ".") return
-
-				participant.makeMove({ x: columnIndex, y: rowIndex })
-				placementDefinitionsClone[rowIndex][columnIndex] = "."
-			})
+			participant.makeMove({ x: columnIndex, y: rowIndex })
 		})
-	}
+	})
 }
 
 it("Participant one making a move is captured", () => {
@@ -70,8 +94,8 @@ it("Participant two making a move is captured", () => {
 	} = gameWithParticipants()
 
 	makeMoves([
-		[p1, "."],
-		[".", "."],
+		[p1, ""],
+		["", ""],
 	])
 
 	p2.makeMove({ x: 1, y: 1 })
@@ -87,9 +111,9 @@ it("Participant three making a move is captured", () => {
 	} = gameWithParticipants()
 
 	makeMoves([
-		[p1, ".", "."],
-		[".", p2, "."],
-		[".", ".", "."],
+		[p1, "", ""],
+		["", p2, ""],
+		["", "", ""],
 	])
 
 	p3.makeMove({ x: 2, y: 2 })
@@ -104,7 +128,7 @@ it("Game can handle a very high board size", () => {
 	const {
 		game,
 		participants: [participantOne],
-	} = gameWithParticipants({ gridSize: highBoardSize })
+	} = gameWithParticipants({ boardSize: highBoardSize })
 
 	const moveWithHighCoordinates = { placement: { x: highBoardSize - 1, y: 0 }, mover: participantOne }
 	participantOne.makeMove(moveWithHighCoordinates.placement)
@@ -118,7 +142,7 @@ it("Game can handle a very high board size 2", () => {
 	const {
 		game,
 		participants: [participantOne],
-	} = gameWithParticipants({ gridSize: highBoardSize })
+	} = gameWithParticipants({ boardSize: highBoardSize })
 
 	const moveWithHighCoordinates = { placement: { x: 0, y: highBoardSize - 1 }, mover: participantOne }
 	participantOne.makeMove(moveWithHighCoordinates.placement)
@@ -157,8 +181,8 @@ describe("Out of order moves", () => {
 		} = gameWithParticipants()
 
 		makeMoves([
-			[p1, "."],
-			[".", "."],
+			[p1, ""],
+			["", ""],
 		])
 
 		const outOfTurnMove = { x: 1, y: 1 }
@@ -174,8 +198,8 @@ describe("Out of order moves", () => {
 		} = gameWithParticipants()
 
 		makeMoves([
-			[p1, "."],
-			[".", p2],
+			[p1, ""],
+			["", p2],
 		])
 
 		const outOfTurnMove = { x: 2, y: 2 }
@@ -190,14 +214,10 @@ describe("Out of order moves", () => {
 			participants: [p1, p2, p3],
 		} = gameWithParticipants()
 
-		// participantOne.makeMove({ x: 0, y: 0 })
-		// participantTwo.makeMove({ x: 1, y: 1 })
-		// participantThree.makeMove({ x: 2, y: 2 })
-
 		makeMoves([
-			[p1, ".", "."],
-			[".", p2, "."],
-			[".", ".", p3],
+			[p1, "", ""],
+			["", p2, ""],
+			["", "", p3],
 		])
 
 		p2.makeMove({ x: 3, y: 3 })
@@ -235,7 +255,7 @@ describe("Making an out of bound move", () => {
 		const {
 			game,
 			participants: [participantOne],
-		} = gameWithParticipants({ gridSize: gameSize })
+		} = gameWithParticipants({ boardSize: gameSize })
 
 		participantOne.makeMove(coordinates)
 
@@ -251,8 +271,8 @@ it("Making a move in a taken square", () => {
 	} = gameWithParticipants()
 
 	makeMoves([
-		[p1, "."],
-		[".", "."],
+		[p1, ""],
+		["", ""],
 	])
 
 	p2.makeMove({ x: 0, y: 0 })
@@ -266,7 +286,7 @@ describe("Winning a game vertically", () => {
 			game,
 			participants: [p1, p2],
 		} = gameWithParticipants({
-			gridSize: 20,
+			boardSize: 20,
 			consecutiveTarget: 3,
 			participantCount: 2,
 		})
@@ -275,9 +295,9 @@ describe("Winning a game vertically", () => {
 		game.onWin(mockWinListener)
 
 		makeMoves([
-			[p1, ".", p2],
-			[p1, ".", p2],
-			[".", ".", "."],
+			[p1, "", p2],
+			[p1, "", p2],
+			["", "", ""],
 		])
 
 		p1.makeMove({ x: 0, y: 2 })
@@ -290,7 +310,7 @@ describe("Winning a game vertically", () => {
 			game,
 			participants: [p1, p2],
 		} = gameWithParticipants({
-			gridSize: 20,
+			boardSize: 20,
 			consecutiveTarget: 4,
 			participantCount: 2,
 		})
@@ -299,9 +319,9 @@ describe("Winning a game vertically", () => {
 		game.onWin(mockWinListener)
 
 		makeMoves([
-			[p1, ".", p2],
-			[p1, ".", p2],
-			[".", ".", "."],
+			[p1, "", p2],
+			[p1, "", p2],
+			["", "", ""],
 		])
 
 		p1.makeMove({ x: 0, y: 2 })
@@ -312,27 +332,22 @@ describe("Winning a game vertically", () => {
 	it("Is triggered when player two wins in the top left", () => {
 		const {
 			game,
-			participants: [p1, p2],
+			participants: [_, p2],
 		} = gameWithParticipants({
-			gridSize: 20,
+			boardSize: 20,
 			consecutiveTarget: 3,
 			participantCount: 2,
+			rules: [anyMoveValid],
 		})
 
 		const mockWinListener = vitest.fn()
 		game.onWin(mockWinListener)
 
-		p1.makeMove({ x: 9, y: 9 })
-		p2.makeMove({ x: 0, y: 0 })
-		p1.makeMove({ x: 9, y: 8 })
-		p2.makeMove({ x: 0, y: 1 })
-		p1.makeMove({ x: 6, y: 6 })
-
-		// makeMoves([
-		// 	[p2, ".", p1],
-		// 	[p2, ".", p1],
-		// 	[".", p1, "."],
-		// ])
+		makeMoves([
+			[p2, "", ""],
+			[p2, "", ""],
+			["", "", ""],
+		])
 
 		p2.makeMove({ x: 0, y: 2 })
 
@@ -342,9 +357,9 @@ describe("Winning a game vertically", () => {
 	it("Is not triggered when a player makes non-consecutive moves in the same column", () => {
 		const {
 			game,
-			participants: [participantOne, participantTwo],
+			participants: [p1, p2],
 		} = gameWithParticipants({
-			gridSize: 20,
+			boardSize: 20,
 			consecutiveTarget: 3,
 			participantCount: 2,
 		})
@@ -352,11 +367,14 @@ describe("Winning a game vertically", () => {
 		const mockWinListener = vitest.fn()
 		game.onWin(mockWinListener)
 
-		participantOne.makeMove({ x: 0, y: 0 })
-		participantTwo.makeMove({ x: 0, y: 1 })
-		participantOne.makeMove({ x: 0, y: 2 })
-		participantTwo.makeMove({ x: 0, y: 3 })
-		participantOne.makeMove({ x: 0, y: 4 })
+		makeMoves([
+			[p1, "", "", ""],
+			[p2, "", "", ""],
+			[p1, "", "", ""],
+			[p2, "", "", ""],
+		])
+
+		p1.makeMove({ x: 0, y: 4 })
 
 		expect(mockWinListener).not.toHaveBeenCalledOnce()
 	})
@@ -364,21 +382,41 @@ describe("Winning a game vertically", () => {
 	it("Is triggered when player one wins in the bottom left", () => {
 		const {
 			game,
-			participants: [participantOne, participantTwo],
+			participants: [p1, p2],
 		} = gameWithParticipants({
-			gridSize: 20,
+			boardSize: 20,
 			consecutiveTarget: 3,
 			participantCount: 2,
+			rules: [anyMoveValid],
 		})
 
 		const mockWinListener = vitest.fn()
 		game.onWin(mockWinListener)
 
-		participantOne.makeMove({ x: 0, y: 19 })
-		participantTwo.makeMove({ x: 9, y: 9 })
-		participantOne.makeMove({ x: 0, y: 18 })
-		participantTwo.makeMove({ x: 8, y: 8 })
-		participantOne.makeMove({ x: 0, y: 17 })
+		makeMoves([
+			["", "", "", "", "", "", "", "", "", p2, "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", p2, "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			[p1, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+			[p1, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+		])
+
+		p1.makeMove({ x: 0, y: 17 })
 
 		expect(mockWinListener).toHaveBeenCalledOnce()
 	})
@@ -390,7 +428,7 @@ describe("Winning a game vertically", () => {
 			game,
 			participants: [participantOne, participantTwo],
 		} = gameWithParticipants({
-			gridSize,
+			boardSize: gridSize,
 			consecutiveTarget: gridSize,
 			participantCount: 2,
 		})
@@ -425,14 +463,18 @@ describe("Winning a game vertically", () => {
 	it("Is not triggered when player two makes their first non-terminal move", () => {
 		const {
 			game,
-			participants: [participantOne, participantTwo],
+			participants: [p1, p2],
 		} = gameWithParticipants()
 
 		const mockWinListener = vitest.fn()
 		game.onWin(mockWinListener)
+		makeMoves([
+			[p1, "", ""],
+			["", "", ""],
+			["", "", ""],
+		])
 
-		participantOne.makeMove({ x: 0, y: 0 })
-		participantTwo.makeMove({ x: 1, y: 1 })
+		p2.makeMove({ x: 1, y: 1 })
 
 		expect(mockWinListener).not.toHaveBeenCalled()
 	})
@@ -443,7 +485,7 @@ describe("Winning a game vertically", () => {
 			participants: [participantOne],
 		} = gameWithParticipants({
 			consecutiveTarget: 21,
-			gridSize: 20,
+			boardSize: 20,
 			participantCount: 1,
 		})
 
@@ -468,7 +510,7 @@ describe("Winning a game vertically", () => {
 			game,
 			participants: [participantOne, participantTwo],
 		} = gameWithParticipants({
-			gridSize,
+			boardSize: gridSize,
 			consecutiveTarget: 3,
 			participantCount: 2,
 		})
@@ -488,27 +530,26 @@ describe("Winning a game vertically", () => {
 	// it("Is triggered when player one wins after making moves in various columns", () => {
 	// 	const {
 	// 		game,
-	// 		participants: [participantOne, participantTwo],
+	// 		participants: [p1, p2],
 	// 	} = gameWithParticipants({
-	// 		gridSize: 20,
+	// 		boardSize: 5,
 	// 		consecutiveTarget: 3,
 	// 		participantCount: 2,
+	// 		rules: [anyMoveValid],
 	// 	})
 
 	// 	const mockWinListener = vitest.fn()
 	// 	game.onWin(mockWinListener)
 
-	// 	participantOne.makeMove({ x: 0, y: 0 })
-	// 	participantTwo.makeMove({ x: 1, y: 0 })
-	// 	participantOne.makeMove({ x: 0, y: 1 })
-	// 	participantTwo.makeMove({ x: 1, y: 1 })
+	// 	makeMoves([
+	// 		[p1, p2, "", p1, p2],
+	// 		[p1, p2, "", p1, p2],
+	// 		["", "", "", "", ""],
+	// 		["", "", "", "", ""],
+	// 		["", "", "", "", ""],
+	// 	])
 
-	// 	participantOne.makeMove({ x: 18, y: 0 })
-	// 	participantTwo.makeMove({ x: 19, y: 0 })
-	// 	participantOne.makeMove({ x: 18, y: 1 })
-	// 	participantTwo.makeMove({ x: 19, y: 1 })
-
-	// 	participantOne.makeMove({ x: 19, y: 2 })
+	// 	p1.makeMove({ x: 3, y: 2 })
 
 	// 	expect(mockWinListener).toHaveBeenCalledOnce()
 	// })

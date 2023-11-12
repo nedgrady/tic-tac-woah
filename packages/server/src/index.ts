@@ -11,6 +11,7 @@ import { CoordinatesDtoSchema, GameStartDto, MoveDto, QueueResponse } from "type
 import { Move } from "./Move"
 import crypto from "crypto"
 import applicationInsights from "./logging/applicationInsights"
+import { standardRules } from "./gameRules"
 
 interface ParticipantHandle {
 	readonly connection: Socket
@@ -59,7 +60,7 @@ io.on("connection", async socket => {
 
 		const participants = Object.freeze(players.map(player => player.participant))
 
-		const game = new Game(participants)
+		const game = new Game(participants, 20, 5, standardRules)
 
 		game.onStart(() => {
 			players.forEach(player => {

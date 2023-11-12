@@ -1,48 +1,13 @@
-import { Mock } from "vitest"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
 import { EventEmitter } from "events"
 import _ from "lodash"
+import { GameConfiguration, GameRuleFunction, GameState, standardRules } from "./gameRules"
 
 // TODO should this return something else e.g. a string?
-type GameRuleFunction = (newMove: Move, gameState: GameState, gameConfiguration: GameConfiguration) => boolean
-
-interface GameConfiguration {
-	readonly boardSize: number
-	readonly target: number
-
-	//readonly rules: readonly GameRuleFunction[]
-}
-
-interface GameState {
-	readonly moves: readonly Move[]
-	readonly participants: readonly Participant[]
-}
-
-function moveMustBeWithinTheBoard(newMove: Move, gameState: GameState, gameConfiguration: GameConfiguration) {
-	return (
-		newMove.placement.x >= 0 &&
-		newMove.placement.y >= 0 &&
-		newMove.placement.x < gameConfiguration.boardSize &&
-		newMove.placement.y < gameConfiguration.boardSize
-	)
-}
-
-function moveMustBeMadeByTheCorrectPlayer(newMove: Move, gameState: GameState, gameConfiguration: GameConfiguration) {
-	return newMove.mover === gameState.participants[gameState.moves.length % gameState.participants.length]
-}
-
-function moveMustBeMadeIntoAFreeSquare(newMove: Move, gameState: GameState, gameConfiguration: GameConfiguration) {
-	return !gameState.moves.some(
-		existingMove =>
-			existingMove.placement.x === newMove.placement.x && existingMove.placement.y === newMove.placement.y
-	)
-}
-
-const standardRules = [moveMustBeWithinTheBoard, moveMustBeMadeByTheCorrectPlayer, moveMustBeMadeIntoAFreeSquare]
 
 export class Game {
-	readonly #target: number
+	readonly #consecutiveTarget: number
 	readonly #movesReal: Move[] = []
 	readonly #participants: readonly Participant[]
 	readonly #emitter: EventEmitter = new EventEmitter()
@@ -67,7 +32,7 @@ export class Game {
 	submitMove(newMove: Move) {
 		const gameConfiguration: GameConfiguration = {
 			boardSize: this.#boardSize,
-			target: this.#target,
+			consecutiveTarget: this.#consecutiveTarget,
 		}
 
 		const gameState: GameState = {
@@ -88,12 +53,12 @@ export class Game {
 			.filter(move => move.mover === newMove.mover)
 			.sort((move1, move2) => move1.placement.y - move2.placement.y)
 
-		if (movesByCurrentPlayer.length < this.#target) return
+		if (movesByCurrentPlayer.length < this.#consecutiveTarget) return
 
-		for (let placementsChunk of overlappingChunks(movesByCurrentPlayer, this.#target)) {
+		for (let placementsChunk of overlappingChunks(movesByCurrentPlayer, this.#consecutiveTarget)) {
 			if (
 				placementsChunk[placementsChunk.length - 1].placement.y - placementsChunk[0].placement.y ===
-				this.#target - 1
+				this.#consecutiveTarget - 1
 			) {
 				this.#emitter.emit("Winning Move")
 			}
@@ -107,8 +72,8 @@ export class Game {
 	constructor(
 		participants: readonly Participant[],
 		boardSize: number = 20,
-		target: number = 9999,
-		rules: readonly GameRuleFunction[] = standardRules
+		consecutiveTarget: number = 9999,
+		rules: readonly GameRuleFunction[]
 	) {
 		participants.forEach((participant, index) => {
 			participant.game = this
@@ -116,7 +81,7 @@ export class Game {
 		})
 		this.#participants = participants
 		this.#boardSize = boardSize
-		this.#target = target
+		this.#consecutiveTarget = consecutiveTarget
 		this.#rules = rules
 	}
 }
