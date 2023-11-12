@@ -1,13 +1,26 @@
-import { expect, it, vitest, describe } from "vitest"
+import { expect, it, vitest, describe, test } from "vitest"
 import { Game } from "./Game"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
 import { faker } from "@faker-js/faker"
 
-function gameWithParticipants(gridSize: number = 20) {
-	const participants: readonly Participant[] = [new Participant(), new Participant(), new Participant()]
+interface GameRules {
+	gridSize?: number
+	consecutiveTarget?: number
+}
 
-	return { game: new Game(participants, gridSize), participants: participants }
+type GameTestDefinition = GameRules & {
+	participantCount?: number
+}
+
+function gameWithParticipants({
+	gridSize = 20,
+	consecutiveTarget = 4,
+	participantCount = 3,
+}: Partial<GameTestDefinition> = {}) {
+	const participants = Array.from({ length: participantCount }, () => new Participant())
+
+	return { game: new Game(participants, gridSize, consecutiveTarget), participants: participants }
 }
 
 it("New games start with an empty set of moves", () => {
@@ -61,7 +74,7 @@ it("Game can handle a very high board size", () => {
 	const {
 		game,
 		participants: [participantOne],
-	} = gameWithParticipants(highBoardSize)
+	} = gameWithParticipants({ gridSize: highBoardSize })
 
 	const moveWithHighCoordinates = { placement: { x: highBoardSize - 1, y: 0 }, mover: participantOne }
 	participantOne.makeMove(moveWithHighCoordinates.placement)
@@ -75,7 +88,7 @@ it("Game can handle a very high board size 2", () => {
 	const {
 		game,
 		participants: [participantOne],
-	} = gameWithParticipants(highBoardSize)
+	} = gameWithParticipants({ gridSize: highBoardSize })
 
 	const moveWithHighCoordinates = { placement: { x: 0, y: highBoardSize - 1 }, mover: participantOne }
 	participantOne.makeMove(moveWithHighCoordinates.placement)
@@ -181,7 +194,7 @@ describe("Making an out of bound move", () => {
 		const {
 			game,
 			participants: [participantOne],
-		} = gameWithParticipants(20)
+		} = gameWithParticipants({ gridSize: 20 })
 
 		participantOne.makeMove(coordinates)
 
@@ -200,4 +213,88 @@ it("Making a move in a taken square", () => {
 	participantTwo.makeMove({ x: 0, y: 0 })
 
 	expect(game.moves()).toHaveLength(1)
+})
+
+describe("Winning a game", () => {
+	it("Is triggered when player one wins vertically", () => {
+		const {
+			game,
+			participants: [participantOne, participantTwo],
+		} = gameWithParticipants({
+			gridSize: 20,
+			consecutiveTarget: 3,
+			participantCount: 2,
+		})
+
+		const mockWinListener = vitest.fn()
+		game.onWin(mockWinListener)
+
+		participantOne.makeMove({ x: 0, y: 0 })
+		participantTwo.makeMove({ x: 9, y: 9 })
+		participantOne.makeMove({ x: 0, y: 1 })
+		participantTwo.makeMove({ x: 8, y: 8 })
+		participantOne.makeMove({ x: 0, y: 2 })
+
+		expect(mockWinListener).toHaveBeenCalledOnce()
+	})
+
+	it("Is not triggered in the same scenario as above but a higher target...", () => {
+		const {
+			game,
+			participants: [participantOne, participantTwo],
+		} = gameWithParticipants({
+			gridSize: 20,
+			consecutiveTarget: 4,
+			participantCount: 2,
+		})
+
+		const mockWinListener = vitest.fn()
+		game.onWin(mockWinListener)
+
+		participantOne.makeMove({ x: 0, y: 0 })
+		participantTwo.makeMove({ x: 9, y: 9 })
+		participantOne.makeMove({ x: 0, y: 1 })
+		participantTwo.makeMove({ x: 8, y: 8 })
+		participantOne.makeMove({ x: 0, y: 2 })
+
+		expect(mockWinListener).not.toHaveBeenCalledOnce()
+	})
+
+	it("Is not triggered when player two makes their first non-terminal move", () => {
+		const {
+			game,
+			participants: [participantOne, participantTwo],
+		} = gameWithParticipants()
+
+		const mockWinListener = vitest.fn()
+		game.onWin(mockWinListener)
+
+		participantOne.makeMove({ x: 0, y: 0 })
+		participantTwo.makeMove({ x: 1, y: 1 })
+
+		expect(mockWinListener).not.toHaveBeenCalled()
+	})
+
+	it("Is not triggered after many non-winning moves", () => {
+		const {
+			game,
+			participants: [participantOne],
+		} = gameWithParticipants({
+			consecutiveTarget: 21,
+			gridSize: 20,
+			participantCount: 1,
+		})
+
+		const mockWinListener = vitest.fn()
+		game.onWin(mockWinListener)
+
+		// generate every possible coordinate
+		const coordinates = Array.from({ length: 20 }, (_, x) =>
+			Array.from({ length: 20 }, (_, y) => ({ x, y }))
+		).flat()
+
+		coordinates.forEach(coordinate => participantOne.makeMove(coordinate))
+
+		expect(mockWinListener).not.toHaveBeenCalled()
+	})
 })

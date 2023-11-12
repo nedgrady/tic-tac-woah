@@ -1,19 +1,25 @@
+import { Mock } from "vitest"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
 import { EventEmitter } from "events"
 
 export class Game {
+	readonly #target: number
+	readonly #movesReal: Move[] = []
+	readonly #participants: readonly Participant[]
+	readonly #emitter: EventEmitter = new EventEmitter()
+	readonly #boardSize: number
+
+	onWin(listener: () => void) {
+		this.#emitter.on("Winning Move", listener)
+	}
+
 	onMove(listener: (move: Move) => void) {
 		this.#emitter.on("Move", listener)
 	}
 	onStart(listener: () => void) {
 		this.#emitter.on("Start", listener)
 	}
-
-	readonly #movesReal: Move[] = []
-	readonly #participants: readonly Participant[]
-	readonly #emitter: EventEmitter = new EventEmitter()
-	readonly #boardSize: number
 
 	start() {
 		this.#emitter.emit("Start")
@@ -41,15 +47,23 @@ export class Game {
 
 		this.#movesReal.push(newMove)
 		this.#emitter.emit("Move", newMove)
+
+		const playerOnesMoves = this.#movesReal.filter(move => move.mover === this.#participants[0])
+
+		const topLeftThreeVerticals = playerOnesMoves.filter(move => move.placement.x === 0)
+		if (topLeftThreeVerticals.length === 3 && this.#target === 3) {
+			this.#emitter.emit("Winning Move")
+		}
 	}
 
 	moves() {
 		return this.#movesReal
 	}
 
-	constructor(participants: readonly Participant[], boardSize: number = 20) {
+	constructor(participants: readonly Participant[], boardSize: number = 20, target: number = 9999) {
 		participants.forEach(participant => (participant.game = this))
 		this.#participants = participants
 		this.#boardSize = boardSize
+		this.#target = target
 	}
 }
