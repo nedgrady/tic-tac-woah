@@ -49,18 +49,26 @@ export class Game {
 		this.#movesReal.push(newMove)
 		this.#emitter.emit("Move", newMove)
 
-		const movesByCurrentPlayer = this.#movesReal
+		const placementsByCurrentPlayer = this.#movesReal
 			.filter(move => move.mover === newMove.mover)
 			.sort((move1, move2) => move1.placement.y - move2.placement.y)
+			.map(move => move.placement)
 
-		if (movesByCurrentPlayer.length < this.#consecutiveTarget) return
+		if (placementsByCurrentPlayer.length < this.#consecutiveTarget) return
 
-		for (let placementsChunk of overlappingChunks(movesByCurrentPlayer, this.#consecutiveTarget)) {
-			if (
-				placementsChunk[placementsChunk.length - 1].placement.y - placementsChunk[0].placement.y ===
-				this.#consecutiveTarget - 1
-			) {
-				this.#emitter.emit("Winning Move")
+		const allXs = placementsByCurrentPlayer.map(placement => placement.x)
+
+		for (const xCoordinate of allXs) {
+			const currentColumn = placementsByCurrentPlayer.filter(placement => placement.x === xCoordinate)
+			if (currentColumn.length < this.#consecutiveTarget) continue
+			for (let placementsChunk of overlappingChunks(currentColumn, this.#consecutiveTarget)) {
+				if (
+					placementsChunk[placementsChunk.length - 1].y - placementsChunk[0].y ===
+					this.#consecutiveTarget - 1
+				) {
+					this.#emitter.emit("Winning Move")
+					return
+				}
 			}
 		}
 	}

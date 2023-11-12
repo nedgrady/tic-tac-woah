@@ -527,30 +527,30 @@ describe("Winning a game vertically", () => {
 		expect(mockWinListener).toHaveBeenCalledOnce()
 	})
 
-	// it("Is triggered when player one wins after making moves in various columns", () => {
-	// 	const {
-	// 		game,
-	// 		participants: [p1, p2],
-	// 	} = gameWithParticipants({
-	// 		boardSize: 5,
-	// 		consecutiveTarget: 3,
-	// 		participantCount: 2,
-	// 		rules: [anyMoveValid],
-	// 	})
+	it.only("Is triggered when player one wins after making moves in various columns", () => {
+		const {
+			game,
+			participants: [p1, p2],
+		} = gameWithParticipants({
+			boardSize: 5,
+			consecutiveTarget: 3,
+			participantCount: 2,
+			rules: [anyMoveValid],
+		})
 
-	// 	const mockWinListener = vitest.fn()
-	// 	game.onWin(mockWinListener)
+		const mockWinListener = vitest.fn()
+		game.onWin(mockWinListener)
 
-	// 	makeMoves([
-	// 		[p1, p2, "", p1, p2],
-	// 		[p1, p2, "", p1, p2],
-	// 		["", "", "", "", ""],
-	// 		["", "", "", "", ""],
-	// 		["", "", "", "", ""],
-	// 	])
+		makeMoves([
+			[p1, p2, "", p1, p2],
+			[p1, p2, "", p1, p2],
+			["", "", "", "", ""],
+			["", "", "", "", ""],
+			["", "", "", "", ""],
+		])
 
-	// 	p1.makeMove({ x: 3, y: 2 })
+		p1.makeMove({ x: 3, y: 2 })
 
-	// 	expect(mockWinListener).toHaveBeenCalledOnce()
-	// })
+		expect(mockWinListener).toHaveBeenCalledOnce()
+	})
 })
