@@ -11,6 +11,7 @@ export class Game {
 	}
 
 	#movesReal: Move[] = []
+	#participants: readonly Participant[]
 	#emitter: EventEmitter = new EventEmitter()
 
 	start() {
@@ -18,6 +19,11 @@ export class Game {
 	}
 
 	submitMove(move: Move) {
+		// Ensure the move is made by the correct participant
+		if (move.mover !== this.#participants[this.#movesReal.length % this.#participants.length]) {
+			return
+		}
+
 		this.#movesReal.push(move)
 		this.#emitter.emit("Move", move)
 	}
@@ -28,5 +34,6 @@ export class Game {
 
 	constructor(participants: readonly Participant[]) {
 		participants.forEach(participant => (participant.game = this))
+		this.#participants = participants
 	}
 }
