@@ -3,7 +3,7 @@ FROM node:18.14.2-alpine3.17
 ARG RENDER_WEBSOCKET_URL=https://tic-tac-woah.onrender.com/
 ARG RENDER_WEBSOCKET_PORT=80
 ARG RENDER_API_URL=https://tic-tac-woah.onrender.com/
-ARG RENDER_API_PORT=80
+ARG RENDER_API_PORT=443
 
 WORKDIR /app
 
