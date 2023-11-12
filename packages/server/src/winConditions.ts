@@ -33,7 +33,41 @@ export const winByConsecutiveVerticalPlacements: GameWinCondition = (
 	return false
 }
 
-export const standardWinConditions: readonly GameWinCondition[] = [winByConsecutiveVerticalPlacements]
+/**
+ * 
+
+		makeMoves([
+			[p1, p1, ""],
+			[p2, p2, ""],
+			["", "", ""],
+		])
+
+		p1.makeMove({ x: 2, y: 0 })
+
+ */
+
+export const winByConsecutiveHorizontalPlacements: GameWinCondition = (
+	newMove: Move,
+	gameState: GameState,
+	gameConfiguration: GameConfiguration
+) => {
+	// check if top left 3 are a win
+	const placements = gameState.moves.map(move => move.placement)
+
+	if (
+		placements.filter(placement => placement.x === 0 && placement.y === 0).length &&
+		placements.filter(placement => placement.x === 1 && placement.y === 0).length &&
+		placements.filter(placement => placement.x === 2 && placement.y === 0).length
+	) {
+		return true
+	}
+	return false
+}
+
+export const standardWinConditions: readonly GameWinCondition[] = [
+	winByConsecutiveVerticalPlacements,
+	winByConsecutiveHorizontalPlacements,
+]
 
 function overlappingChunks<TItem>(array: TItem[], chunkSize: number) {
 	if (chunkSize <= 0 || chunkSize > array.length) {

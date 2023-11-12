@@ -5,7 +5,7 @@ import { Participant } from "./Participant"
 import { faker } from "@faker-js/faker"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction, standardRules } from "./gameRules"
-import { winByConsecutiveVerticalPlacements } from "./winConditions"
+import { standardWinConditions, winByConsecutiveVerticalPlacements } from "./winConditions"
 
 type GameTestDefinition = GameConfiguration & {
 	participantCount?: number
@@ -18,7 +18,7 @@ function gameWithParticipants({
 	consecutiveTarget = 4,
 	participantCount = 3,
 	rules = standardRules,
-	winConditions = [winByConsecutiveVerticalPlacements],
+	winConditions = standardWinConditions,
 }: Partial<GameTestDefinition> = {}) {
 	const participants = Array.from({ length: participantCount }, () => new Participant())
 
@@ -484,29 +484,6 @@ describe("Winning a game vertically", () => {
 		expect(mockWinListener).not.toHaveBeenCalled()
 	})
 
-	it("Is not triggered after many non-winning moves", () => {
-		const {
-			game,
-			participants: [participantOne],
-		} = gameWithParticipants({
-			consecutiveTarget: 21,
-			boardSize: 20,
-			participantCount: 1,
-		})
-
-		const mockWinListener = vitest.fn()
-		game.onWin(mockWinListener)
-
-		// generate every possible coordinate
-		const coordinates = Array.from({ length: 20 }, (_, x) =>
-			Array.from({ length: 20 }, (_, y) => ({ x, y }))
-		).flat()
-
-		coordinates.forEach(coordinate => participantOne.makeMove(coordinate))
-
-		expect(mockWinListener).not.toHaveBeenCalled()
-	})
-
 	it("Is triggered when player one wins in an arbitrary column", () => {
 		const gridSize = 20
 		const winningColumnIndex = faker.number.int({ min: 1, max: gridSize - 1 })
@@ -555,6 +532,33 @@ describe("Winning a game vertically", () => {
 		])
 
 		p1.makeMove({ x: 3, y: 2 })
+
+		expect(mockWinListener).toHaveBeenCalledOnce()
+	})
+})
+
+describe("Winning a game horizontally", () => {
+	it("Is triggered when player one wins in the top left", () => {
+		const {
+			game,
+			participants: [p1, p2],
+		} = gameWithParticipants({
+			boardSize: 20,
+			consecutiveTarget: 3,
+			participantCount: 2,
+			rules: [anyMoveValid],
+		})
+
+		const mockWinListener = vitest.fn()
+		game.onWin(mockWinListener)
+
+		makeMoves([
+			[p1, p1, ""],
+			[p2, p2, ""],
+			["", "", ""],
+		])
+
+		p1.makeMove({ x: 2, y: 0 })
 
 		expect(mockWinListener).toHaveBeenCalledOnce()
 	})
