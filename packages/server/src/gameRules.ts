@@ -50,4 +50,8 @@ export const moveMustBeMadeIntoAFreeSquare: GameRuleFunction = (
 	)
 }
 
-export const standardRules = [moveMustBeWithinTheBoard, moveMustBeMadeByTheCorrectPlayer, moveMustBeMadeIntoAFreeSquare]
+export const standardRules: readonly GameRuleFunction[] = [
+	moveMustBeWithinTheBoard,
+	moveMustBeMadeByTheCorrectPlayer,
+	moveMustBeMadeIntoAFreeSquare,
+]

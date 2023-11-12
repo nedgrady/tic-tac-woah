@@ -12,6 +12,7 @@ import { Move } from "./Move"
 import crypto from "crypto"
 import applicationInsights from "./logging/applicationInsights"
 import { standardRules } from "./gameRules"
+import { standardWinConditions } from "./winConditions"
 
 interface ParticipantHandle {
 	readonly connection: Socket
@@ -60,7 +61,7 @@ io.on("connection", async socket => {
 
 		const participants = Object.freeze(players.map(player => player.participant))
 
-		const game = new Game(participants, 20, 5, standardRules)
+		const game = new Game(participants, 20, 5, standardRules, standardWinConditions)
 
 		game.onStart(() => {
 			players.forEach(player => {

@@ -3,13 +3,14 @@ import { Game } from "./Game"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
 import { faker } from "@faker-js/faker"
-import Coordinates from "./Coordinates"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction, standardRules } from "./gameRules"
+import { winByConsecutiveVerticalPlacements } from "./winConditions"
 
 type GameTestDefinition = GameConfiguration & {
 	participantCount?: number
 	rules: readonly GameRuleFunction[]
+	winConditions: readonly GameRuleFunction[]
 }
 
 function gameWithParticipants({
@@ -17,10 +18,14 @@ function gameWithParticipants({
 	consecutiveTarget = 4,
 	participantCount = 3,
 	rules = standardRules,
+	winConditions = [winByConsecutiveVerticalPlacements],
 }: Partial<GameTestDefinition> = {}) {
 	const participants = Array.from({ length: participantCount }, () => new Participant())
 
-	return { game: new Game(participants, gridSize, consecutiveTarget, rules), participants: participants }
+	return {
+		game: new Game(participants, gridSize, consecutiveTarget, rules, winConditions),
+		participants: participants,
+	}
 }
 
 const anyMoveValid: GameRuleFunction = () => true

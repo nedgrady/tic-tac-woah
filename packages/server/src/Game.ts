@@ -3,8 +3,7 @@ import { Participant } from "./Participant"
 import { EventEmitter } from "events"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction, GameState, standardRules } from "./gameRules"
-
-// TODO should this return something else e.g. a string?
+import { GameWinCondition } from "./winConditions"
 
 export class Game {
 	readonly #consecutiveTarget: number
@@ -13,6 +12,7 @@ export class Game {
 	readonly #emitter: EventEmitter = new EventEmitter()
 	readonly #boardSize: number
 	readonly #rules: readonly GameRuleFunction[]
+	readonly #winConditions: readonly GameWinCondition[]
 
 	onWin(listener: () => void) {
 		this.#emitter.on("Winning Move", listener)
@@ -49,28 +49,19 @@ export class Game {
 		this.#movesReal.push(newMove)
 		this.#emitter.emit("Move", newMove)
 
-		const placementsByCurrentPlayer = this.#movesReal
-			.filter(move => move.mover === newMove.mover)
-			.sort((move1, move2) => move1.placement.y - move2.placement.y)
-			.map(move => move.placement)
+		// const placementsByCurrentPlayer = this.#movesReal
+		// 	.filter(move => move.mover === newMove.mover)
+		// 	.sort((move1, move2) => move1.placement.y - move2.placement.y)
+		// 	.map(move => move.placement)
 
-		if (placementsByCurrentPlayer.length < this.#consecutiveTarget) return
-
-		const allXs = placementsByCurrentPlayer.map(placement => placement.x)
-
-		for (const xCoordinate of allXs) {
-			const currentColumn = placementsByCurrentPlayer.filter(placement => placement.x === xCoordinate)
-			if (currentColumn.length < this.#consecutiveTarget) continue
-			for (let placementsChunk of overlappingChunks(currentColumn, this.#consecutiveTarget)) {
-				if (
-					placementsChunk[placementsChunk.length - 1].y - placementsChunk[0].y ===
-					this.#consecutiveTarget - 1
-				) {
-					this.#emitter.emit("Winning Move")
-					return
-				}
+		for (let winCondition of this.#winConditions) {
+			if (winCondition(newMove, gameState, gameConfiguration)) {
+				this.#emitter.emit("Winning Move")
+				return
 			}
 		}
+
+		//this.#emitter.emit("Winning Move")
 	}
 
 	moves() {
@@ -81,7 +72,8 @@ export class Game {
 		participants: readonly Participant[],
 		boardSize: number = 20,
 		consecutiveTarget: number = 9999,
-		rules: readonly GameRuleFunction[]
+		rules: readonly GameRuleFunction[],
+		winConditions: readonly GameWinCondition[]
 	) {
 		participants.forEach((participant, index) => {
 			participant.game = this
@@ -91,18 +83,6 @@ export class Game {
 		this.#boardSize = boardSize
 		this.#consecutiveTarget = consecutiveTarget
 		this.#rules = rules
+		this.#winConditions = winConditions
 	}
-}
-
-function overlappingChunks<TItem>(array: TItem[], chunkSize: number) {
-	if (chunkSize <= 0 || chunkSize > array.length) {
-		throw new Error("Invalid chunk size")
-	}
-
-	const result = []
-	for (let i = 0; i <= array.length - chunkSize; i++) {
-		result.push(array.slice(i, i + chunkSize))
-	}
-
-	return result
 }
