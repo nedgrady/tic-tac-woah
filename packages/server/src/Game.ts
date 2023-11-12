@@ -49,19 +49,12 @@ export class Game {
 		this.#movesReal.push(newMove)
 		this.#emitter.emit("Move", newMove)
 
-		// const placementsByCurrentPlayer = this.#movesReal
-		// 	.filter(move => move.mover === newMove.mover)
-		// 	.sort((move1, move2) => move1.placement.y - move2.placement.y)
-		// 	.map(move => move.placement)
-
 		for (let winCondition of this.#winConditions) {
 			if (winCondition(newMove, gameState, gameConfiguration)) {
 				this.#emitter.emit("Winning Move")
 				return
 			}
 		}
-
-		//this.#emitter.emit("Winning Move")
 	}
 
 	moves() {
