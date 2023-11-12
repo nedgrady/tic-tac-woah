@@ -2,7 +2,7 @@ import { Move } from "./Move"
 import { Participant } from "./Participant"
 import { EventEmitter } from "events"
 import _ from "lodash"
-import { GameConfiguration, GameRuleFunction, GameState, standardRules } from "./gameRules"
+import { GameConfiguration, GameRuleFunction, GameState } from "./gameRules"
 import { GameWinCondition } from "./winConditions"
 
 export class Game {

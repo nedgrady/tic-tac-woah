@@ -532,7 +532,7 @@ describe("Winning a game vertically", () => {
 		expect(mockWinListener).toHaveBeenCalledOnce()
 	})
 
-	it.only("Is triggered when player one wins after making moves in various columns", () => {
+	it("Is triggered when player one wins after making moves in various columns", () => {
 		const {
 			game,
 			participants: [p1, p2],
