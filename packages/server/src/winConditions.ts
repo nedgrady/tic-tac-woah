@@ -1,3 +1,4 @@
+import _ from "lodash"
 import { Move } from "./Move"
 import { GameConfiguration, GameState } from "./gameRules"
 
@@ -54,13 +55,27 @@ export const winByConsecutiveHorizontalPlacements: GameWinCondition = (
 	// check if top left 3 are a win
 	const placements = gameState.moves.map(move => move.placement)
 
-	if (
-		placements.filter(placement => placement.x === 0 && placement.y === 0).length &&
-		placements.filter(placement => placement.x === 1 && placement.y === 0).length &&
-		placements.filter(placement => placement.x === 2 && placement.y === 0).length
-	) {
-		return true
+	const participants = _.uniq(gameState.moves.map(move => move.mover))
+
+	for (const currentParticipant of participants) {
+		const placementsByCurrentPlayer = gameState.moves
+			.filter(move => move.mover === currentParticipant)
+			.sort((move1, move2) => move1.placement.x - move2.placement.x)
+			.map(move => move.placement)
+
+		const allYs = placementsByCurrentPlayer.map(placement => placement.y)
+
+		for (const yCoordinate of allYs) {
+			const currentRow = placementsByCurrentPlayer.filter(placement => placement.y === yCoordinate)
+			if (currentRow.length < 3) continue
+			for (let placementsChunk of overlappingChunks(currentRow, 3)) {
+				if (placementsChunk[placementsChunk.length - 1].x - placementsChunk[0].x === 2) {
+					return true
+				}
+			}
+		}
 	}
+
 	return false
 }
 
