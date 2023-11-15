@@ -1,20 +1,37 @@
 import _ from "lodash"
 import { Move } from "./Move"
 import { GameConfiguration, GameState } from "./gameRules"
+import { G } from "vitest/dist/types-dea83b3d"
+import { pl } from "@faker-js/faker"
 
-export type GameWinCondition = (newMove: Move, gameState: GameState, gameConfiguration: GameConfiguration) => boolean
+export type GameWinCondition = (
+	latestMove: Move,
+	gameState: GameState,
+	gameConfiguration: GameConfiguration
+) => GameWinConditionResult
+
+export type GameWinConditionResult = GameWin | GameContinues
+
+export interface GameWin {
+	readonly result: "win"
+	readonly winningMoves: readonly Move[]
+}
+
+export interface GameContinues {
+	readonly result: "continues"
+}
+
+const todoGameResult: GameWinConditionResult = { result: "continues" }
 
 export const winByConsecutiveVerticalPlacements: GameWinCondition = (
-	newMove: Move,
+	latestMove: Move,
 	gameState: GameState,
 	gameConfiguration: GameConfiguration
 ) => {
 	const placementsByCurrentPlayer = gameState.moves
-		.filter(move => move.mover === newMove.mover)
+		.filter(move => move.mover === latestMove.mover)
 		.sort((move1, move2) => move1.placement.y - move2.placement.y)
 		.map(move => move.placement)
-
-	if (placementsByCurrentPlayer.length < gameConfiguration.consecutiveTarget) return false
 
 	const allXs = placementsByCurrentPlayer.map(placement => placement.x)
 
@@ -26,39 +43,23 @@ export const winByConsecutiveVerticalPlacements: GameWinCondition = (
 				placementsChunk[placementsChunk.length - 1].y - placementsChunk[0].y ===
 				gameConfiguration.consecutiveTarget - 1
 			) {
-				return true
+				return { result: "win", winningMoves: [] }
 			}
 		}
 	}
 
-	return false
+	return todoGameResult
 }
 
-/**
- * 
-
-		makeMoves([
-			[p1, p1, ""],
-			[p2, p2, ""],
-			["", "", ""],
-		])
-
-		p1.makeMove({ x: 2, y: 0 })
-
- */
-
 export const winByConsecutiveHorizontalPlacements: GameWinCondition = (
-	newMove: Move,
+	latestMove: Move,
 	gameState: GameState,
 	gameConfiguration: GameConfiguration
 ) => {
-	// check if top left 3 are a win
-	const placements = gameState.moves.map(move => move.placement)
-
 	const participants = _.uniq(gameState.moves.map(move => move.mover))
 
 	for (const currentParticipant of participants) {
-		const placementsByCurrentPlayer = gameState.moves
+		let placementsByCurrentPlayer = gameState.moves
 			.filter(move => move.mover === currentParticipant)
 			.sort((move1, move2) => move1.placement.x - move2.placement.x)
 			.map(move => move.placement)
@@ -67,16 +68,22 @@ export const winByConsecutiveHorizontalPlacements: GameWinCondition = (
 
 		for (const yCoordinate of allYs) {
 			const currentRow = placementsByCurrentPlayer.filter(placement => placement.y === yCoordinate)
-			if (currentRow.length < 3) continue
-			for (let placementsChunk of overlappingChunks(currentRow, 3)) {
-				if (placementsChunk[placementsChunk.length - 1].x - placementsChunk[0].x === 2) {
-					return true
+			if (currentRow.length < gameConfiguration.consecutiveTarget) continue
+			for (let placementsChunk of overlappingChunks(currentRow, gameConfiguration.consecutiveTarget)) {
+				if (
+					placementsChunk[placementsChunk.length - 1].x - placementsChunk[0].x ===
+					gameConfiguration.consecutiveTarget - 1
+				) {
+					return {
+						result: "win",
+						winningMoves: placementsChunk.map(placement => ({ mover: currentParticipant, placement })),
+					}
 				}
 			}
 		}
 	}
 
-	return false
+	return todoGameResult
 }
 
 export const standardWinConditions: readonly GameWinCondition[] = [

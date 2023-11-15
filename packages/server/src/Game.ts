@@ -5,6 +5,8 @@ import _ from "lodash"
 import { GameConfiguration, GameRuleFunction, GameState } from "./gameRules"
 import { GameWinCondition } from "./winConditions"
 
+export type GameWonListener = (winningMoves: readonly Move[]) => void
+
 export class Game {
 	readonly #consecutiveTarget: number
 	readonly #movesReal: Move[] = []
@@ -14,7 +16,7 @@ export class Game {
 	readonly #rules: readonly GameRuleFunction[]
 	readonly #winConditions: readonly GameWinCondition[]
 
-	onWin(listener: () => void) {
+	onWin(listener: GameWonListener) {
 		this.#emitter.on("Winning Move", listener)
 	}
 
@@ -50,8 +52,9 @@ export class Game {
 		this.#emitter.emit("Move", newMove)
 
 		for (let winCondition of this.#winConditions) {
-			if (winCondition(newMove, gameState, gameConfiguration)) {
-				this.#emitter.emit("Winning Move")
+			const thing = winCondition(newMove, gameState, gameConfiguration)
+			if (thing.result === "win") {
+				this.#emitter.emit("Winning Move", thing.winningMoves)
 				return
 			}
 		}

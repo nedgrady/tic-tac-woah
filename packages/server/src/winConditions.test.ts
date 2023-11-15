@@ -2,9 +2,15 @@ import { expect, describe, it, test } from "vitest"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
 import { winByConsecutiveHorizontalPlacements } from "./winConditions"
+import { number } from "zod"
 
 type PlacementSpecification = (Participant | Empty)[][]
 type Empty = ""
+
+interface TestCase {
+	board: PlacementSpecification
+	consecutiveTarget: number
+}
 
 function createMoves(placementDefinitions: PlacementSpecification) {
 	const moves: Move[] = []
@@ -34,92 +40,131 @@ const anyLastMove: Move = {
 
 const [p1, p2] = createParticipants(2)
 
-describe.only("Winning a game horizontally", () => {
-	const p1WinsWithThreePlacementsTestCases: PlacementSpecification[][] = [
-		[
-			[
+describe("Winning a game horizontally", () => {
+	const p1WinsTestCases: TestCase[] = [
+		{
+			board: [
 				[p1, p1, p1, ""],
 				[p2, p2, "", ""],
 				["", "", "", ""],
 				["", "", "", ""],
 			],
-		],
-		[
-			[
+			consecutiveTarget: 3,
+		},
+
+		{
+			board: [
 				["", p1, p1, p1],
 				["", p2, p2, ""],
 				["", "", "", ""],
 				["", "", "", ""],
 			],
-		],
-		[
-			[
+			consecutiveTarget: 3,
+		},
+
+		{
+			board: [
 				["", "", "", ""],
 				["", p2, p2, ""],
 				["", "", "", ""],
 				[p1, p1, p1, ""],
 			],
-		],
-		[
-			[
+			consecutiveTarget: 3,
+		},
+
+		{
+			board: [
 				["", "", "", ""],
 				["", p2, p2, ""],
 				["", "", "", ""],
 				["", p1, p1, p1],
 			],
-		],
+			consecutiveTarget: 3,
+		},
+
+		{
+			board: [
+				["", "", "", ""],
+				["", p2, p2, ""],
+				["", "", "", ""],
+				[p1, p1, p1, p1],
+			],
+			consecutiveTarget: 3,
+		},
+
+		{
+			board: [
+				["", "", "", ""],
+				["", p2, p2, ""],
+				["", "", "", ""],
+				[p1, p1, p1, p1],
+			],
+			consecutiveTarget: 4,
+		},
 	]
 
-	test.each(p1WinsWithThreePlacementsTestCases)("Is triggered when player one wins with board %#", moves => {
-		const isWin = winByConsecutiveHorizontalPlacements(
+	test.each(p1WinsTestCases)("Is triggered when player one wins with board %#", ({ board, consecutiveTarget }) => {
+		const { result: type } = winByConsecutiveHorizontalPlacements(
 			anyLastMove,
 			{
-				moves: createMoves(moves),
+				moves: createMoves(board),
 				participants: [new Participant(), new Participant()],
 			},
 			{
 				boardSize: 3,
-				consecutiveTarget: 3,
+				consecutiveTarget: consecutiveTarget,
 			}
 		)
 
-		expect(isWin).toBe(true)
+		expect(type).toEqual("win")
 	})
 })
 
 describe("Non-winning scenarios do not trigger a win", () => {
-	const nonWinningFiveConsecutivePlacementsRequiredTestCases: PlacementSpecification[][] = [
-		[
-			[
+	const nonWinningTestCases: TestCase[] = [
+		{
+			board: [
 				[p1, p1, p1, p1],
 				[p2, p2, p2, ""],
 				["", "", "", ""],
 				["", "", "", ""],
 			],
-		],
-		[
-			[
+			consecutiveTarget: 5,
+		},
+
+		{
+			board: [
 				["", "", "", ""],
 				["", p2, p2, p2],
 				["", "", "", ""],
 				[p1, p1, p1, p1],
 			],
-		],
+			consecutiveTarget: 5,
+		},
+		{
+			board: [
+				["", "", "", ""],
+				["", p2, "", ""],
+				["", "", "", ""],
+				["", p1, "", ""],
+			],
+			consecutiveTarget: 2,
+		},
 	]
 
-	test.each(nonWinningFiveConsecutivePlacementsRequiredTestCases)("With the board %a", moves => {
-		const isWin = winByConsecutiveHorizontalPlacements(
+	test.each(nonWinningTestCases)("With the board %a", ({ board, consecutiveTarget }) => {
+		const { result } = winByConsecutiveHorizontalPlacements(
 			anyLastMove,
 			{
-				moves: createMoves(moves),
+				moves: createMoves(board),
 				participants: [new Participant(), new Participant()],
 			},
 			{
 				boardSize: 5,
-				consecutiveTarget: 5,
+				consecutiveTarget: consecutiveTarget,
 			}
 		)
 
-		expect(isWin).toBe(false)
+		expect(result).toBe("continues")
 	})
 })

@@ -1,16 +1,21 @@
-import { expect, it, vitest, describe, test } from "vitest"
-import { Game } from "./Game"
+import { expect, it, vitest, describe, test, ArgumentsType } from "vitest"
+import { Game, GameWonListener } from "./Game"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
 import { faker } from "@faker-js/faker"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction, standardRules } from "./gameRules"
-import { standardWinConditions, winByConsecutiveVerticalPlacements } from "./winConditions"
+import {
+	GameWinCondition,
+	standardWinConditions,
+	winByConsecutiveHorizontalPlacements,
+	winByConsecutiveVerticalPlacements,
+} from "./winConditions"
 
 type GameTestDefinition = GameConfiguration & {
 	participantCount?: number
 	rules: readonly GameRuleFunction[]
-	winConditions: readonly GameRuleFunction[]
+	winConditions: readonly GameWinCondition[]
 }
 
 function gameWithParticipants({
@@ -547,6 +552,7 @@ describe("Winning a game horizontally", () => {
 			consecutiveTarget: 3,
 			participantCount: 2,
 			rules: [anyMoveValid],
+			winConditions: [winByConsecutiveHorizontalPlacements],
 		})
 
 		const mockWinListener = vitest.fn()
@@ -561,5 +567,35 @@ describe("Winning a game horizontally", () => {
 		p1.makeMove({ x: 2, y: 0 })
 
 		expect(mockWinListener).toHaveBeenCalledOnce()
+	})
+
+	it("Supplies the winning moves", () => {
+		const {
+			game,
+			participants: [p1, p2],
+		} = gameWithParticipants({
+			boardSize: 20,
+			consecutiveTarget: 3,
+			participantCount: 2,
+			rules: [anyMoveValid],
+			winConditions: [winByConsecutiveHorizontalPlacements],
+		})
+
+		const mockWinListener = vitest.fn<ArgumentsType<GameWonListener>, ReturnType<GameWonListener>>()
+		game.onWin(mockWinListener)
+
+		makeMoves([
+			[p1, p1, ""],
+			[p2, p2, ""],
+			["", "", ""],
+		])
+
+		p1.makeMove({ x: 2, y: 0 })
+
+		expect(mockWinListener).toHaveBeenCalledWith([
+			{ placement: { x: 0, y: 0 }, mover: p1 },
+			{ placement: { x: 1, y: 0 }, mover: p1 },
+			{ placement: { x: 2, y: 0 }, mover: p1 },
+		])
 	})
 })
