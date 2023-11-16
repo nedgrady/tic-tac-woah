@@ -397,6 +397,9 @@ const winByConsecutiveDiagonalPlacements: GameWinCondition = (
 	gameState: GameState,
 	gameConfiguration: GameConfiguration
 ) => {
+	// TODO there needs to be sorts in here
+	// So write some test cases that cover that scenario
+
 	// Rotate all coordinates 45 degrees about the origin
 	// using (x, y) -> (x + y, y - x)
 	// to inverse use (x', y') -> ([x' - y'] / 2, [x' + y'] / 2])
