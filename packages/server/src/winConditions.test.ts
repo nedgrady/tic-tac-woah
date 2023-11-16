@@ -100,7 +100,7 @@ describe("Winning a game horizontally", () => {
 		},
 	]
 
-	test.only.each(p1WinsTestCases)(
+	test.each(p1WinsTestCases)(
 		"Is triggered when player one wins with board %#",
 		({ board, consecutiveTarget, winningMove }) => {
 			const { result: type } = winByConsecutiveHorizontalPlacements(
