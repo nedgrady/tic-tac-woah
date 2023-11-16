@@ -1,8 +1,6 @@
 import _ from "lodash"
 import { Move } from "./Move"
 import { GameConfiguration, GameState } from "./gameRules"
-import { G } from "vitest/dist/types-dea83b3d"
-import { pl } from "@faker-js/faker"
 
 export type GameWinCondition = (
 	latestMove: Move,
