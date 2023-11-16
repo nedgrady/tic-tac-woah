@@ -89,7 +89,7 @@ export const standardWinConditions: readonly GameWinCondition[] = [
 	winByConsecutiveHorizontalPlacements,
 ]
 
-function overlappingChunks<TItem>(array: TItem[], chunkSize: number) {
+export function overlappingChunks<TItem>(array: TItem[], chunkSize: number) {
 	if (chunkSize <= 0 || chunkSize > array.length) {
 		throw new Error("Invalid chunk size")
 	}
