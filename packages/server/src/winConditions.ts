@@ -60,28 +60,24 @@ export const winByConsecutiveHorizontalPlacements: GameWinCondition = (
 	gameState: GameState,
 	gameConfiguration: GameConfiguration
 ) => {
-	const participants = _.uniq(gameState.moves.map(move => move.mover))
+	let placementsByCurrentPlayer = gameState.moves
+		.filter(move => move.mover === latestMove.mover)
+		.sort((move1, move2) => move1.placement.x - move2.placement.x)
+		.map(move => move.placement)
 
-	for (const currentParticipant of participants) {
-		let placementsByCurrentPlayer = gameState.moves
-			.filter(move => move.mover === currentParticipant)
-			.sort((move1, move2) => move1.placement.x - move2.placement.x)
-			.map(move => move.placement)
+	const allYs = placementsByCurrentPlayer.map(placement => placement.y)
 
-		const allYs = placementsByCurrentPlayer.map(placement => placement.y)
-
-		for (const yCoordinate of allYs) {
-			const currentRow = placementsByCurrentPlayer.filter(placement => placement.y === yCoordinate)
-			if (currentRow.length < gameConfiguration.consecutiveTarget) continue
-			for (let placementsChunk of overlappingChunks(currentRow, gameConfiguration.consecutiveTarget)) {
-				if (
-					placementsChunk[placementsChunk.length - 1].x - placementsChunk[0].x ===
-					gameConfiguration.consecutiveTarget - 1
-				) {
-					return {
-						result: "win",
-						winningMoves: placementsChunk.map(placement => ({ mover: currentParticipant, placement })),
-					}
+	for (const yCoordinate of allYs) {
+		const currentRow = placementsByCurrentPlayer.filter(placement => placement.y === yCoordinate)
+		if (currentRow.length < gameConfiguration.consecutiveTarget) continue
+		for (let placementsChunk of overlappingChunks(currentRow, gameConfiguration.consecutiveTarget)) {
+			if (
+				placementsChunk[placementsChunk.length - 1].x - placementsChunk[0].x ===
+				gameConfiguration.consecutiveTarget - 1
+			) {
+				return {
+					result: "win",
+					winningMoves: placementsChunk.map(placement => ({ mover: latestMove.mover, placement })),
 				}
 			}
 		}

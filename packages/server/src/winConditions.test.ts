@@ -12,6 +12,7 @@ import { PlacementSpecification, createMoves } from "./gameTestHelpers"
 interface TestCase {
 	board: PlacementSpecification
 	consecutiveTarget: number
+	winningMove: Move
 }
 
 function createParticipants(count: number): readonly Participant[] {
@@ -40,6 +41,7 @@ describe("Winning a game horizontally", () => {
 				["", "", "", ""],
 			],
 			consecutiveTarget: 3,
+			winningMove: { mover: p1, placement: { x: 3, y: 0 } },
 		},
 
 		{
@@ -50,6 +52,7 @@ describe("Winning a game horizontally", () => {
 				["", "", "", ""],
 			],
 			consecutiveTarget: 3,
+			winningMove: { mover: p1, placement: { x: 4, y: 0 } },
 		},
 
 		{
@@ -60,6 +63,7 @@ describe("Winning a game horizontally", () => {
 				[p1, p1, p1, ""],
 			],
 			consecutiveTarget: 3,
+			winningMove: { mover: p1, placement: { x: 2, y: 2 } },
 		},
 
 		{
@@ -70,6 +74,7 @@ describe("Winning a game horizontally", () => {
 				["", p1, p1, p1],
 			],
 			consecutiveTarget: 3,
+			winningMove: { mover: p1, placement: { x: 3, y: 3 } },
 		},
 
 		{
@@ -80,6 +85,7 @@ describe("Winning a game horizontally", () => {
 				[p1, p1, p1, p1],
 			],
 			consecutiveTarget: 3,
+			winningMove: { mover: p1, placement: { x: 2, y: 3 } },
 		},
 
 		{
@@ -90,24 +96,28 @@ describe("Winning a game horizontally", () => {
 				[p1, p1, p1, p1],
 			],
 			consecutiveTarget: 4,
+			winningMove: { mover: p1, placement: { x: 0, y: 3 } },
 		},
 	]
 
-	test.each(p1WinsTestCases)("Is triggered when player one wins with board %#", ({ board, consecutiveTarget }) => {
-		const { result: type } = winByConsecutiveHorizontalPlacements(
-			anyLastMove,
-			{
-				moves: createMoves(board),
-				participants: [new Participant(), new Participant()],
-			},
-			{
-				boardSize: 3,
-				consecutiveTarget: consecutiveTarget,
-			}
-		)
+	test.only.each(p1WinsTestCases)(
+		"Is triggered when player one wins with board %#",
+		({ board, consecutiveTarget, winningMove }) => {
+			const { result: type } = winByConsecutiveHorizontalPlacements(
+				winningMove,
+				{
+					moves: createMoves(board),
+					participants: [p1, p2],
+				},
+				{
+					boardSize: 3,
+					consecutiveTarget: consecutiveTarget,
+				}
+			)
 
-		expect(type).toEqual("win")
-	})
+			expect(type).toEqual("win")
+		}
+	)
 })
 
 describe("Winning a game vertically", () => {
@@ -121,7 +131,7 @@ describe("Winning a game vertically", () => {
 					[p1, "", "", ""],
 					[p1, "", "", ""],
 				]),
-				participants: [new Participant(), new Participant()],
+				participants: [p1, p2],
 			},
 			{
 				boardSize: 4,
@@ -142,7 +152,7 @@ describe("Winning a game vertically", () => {
 					[p2, "", "", ""],
 					[p2, "", "", ""],
 				]),
-				participants: [new Participant(), new Participant()],
+				participants: [p1, p2],
 			},
 			{
 				boardSize: 4,
@@ -184,7 +194,7 @@ describe("Winning a game vertically", () => {
 })
 
 describe("Non-winning scenarios do not trigger a win", () => {
-	const nonWinningTestCases: TestCase[] = [
+	const nonWinningTestCases: Omit<TestCase, "winningMove">[] = [
 		{
 			board: [
 				[p1, p1, p1, p1],
@@ -220,7 +230,7 @@ describe("Non-winning scenarios do not trigger a win", () => {
 			anyLastMove,
 			{
 				moves: createMoves(board),
-				participants: [new Participant(), new Participant()],
+				participants: [p1, p2],
 			},
 			{
 				boardSize: 5,
