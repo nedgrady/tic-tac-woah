@@ -13,6 +13,7 @@ export type GameWinCondition = (
 export type GameWinConditionResult = GameWin | GameContinues
 
 export interface GameWin {
+	// TODO - better name for this
 	readonly result: "win"
 	readonly winningMoves: readonly Move[]
 }
@@ -21,7 +22,7 @@ export interface GameContinues {
 	readonly result: "continues"
 }
 
-const todoGameResult: GameWinConditionResult = { result: "continues" }
+const continueGame: GameWinConditionResult = { result: "continues" }
 
 export const winByConsecutiveVerticalPlacements: GameWinCondition = (
 	latestMove: Move,
@@ -43,12 +44,15 @@ export const winByConsecutiveVerticalPlacements: GameWinCondition = (
 				placementsChunk[placementsChunk.length - 1].y - placementsChunk[0].y ===
 				gameConfiguration.consecutiveTarget - 1
 			) {
-				return { result: "win", winningMoves: [] }
+				return {
+					result: "win",
+					winningMoves: placementsChunk.map(placement => ({ mover: latestMove.mover, placement })),
+				}
 			}
 		}
 	}
 
-	return todoGameResult
+	return continueGame
 }
 
 export const winByConsecutiveHorizontalPlacements: GameWinCondition = (
@@ -83,7 +87,7 @@ export const winByConsecutiveHorizontalPlacements: GameWinCondition = (
 		}
 	}
 
-	return todoGameResult
+	return continueGame
 }
 
 export const standardWinConditions: readonly GameWinCondition[] = [

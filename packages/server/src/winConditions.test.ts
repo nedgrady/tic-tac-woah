@@ -1,32 +1,17 @@
 import { expect, describe, it, test } from "vitest"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
-import { winByConsecutiveHorizontalPlacements } from "./winConditions"
-import { number } from "zod"
-
-type PlacementSpecification = (Participant | Empty)[][]
-type Empty = ""
+import {
+	GameWin,
+	GameWinConditionResult,
+	winByConsecutiveHorizontalPlacements,
+	winByConsecutiveVerticalPlacements,
+} from "./winConditions"
+import { PlacementSpecification, createMoves } from "./gameTestHelpers"
 
 interface TestCase {
 	board: PlacementSpecification
 	consecutiveTarget: number
-}
-
-function createMoves(placementDefinitions: PlacementSpecification) {
-	const moves: Move[] = []
-
-	placementDefinitions.forEach((row, rowIndex) => {
-		row.forEach((participant, columnIndex) => {
-			if (participant === "") return
-
-			moves.push({
-				mover: participant,
-				placement: { x: columnIndex, y: rowIndex },
-			})
-		})
-	})
-
-	return moves
 }
 
 function createParticipants(count: number): readonly Participant[] {
@@ -39,6 +24,11 @@ const anyLastMove: Move = {
 }
 
 const [p1, p2] = createParticipants(2)
+
+function ensureWin(winCondition: GameWinConditionResult): winCondition is GameWin {
+	expect(winCondition.result).toBe("win")
+	return (winCondition as GameWin).result === "win"
+}
 
 describe("Winning a game horizontally", () => {
 	const p1WinsTestCases: TestCase[] = [
@@ -117,6 +107,79 @@ describe("Winning a game horizontally", () => {
 		)
 
 		expect(type).toEqual("win")
+	})
+})
+
+describe("Winning a game vertically", () => {
+	it("Returns a win", () => {
+		const result = winByConsecutiveVerticalPlacements(
+			{ mover: p1, placement: { x: 0, y: 3 } },
+			{
+				moves: createMoves([
+					[p1, "", "", ""],
+					[p1, "", "", ""],
+					[p1, "", "", ""],
+					[p1, "", "", ""],
+				]),
+				participants: [new Participant(), new Participant()],
+			},
+			{
+				boardSize: 4,
+				consecutiveTarget: 4,
+			}
+		)
+
+		expect((result as GameWin).result).toEqual("win")
+	})
+
+	it("Returns the correct winning sequence", () => {
+		const result = winByConsecutiveVerticalPlacements(
+			{ mover: p2, placement: { x: 0, y: 3 } },
+			{
+				moves: createMoves([
+					[p2, "", "", ""],
+					[p2, "", "", ""],
+					[p2, "", "", ""],
+					[p2, "", "", ""],
+				]),
+				participants: [new Participant(), new Participant()],
+			},
+			{
+				boardSize: 4,
+				consecutiveTarget: 4,
+			}
+		)
+
+		expect((result as GameWin).winningMoves).toEqual([
+			{ mover: p2, placement: { x: 0, y: 0 } },
+			{ mover: p2, placement: { x: 0, y: 1 } },
+			{ mover: p2, placement: { x: 0, y: 2 } },
+			{ mover: p2, placement: { x: 0, y: 3 } },
+		])
+	})
+
+	it("Returns the correct winning sequence 2", () => {
+		const result = winByConsecutiveVerticalPlacements(
+			{ mover: p1, placement: { x: 1, y: 2 } },
+			{
+				moves: createMoves([
+					["", "", "", ""],
+					["", p1, "", ""],
+					["", p1, "", ""],
+					["", "", "", ""],
+				]),
+				participants: [p1, p2],
+			},
+			{
+				boardSize: 4,
+				consecutiveTarget: 2,
+			}
+		)
+
+		expect((result as GameWin).winningMoves).toEqual([
+			{ mover: p1, placement: { x: 1, y: 1 } },
+			{ mover: p1, placement: { x: 1, y: 2 } },
+		])
 	})
 })
 

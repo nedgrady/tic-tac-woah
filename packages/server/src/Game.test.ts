@@ -1,16 +1,12 @@
-import { expect, it, vitest, describe, test, ArgumentsType } from "vitest"
+import { expect, it, vitest, describe, ArgumentsType } from "vitest"
 import { Game, GameWonListener } from "./Game"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
 import { faker } from "@faker-js/faker"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction, standardRules } from "./gameRules"
-import {
-	GameWinCondition,
-	standardWinConditions,
-	winByConsecutiveHorizontalPlacements,
-	winByConsecutiveVerticalPlacements,
-} from "./winConditions"
+import { GameWinCondition, standardWinConditions, winByConsecutiveVerticalPlacements } from "./winConditions"
+import { PlacementSpecification, createMoves, makeMoves } from "./gameTestHelpers"
 
 type GameTestDefinition = GameConfiguration & {
 	participantCount?: number
@@ -40,9 +36,6 @@ it("New games start with an empty set of moves", () => {
 
 	expect(game.moves()).toHaveLength(0)
 })
-
-type PlacementSpecification = (Participant | Empty)[][]
-type Empty = ""
 
 /*
 Here is a 3x3 grid for your convenience
@@ -74,16 +67,6 @@ Here is a 3x3 grid for your convenience
 ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
 ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
 */
-
-function makeMoves(placementDefinitions: PlacementSpecification) {
-	placementDefinitions.forEach((row, rowIndex) => {
-		row.forEach((participant, columnIndex) => {
-			if (participant === "") return
-
-			participant.makeMove({ x: columnIndex, y: rowIndex })
-		})
-	})
-}
 
 it("Participant one making a move is captured", () => {
 	const {
@@ -290,6 +273,52 @@ it("Making a move in a taken square", () => {
 	expect(game.moves()).toHaveLength(1)
 })
 
+describe("Winning a game in all scenarios", () => {
+	const firstMoveIsAWin: GameWinCondition = latestMove => ({
+		result: "win",
+		winningMoves: [latestMove],
+	})
+
+	it("Invokes win listener", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			winConditions: [firstMoveIsAWin],
+			rules: [anyMoveValid],
+		})
+
+		const mockWinListener = vitest.fn<ArgumentsType<GameWonListener>, ReturnType<GameWonListener>>()
+		game.onWin(mockWinListener)
+
+		p1.makeMove({ x: 0, y: 0 })
+
+		expect(mockWinListener).toHaveBeenCalledOnce()
+	})
+
+	it("Returns the correct winning moves", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			winConditions: [firstMoveIsAWin],
+			rules: [anyMoveValid],
+		})
+
+		const mockWinListener = vitest.fn<ArgumentsType<GameWonListener>, ReturnType<GameWonListener>>()
+		game.onWin(mockWinListener)
+
+		const winningPlacement = {
+			x: faker.number.int({ min: 0 }),
+			y: faker.number.int({ min: 0 }),
+		}
+
+		p1.makeMove(winningPlacement)
+
+		expect(mockWinListener).toHaveBeenCalledWith([{ placement: winningPlacement, mover: p1 }])
+	})
+})
+
 describe("Winning a game vertically", () => {
 	it("Is triggered when player one in the top left", () => {
 		const {
@@ -299,6 +328,7 @@ describe("Winning a game vertically", () => {
 			boardSize: 20,
 			consecutiveTarget: 3,
 			participantCount: 2,
+			winConditions: [winByConsecutiveVerticalPlacements],
 		})
 
 		const mockWinListener = vitest.fn()
@@ -323,6 +353,7 @@ describe("Winning a game vertically", () => {
 			boardSize: 20,
 			consecutiveTarget: 4,
 			participantCount: 2,
+			winConditions: [winByConsecutiveVerticalPlacements],
 		})
 
 		const mockWinListener = vitest.fn()
@@ -348,6 +379,7 @@ describe("Winning a game vertically", () => {
 			consecutiveTarget: 3,
 			participantCount: 2,
 			rules: [anyMoveValid],
+			winConditions: [winByConsecutiveVerticalPlacements],
 		})
 
 		const mockWinListener = vitest.fn()
@@ -372,6 +404,7 @@ describe("Winning a game vertically", () => {
 			boardSize: 20,
 			consecutiveTarget: 3,
 			participantCount: 2,
+			winConditions: [winByConsecutiveVerticalPlacements],
 		})
 
 		const mockWinListener = vitest.fn()
@@ -398,6 +431,7 @@ describe("Winning a game vertically", () => {
 			consecutiveTarget: 3,
 			participantCount: 2,
 			rules: [anyMoveValid],
+			winConditions: [winByConsecutiveVerticalPlacements],
 		})
 
 		const mockWinListener = vitest.fn()
@@ -441,6 +475,7 @@ describe("Winning a game vertically", () => {
 			boardSize: gridSize,
 			consecutiveTarget: gridSize,
 			participantCount: 2,
+			winConditions: [winByConsecutiveVerticalPlacements],
 		})
 
 		const mockWinListener = vitest.fn()
@@ -474,7 +509,9 @@ describe("Winning a game vertically", () => {
 		const {
 			game,
 			participants: [p1, p2],
-		} = gameWithParticipants()
+		} = gameWithParticipants({
+			winConditions: [winByConsecutiveVerticalPlacements],
+		})
 
 		const mockWinListener = vitest.fn()
 		game.onWin(mockWinListener)
@@ -500,6 +537,7 @@ describe("Winning a game vertically", () => {
 			boardSize: gridSize,
 			consecutiveTarget: 3,
 			participantCount: 2,
+			winConditions: [winByConsecutiveVerticalPlacements],
 		})
 
 		const mockWinListener = vitest.fn()
@@ -523,6 +561,7 @@ describe("Winning a game vertically", () => {
 			consecutiveTarget: 3,
 			participantCount: 2,
 			rules: [anyMoveValid],
+			winConditions: [winByConsecutiveVerticalPlacements],
 		})
 
 		const mockWinListener = vitest.fn()
@@ -539,63 +578,5 @@ describe("Winning a game vertically", () => {
 		p1.makeMove({ x: 3, y: 2 })
 
 		expect(mockWinListener).toHaveBeenCalledOnce()
-	})
-})
-
-describe("Winning a game horizontally", () => {
-	it("Is triggered when player one wins in the top left", () => {
-		const {
-			game,
-			participants: [p1, p2],
-		} = gameWithParticipants({
-			boardSize: 20,
-			consecutiveTarget: 3,
-			participantCount: 2,
-			rules: [anyMoveValid],
-			winConditions: [winByConsecutiveHorizontalPlacements],
-		})
-
-		const mockWinListener = vitest.fn()
-		game.onWin(mockWinListener)
-
-		makeMoves([
-			[p1, p1, ""],
-			[p2, p2, ""],
-			["", "", ""],
-		])
-
-		p1.makeMove({ x: 2, y: 0 })
-
-		expect(mockWinListener).toHaveBeenCalledOnce()
-	})
-
-	it("Supplies the winning moves", () => {
-		const {
-			game,
-			participants: [p1, p2],
-		} = gameWithParticipants({
-			boardSize: 20,
-			consecutiveTarget: 3,
-			participantCount: 2,
-			rules: [anyMoveValid],
-			winConditions: [winByConsecutiveHorizontalPlacements],
-		})
-
-		const mockWinListener = vitest.fn<ArgumentsType<GameWonListener>, ReturnType<GameWonListener>>()
-		game.onWin(mockWinListener)
-
-		makeMoves([
-			[p1, p1, ""],
-			[p2, p2, ""],
-			["", "", ""],
-		])
-
-		p1.makeMove({ x: 2, y: 0 })
-
-		expect(mockWinListener).toHaveBeenCalledWith([
-			{ placement: { x: 0, y: 0 }, mover: p1 },
-			{ placement: { x: 1, y: 0 }, mover: p1 },
-			{ placement: { x: 2, y: 0 }, mover: p1 },
-		])
 	})
 })
