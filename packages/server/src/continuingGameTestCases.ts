@@ -1,10 +1,10 @@
 import { Participant } from "./Participant"
-import { GameContinuesTestCase, createParticipants } from "./gameTestHelpers"
+import { GameContinuesTestCase, createParticipants } from "./domain/gameTestHelpers"
 import {
 	winByConsecutiveHorizontalPlacements,
 	winByConsecutiveDiagonalPlacements,
 	winByConsecutiveVerticalPlacements,
-} from "./winConditions"
+} from "./domain/winConditions/winConditions"
 
 const [p1, p2] = createParticipants(2)
 

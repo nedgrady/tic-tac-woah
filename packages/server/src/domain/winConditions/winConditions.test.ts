@@ -1,14 +1,14 @@
-import { expect, describe, it, test } from "vitest"
-import { Move } from "./Move"
-import { Participant } from "./Participant"
-import { GameWin, winByConsecutiveHorizontalPlacements, winByConsecutiveVerticalPlacements } from "./winConditions"
-import { GameWinTestCase, PlacementSpecification, createMoves } from "./gameTestHelpers"
+import { expect, it, test } from "vitest"
+import { Move } from "../../Move"
+import { Participant } from "../../Participant"
+import { GameWin } from "./winConditions"
+import { GameWinTestCase, createMoves } from "../gameTestHelpers"
 import { winByConsecutiveDiagonalPlacements } from "./winConditions"
 import {
 	diagonalNonWinningTestCases,
 	horizontalNonWinTestCases,
 	vertialNonWinningTestCases,
-} from "./continuingGameTestCases"
+} from "../../continuingGameTestCases"
 import { horizontalWinTestCases } from "./winningGameTestCases"
 
 type GameContinuesTestCase = Omit<GameWinTestCase, "winningMove" | "expectedWinningMoves">

@@ -5,8 +5,8 @@ import { Participant } from "./Participant"
 import { faker } from "@faker-js/faker"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction, standardRules } from "./gameRules"
-import { GameWinCondition, standardWinConditions, winByConsecutiveVerticalPlacements } from "./winConditions"
-import { PlacementSpecification, createMoves, makeMoves } from "./gameTestHelpers"
+import { GameWinCondition, standardWinConditions } from "./domain/winConditions/winConditions"
+import { makeMoves } from "./domain/gameTestHelpers"
 
 type GameTestDefinition = GameConfiguration & {
 	participantCount?: number
@@ -72,7 +72,9 @@ it("Participant one making a move is captured", () => {
 	const {
 		game,
 		participants: [p1],
-	} = gameWithParticipants()
+	} = gameWithParticipants({
+		rules: [anyMoveValid],
+	})
 
 	p1.makeMove({ x: 0, y: 0 })
 
@@ -84,7 +86,9 @@ it("Participant two making a move is captured", () => {
 	const {
 		game,
 		participants: [p1, p2],
-	} = gameWithParticipants()
+	} = gameWithParticipants({
+		rules: [anyMoveValid],
+	})
 
 	makeMoves([
 		[p1, ""],
@@ -101,7 +105,9 @@ it("Participant three making a move is captured", () => {
 	const {
 		game,
 		participants: [p1, p2, p3],
-	} = gameWithParticipants()
+	} = gameWithParticipants({
+		rules: [anyMoveValid],
+	})
 
 	makeMoves([
 		[p1, "", ""],
@@ -121,7 +127,7 @@ it("Game can handle a very high board size", () => {
 	const {
 		game,
 		participants: [participantOne],
-	} = gameWithParticipants({ boardSize: highBoardSize })
+	} = gameWithParticipants({ boardSize: highBoardSize, rules: [anyMoveValid] })
 
 	const moveWithHighCoordinates = { placement: { x: highBoardSize - 1, y: 0 }, mover: participantOne }
 	participantOne.makeMove(moveWithHighCoordinates.placement)
@@ -135,7 +141,7 @@ it("Game can handle a very high board size 2", () => {
 	const {
 		game,
 		participants: [participantOne],
-	} = gameWithParticipants({ boardSize: highBoardSize })
+	} = gameWithParticipants({ boardSize: highBoardSize, rules: [anyMoveValid] })
 
 	const moveWithHighCoordinates = { placement: { x: 0, y: highBoardSize - 1 }, mover: participantOne }
 	participantOne.makeMove(moveWithHighCoordinates.placement)
@@ -144,7 +150,7 @@ it("Game can handle a very high board size 2", () => {
 })
 
 it("Emits a GameStart event", () => {
-	const { game } = gameWithParticipants()
+	const { game } = gameWithParticipants({ rules: [anyMoveValid] })
 	const mockStartListener = vitest.fn()
 	game.onStart(mockStartListener)
 
@@ -271,6 +277,22 @@ it("Making a move in a taken square", () => {
 	p2.makeMove({ x: 0, y: 0 })
 
 	expect(game.moves()).toHaveLength(1)
+})
+
+describe("Making a move that violates a rule in all scenarios", () => {
+	it("Ignores the move", () => {
+		const noMoveValid: GameRuleFunction = () => false
+		const {
+			game,
+			participants: [p1, p2],
+		} = gameWithParticipants({
+			rules: [noMoveValid],
+		})
+
+		p2.makeMove({ x: 0, y: 0 })
+
+		expect(game.moves()).toHaveLength(0)
+	})
 })
 
 describe("Winning a game in all scenarios", () => {

@@ -3,7 +3,7 @@ import { Participant } from "./Participant"
 import { EventEmitter } from "events"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction, GameState } from "./gameRules"
-import { GameWinCondition } from "./winConditions"
+import { GameWinCondition } from "./domain/winConditions/winConditions"
 
 export type GameWonListener = (winningMoves: readonly Move[]) => void
 
@@ -60,7 +60,7 @@ export class Game {
 		}
 	}
 
-	moves() {
+	moves(): readonly Move[] {
 		return this.#movesReal
 	}
 

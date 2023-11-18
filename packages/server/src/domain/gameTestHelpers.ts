@@ -1,6 +1,6 @@
-import { Move } from "./Move"
-import { Participant } from "./Participant"
-import { GameWinCondition } from "./winConditions"
+import { Move } from "../Move"
+import { Participant } from "../Participant"
+import { GameWinCondition } from "./winConditions/winConditions"
 
 export type PlacementSpecification = (Participant | Empty)[][]
 export type Empty = ""

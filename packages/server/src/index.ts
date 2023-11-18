@@ -12,7 +12,7 @@ import { Move } from "./Move"
 import crypto from "crypto"
 import applicationInsights from "./logging/applicationInsights"
 import { standardRules } from "./gameRules"
-import { standardWinConditions } from "./winConditions"
+import { standardWinConditions } from "./domain/winConditions/winConditions"
 
 interface ParticipantHandle {
 	readonly connection: Socket

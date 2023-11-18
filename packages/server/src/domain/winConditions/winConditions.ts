@@ -1,6 +1,6 @@
 import _ from "lodash"
-import { Move } from "./Move"
-import { GameState, GameConfiguration } from "./gameRules"
+import { Move } from "../../Move"
+import { GameState, GameConfiguration } from "../../gameRules"
 
 export type GameWinCondition = (
 	latestMove: Move,
