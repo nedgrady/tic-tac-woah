@@ -1,12 +1,19 @@
-import { expect, it, vitest, describe, ArgumentsType } from "vitest"
+import { expect, it, vitest, describe, ArgumentsType, test } from "vitest"
 import { Game, GameWonListener } from "./Game"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
 import { faker } from "@faker-js/faker"
 import _ from "lodash"
-import { GameConfiguration, GameRuleFunction, standardRules } from "./gameRules"
+import {
+	GameConfiguration,
+	GameRuleFunction,
+	moveMustBeMadeByTheCorrectPlayer,
+	moveMustBeMadeIntoAFreeSquare,
+	moveMustBeWithinTheBoard,
+	standardRules,
+} from "./gameRules"
 import { GameWinCondition, standardWinConditions } from "./domain/winConditions/winConditions"
-import { makeMoves } from "./domain/gameTestHelpers"
+import { PlacementSpecification, createMoves, createParticipants, makeMoves } from "./domain/gameTestHelpers"
 
 type GameTestDefinition = GameConfiguration & {
 	participantCount?: number
@@ -172,112 +179,367 @@ it("Emits move made events", () => {
 	expect(onMoveListener).toHaveBeenCalledWith({ placement: { x: 0, y: 0 }, mover: participantOne })
 })
 
-describe("Out of order moves", () => {
-	it("Participant one makes a turn out of order", () => {
-		const {
-			game,
-			participants: [p1],
-		} = gameWithParticipants()
+interface GameRuleTestCase {
+	readonly rule: GameRuleFunction
+	readonly move: Move
+	readonly board: PlacementSpecification
+	readonly participants: readonly Participant[]
+	readonly expectedRuleResult: boolean
+	readonly boardSize: number
+}
 
-		makeMoves([
-			[p1, ""],
-			["", ""],
-		])
+const [p1, p2, p3] = createParticipants(3)
 
-		const outOfTurnMove = { x: 1, y: 1 }
-		p1.makeMove(outOfTurnMove)
-
-		expect(game.moves()).toHaveLength(1)
-	})
-
-	it("Participant two makes a turn out of order", () => {
-		const {
-			game,
-			participants: [p1, p2],
-		} = gameWithParticipants()
-
-		makeMoves([
+const moveOrderTestCases: GameRuleTestCase[] = [
+	{
+		rule: moveMustBeMadeByTheCorrectPlayer,
+		move: { placement: { x: 1, y: 1 }, mover: p1 },
+		board: [
+			[p1, "", ""],
+			["", "", ""],
+			["", "", ""],
+		],
+		participants: [p1, p2],
+		expectedRuleResult: false,
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeMadeByTheCorrectPlayer,
+		move: { placement: { x: 1, y: 0 }, mover: p2 },
+		board: [
 			[p1, ""],
 			["", p2],
-		])
-
-		const outOfTurnMove = { x: 2, y: 2 }
-		p2.makeMove(outOfTurnMove)
-
-		expect(game.moves()).toHaveLength(2)
-	})
-
-	it("Participant two makes a second turn out of order", () => {
-		const {
-			game,
-			participants: [p1, p2, p3],
-		} = gameWithParticipants()
-
-		makeMoves([
+		],
+		participants: [p1, p2],
+		expectedRuleResult: false,
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeMadeByTheCorrectPlayer,
+		move: { placement: { x: 2, y: 0 }, mover: p2 },
+		board: [
 			[p1, "", ""],
 			["", p2, ""],
 			["", "", p3],
-		])
-
-		p2.makeMove({ x: 3, y: 3 })
-
-		expect(game.moves()).toHaveLength(3)
-	})
-
-	it("Patricipant two makes the first turn out of order", () => {
-		const {
-			game,
-			participants: [_, participantTwo],
-		} = gameWithParticipants()
-
-		participantTwo.makeMove({ x: 0, y: 0 })
-
-		expect(game.moves()).toHaveLength(0)
-	})
-})
-
-describe("Making an out of bound move", () => {
-	const gameSize = faker.number.int({ min: 10, max: 100 })
-
-	const testCases = [
-		{ x: -1, y: 0 },
-		{ x: 0, y: -1 },
-		{ x: -9, y: -7 },
-		{ x: 0, y: -7 },
-		{ x: 100, y: 0 },
-		{ x: 0, y: 100 },
-		{ x: gameSize, y: 0 },
-		{ x: 0, y: gameSize },
-	]
-
-	it.each(testCases)("'%s' is ignored", coordinates => {
-		const {
-			game,
-			participants: [participantOne],
-		} = gameWithParticipants({ boardSize: gameSize })
-
-		participantOne.makeMove(coordinates)
-
-		expect(game.moves()).toHaveLength(0)
-	})
-})
-
-it("Making a move in a taken square", () => {
-	// Ensure player can't move in a square that's already been taken
-	const {
-		game,
+		],
+		participants: [p1, p2, p3],
+		expectedRuleResult: false,
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeMadeByTheCorrectPlayer,
+		move: { placement: { x: 0, y: 0 }, mover: p2 },
+		board: [
+			["", "", ""],
+			["", "", ""],
+			["", "", ""],
+		],
 		participants: [p1, p2],
-	} = gameWithParticipants()
+		expectedRuleResult: false,
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeMadeByTheCorrectPlayer,
+		move: { placement: { x: 0, y: 0 }, mover: p1 },
+		board: [
+			["", "", ""],
+			["", "", ""],
+			["", "", ""],
+		],
+		participants: [p1, p2],
+		expectedRuleResult: true,
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeMadeByTheCorrectPlayer,
+		move: { placement: { x: 2, y: 2 }, mover: p2 },
+		board: [
+			["", "", ""],
+			["", p1, ""],
+			["", "", ""],
+		],
+		participants: [p1, p2],
+		expectedRuleResult: true,
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeMadeByTheCorrectPlayer,
+		move: { placement: { x: 1, y: 1 }, mover: p2 },
+		board: [
+			[p1, "", p2],
+			["", "", ""],
+			["", "", p1],
+		],
+		participants: [p1, p2],
+		expectedRuleResult: true,
+		boardSize: 100,
+	},
+]
 
-	makeMoves([
-		[p1, ""],
-		["", ""],
-	])
+const moveBoundsTestCases: GameRuleTestCase[] = [
+	{
+		rule: moveMustBeWithinTheBoard,
+		move: { placement: { x: 1, y: 1 }, mover: p2 },
+		board: [
+			[p1, "", p2],
+			["", "", ""],
+			["", "", p1],
+		],
+		participants: [p1, p2],
+		expectedRuleResult: true,
+		boardSize: 20,
+	},
+	{
+		rule: moveMustBeWithinTheBoard,
+		board: [],
+		expectedRuleResult: false,
+		participants: [p1, p2],
+		move: { placement: { x: -1, y: 0 }, mover: p1 },
+		boardSize: 20,
+	},
+	{
+		rule: moveMustBeWithinTheBoard,
+		board: [],
+		expectedRuleResult: false,
+		participants: [p1, p2],
+		move: { placement: { x: 0, y: -1 }, mover: p1 },
+		boardSize: 20,
+	},
+	{
+		rule: moveMustBeWithinTheBoard,
+		board: [],
+		expectedRuleResult: false,
+		participants: [p1, p2],
+		move: { placement: { x: -9, y: -7 }, mover: p1 },
+		boardSize: 20,
+	},
+	{
+		rule: moveMustBeWithinTheBoard,
+		board: [],
+		expectedRuleResult: false,
+		participants: [p1, p2],
+		move: { placement: { x: 0, y: -7 }, mover: p1 },
+		boardSize: 20,
+	},
+	{
+		rule: moveMustBeWithinTheBoard,
+		board: [],
+		expectedRuleResult: false,
+		participants: [p1, p2],
+		move: { placement: { x: 100, y: 0 }, mover: p1 },
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeWithinTheBoard,
+		board: [],
+		expectedRuleResult: false,
+		participants: [p1, p2],
+		move: { placement: { x: 0, y: 100 }, mover: p2 },
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeWithinTheBoard,
+		board: [],
+		expectedRuleResult: false,
+		participants: [p1, p2],
+		move: { placement: { x: 0, y: 100 }, mover: p2 },
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeWithinTheBoard,
+		board: [],
+		expectedRuleResult: true,
+		participants: [p1, p2],
+		move: { placement: { x: 0, y: 99 }, mover: p1 },
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeWithinTheBoard,
+		board: [],
+		expectedRuleResult: true,
+		participants: [p1, p2],
+		move: { placement: { x: 99, y: 99 }, mover: p1 },
+		boardSize: 100,
+	},
+]
 
-	p2.makeMove({ x: 0, y: 0 })
+const moveMustBeMadeIntoAFreeSquareTestCases: GameRuleTestCase[] = [
+	{
+		rule: moveMustBeMadeIntoAFreeSquare,
+		board: [
+			["", "", ""],
+			["", "", ""],
+			["", "", ""],
+		],
+		expectedRuleResult: true,
+		participants: [p1, p2],
+		move: { placement: { x: 0, y: 0 }, mover: p1 },
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeMadeIntoAFreeSquare,
+		board: [
+			[p1, "", ""],
+			["", "", ""],
+			["", "", ""],
+		],
+		expectedRuleResult: false,
+		participants: [p1, p2],
+		move: { placement: { x: 0, y: 0 }, mover: p1 },
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeMadeIntoAFreeSquare,
+		board: [
+			["", "", ""],
+			["", p1, ""],
+			["", "", ""],
+		],
+		expectedRuleResult: true,
+		participants: [p1, p2],
+		move: { placement: { x: 0, y: 0 }, mover: p2 },
+		boardSize: 100,
+	},
+	{
+		rule: moveMustBeMadeIntoAFreeSquare,
+		board: [
+			["", "", ""],
+			["", p1, ""],
+			["", "", ""],
+		],
+		expectedRuleResult: true,
+		participants: [p1, p2],
+		move: { placement: { x: 0, y: 0 }, mover: p2 },
+		boardSize: 100,
+	},
+]
 
-	expect(game.moves()).toHaveLength(1)
-})
+const moveRuleTestCases: readonly GameRuleTestCase[] = [
+	...moveOrderTestCases,
+	...moveBoundsTestCases,
+	...moveMustBeMadeIntoAFreeSquareTestCases,
+]
+
+test.each(moveRuleTestCases)(
+	"Testing rule '$rule' with move '$move' return $expectedRuleResult",
+	({ rule, move, board, participants, expectedRuleResult, boardSize }) => {
+		const isMoveAllowed = rule(
+			move,
+			{
+				moves: createMoves(board),
+				participants: participants,
+			},
+			{ boardSize: boardSize, consecutiveTarget: 3 }
+		)
+
+		expect(isMoveAllowed).toBe(expectedRuleResult)
+	}
+)
+
+// // describe("Out of order moves", () => {
+// // 	it("Participant one makes a turn out of order", () => {
+// // 		const {
+// // 			game,
+// // 			participants: [p1],
+// // 		} = gameWithParticipants()
+
+// // 		makeMoves([
+// // 			[p1, ""],
+// // 			["", ""],
+// // 		])
+
+// // 		const outOfTurnMove = { x: 1, y: 1 }
+// // 		p1.makeMove(outOfTurnMove)
+
+// // 		expect(game.moves()).toHaveLength(1)
+// // 	})
+
+// // 	it("Participant two makes a turn out of order", () => {
+// // 		const {
+// // 			game,
+// // 			participants: [p1, p2],
+// // 		} = gameWithParticipants()
+
+// // 		makeMoves([
+// // 			[p1, ""],
+// // 			["", p2],
+// // 		])
+
+// // 		const outOfTurnMove = { x: 2, y: 2 }
+// // 		p2.makeMove(outOfTurnMove)
+
+// // 		expect(game.moves()).toHaveLength(2)
+// // 	})
+
+// // 	it("Participant two makes a second turn out of order", () => {
+// // 		const {
+// // 			game,
+// // 			participants: [p1, p2, p3],
+// // 		} = gameWithParticipants()
+
+// // 		makeMoves([
+// // 			[p1, "", ""],
+// // 			["", p2, ""],
+// // 			["", "", p3],
+// // 		])
+
+// // 		p2.makeMove({ x: 3, y: 3 })
+
+// // 		expect(game.moves()).toHaveLength(3)
+// // 	})
+
+// // 	it("Patricipant two makes the first turn out of order", () => {
+// // 		const {
+// // 			game,
+// // 			participants: [_, participantTwo],
+// // 		} = gameWithParticipants()
+
+// // 		participantTwo.makeMove({ x: 0, y: 0 })
+
+// // 		expect(game.moves()).toHaveLength(0)
+// // 	})
+// // })
+
+// // describe("Making an out of bound move", () => {
+// // 	const gameSize = faker.number.int({ min: 10, max: 100 })
+
+// // 	const testCases = [
+// // 		{ x: -1, y: 0 },
+// // 		{ x: 0, y: -1 },
+// // 		{ x: -9, y: -7 },
+// // 		{ x: 0, y: -7 },
+// // 		{ x: 100, y: 0 },
+// // 		{ x: 0, y: 100 },
+// // 	]
+
+// // 	it.each(testCases)("'%s' is ignored", coordinates => {
+// // 		const {
+// // 			game,
+// // 			participants: [participantOne],
+// // 		} = gameWithParticipants({ boardSize: gameSize })
+
+// // 		participantOne.makeMove(coordinates)
+
+// // 		expect(game.moves()).toHaveLength(0)
+// // 	})
+// // })
+
+// it("Making a move in a taken square", () => {
+// 	// Ensure player can't move in a square that's already been taken
+// 	const {
+// 		game,
+// 		participants: [p1, p2],
+// 	} = gameWithParticipants()
+
+// 	makeMoves([
+// 		[p1, ""],
+// 		["", ""],
+// 	])
+
+// 	p2.makeMove({ x: 0, y: 0 })
+
+// 	expect(game.moves()).toHaveLength(1)
+// })
 
 describe("Making a move that violates a rule in all scenarios", () => {
 	it("Ignores the move", () => {

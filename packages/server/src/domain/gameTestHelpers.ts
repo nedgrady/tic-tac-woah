@@ -16,7 +16,7 @@ export interface GameWinTestCase {
 
 export type GameContinuesTestCase = Omit<GameWinTestCase, "winningMove" | "expectedWinningMoves">
 
-export function createMoves(placementDefinitions: PlacementSpecification) {
+export function createMoves(placementDefinitions: PlacementSpecification): readonly Move[] {
 	const moves: Move[] = []
 
 	placementDefinitions.forEach((row, rowIndex) => {
