@@ -1,237 +1,43 @@
 import { expect, describe, it, test } from "vitest"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
-import {
-	GameWin,
-	GameWinCondition,
-	GameWinConditionResult,
-	winByConsecutiveHorizontalPlacements,
-	winByConsecutiveVerticalPlacements,
-} from "./winConditions"
-import { PlacementSpecification, createMoves } from "./gameTestHelpers"
+import { GameWin, winByConsecutiveHorizontalPlacements, winByConsecutiveVerticalPlacements } from "./winConditions"
+import { GameWinTestCase, PlacementSpecification, createMoves } from "./gameTestHelpers"
 import { winByConsecutiveDiagonalPlacements } from "./winConditions"
+import {
+	diagonalNonWinningTestCases,
+	horizontalNonWinTestCases,
+	vertialNonWinningTestCases,
+} from "./continuingGameTestCases"
+import { horizontalWinTestCases } from "./winningGameTestCases"
 
-interface GameWinTestCase {
-	readonly board: PlacementSpecification
-	readonly consecutiveTarget: number
-	readonly winningMove: Move
-	readonly expectedWinningMoves: readonly Move[]
-	readonly gameWinConditionUnderTest: GameWinCondition
-}
-
-type GameContinuesTestCase = Omit<GameWinTestCase, "winningMove" | "expectedWinningMoves" | "gameWinConditionUnderTest">
+type GameContinuesTestCase = Omit<GameWinTestCase, "winningMove" | "expectedWinningMoves">
 
 function createParticipants(count: number): readonly Participant[] {
 	return Array.from({ length: count }).map(() => new Participant())
 }
+
+const [p1, p2] = createParticipants(2)
 
 const anyLastMove: Move = {
 	mover: new Participant(),
 	placement: { x: 0, y: 0 },
 }
 
-const [p1, p2] = createParticipants(2)
+const allTheNonWinningTestCases: GameContinuesTestCase[] = [
+	...diagonalNonWinningTestCases,
+	...horizontalNonWinTestCases,
+	...vertialNonWinningTestCases,
+]
 
-describe("Winning a game horizontally", () => {
-	const p1WinsTestCases: Omit<GameWinTestCase, "expectedWinningMoves" | "gameWinConditionUnderTest">[] = [
-		{
-			board: [
-				[p1, p1, p1, ""],
-				[p2, p2, "", ""],
-				["", "", "", ""],
-				["", "", "", ""],
-			],
-			consecutiveTarget: 3,
-			winningMove: { mover: p1, placement: { x: 3, y: 0 } },
-		},
-
-		{
-			board: [
-				["", p1, p1, p1],
-				["", p2, p2, ""],
-				["", "", "", ""],
-				["", "", "", ""],
-			],
-			consecutiveTarget: 3,
-			winningMove: { mover: p1, placement: { x: 4, y: 0 } },
-		},
-
-		{
-			board: [
-				["", "", "", ""],
-				["", p2, p2, ""],
-				["", "", "", ""],
-				[p1, p1, p1, ""],
-			],
-			consecutiveTarget: 3,
-			winningMove: { mover: p1, placement: { x: 2, y: 2 } },
-		},
-
-		{
-			board: [
-				["", "", "", ""],
-				["", p2, p2, ""],
-				["", "", "", ""],
-				["", p1, p1, p1],
-			],
-			consecutiveTarget: 3,
-			winningMove: { mover: p1, placement: { x: 3, y: 3 } },
-		},
-
-		{
-			board: [
-				["", "", "", ""],
-				["", p2, p2, ""],
-				["", "", "", ""],
-				[p1, p1, p1, p1],
-			],
-			consecutiveTarget: 3,
-			winningMove: { mover: p1, placement: { x: 2, y: 3 } },
-		},
-
-		{
-			board: [
-				["", "", "", ""],
-				["", p2, p2, ""],
-				["", "", "", ""],
-				[p1, p1, p1, p1],
-			],
-			consecutiveTarget: 4,
-			winningMove: { mover: p1, placement: { x: 0, y: 3 } },
-		},
-	]
-
-	test.each(p1WinsTestCases)(
-		"Is triggered when player one wins with board %#",
-		({ board, consecutiveTarget, winningMove }) => {
-			const { result: type } = winByConsecutiveHorizontalPlacements(
-				winningMove,
-				{
-					moves: createMoves(board),
-					participants: [p1, p2],
-				},
-				{
-					boardSize: 3,
-					consecutiveTarget: consecutiveTarget,
-				}
-			)
-
-			expect(type).toEqual("win")
-		}
-	)
-})
-
-describe("Winning a game vertically", () => {
-	it("Returns a win", () => {
-		const result = winByConsecutiveVerticalPlacements(
-			{ mover: p1, placement: { x: 0, y: 3 } },
-			{
-				moves: createMoves([
-					[p1, "", "", ""],
-					[p1, "", "", ""],
-					[p1, "", "", ""],
-					[p1, "", "", ""],
-				]),
-				participants: [p1, p2],
-			},
-			{
-				boardSize: 4,
-				consecutiveTarget: 4,
-			}
-		)
-
-		expect((result as GameWin).result).toEqual("win")
-	})
-
-	it("Returns the correct winning sequence", () => {
-		const result = winByConsecutiveVerticalPlacements(
-			{ mover: p2, placement: { x: 0, y: 3 } },
-			{
-				moves: createMoves([
-					[p2, "", "", ""],
-					[p2, "", "", ""],
-					[p2, "", "", ""],
-					[p2, "", "", ""],
-				]),
-				participants: [p1, p2],
-			},
-			{
-				boardSize: 4,
-				consecutiveTarget: 4,
-			}
-		)
-
-		expect((result as GameWin).winningMoves).toEqual([
-			{ mover: p2, placement: { x: 0, y: 0 } },
-			{ mover: p2, placement: { x: 0, y: 1 } },
-			{ mover: p2, placement: { x: 0, y: 2 } },
-			{ mover: p2, placement: { x: 0, y: 3 } },
-		])
-	})
-
-	it("Returns the correct winning sequence 2", () => {
-		const result = winByConsecutiveVerticalPlacements(
-			{ mover: p1, placement: { x: 1, y: 2 } },
-			{
-				moves: createMoves([
-					["", "", "", ""],
-					["", p1, "", ""],
-					["", p1, "", ""],
-					["", "", "", ""],
-				]),
-				participants: [p1, p2],
-			},
-			{
-				boardSize: 4,
-				consecutiveTarget: 2,
-			}
-		)
-
-		expect((result as GameWin).winningMoves).toEqual([
-			{ mover: p1, placement: { x: 1, y: 1 } },
-			{ mover: p1, placement: { x: 1, y: 2 } },
-		])
-	})
-})
-
-describe("Non-winning scenarios do not trigger a win", () => {
-	const nonWinningTestCases: GameContinuesTestCase[] = [
-		{
-			board: [
-				[p1, p1, p1, p1],
-				[p2, p2, p2, ""],
-				["", "", "", ""],
-				["", "", "", ""],
-			],
-			consecutiveTarget: 5,
-		},
-
-		{
-			board: [
-				["", "", "", ""],
-				["", p2, p2, p2],
-				["", "", "", ""],
-				[p1, p1, p1, p1],
-			],
-			consecutiveTarget: 5,
-		},
-		{
-			board: [
-				["", "", "", ""],
-				["", p2, "", ""],
-				["", "", "", ""],
-				["", p1, "", ""],
-			],
-			consecutiveTarget: 2,
-		},
-	]
-
-	test.each(nonWinningTestCases)("With the board %a", ({ board, consecutiveTarget }) => {
-		const { result } = winByConsecutiveHorizontalPlacements(
+test.each(allTheNonWinningTestCases)(
+	"Checking the rule '$gameWinConditionUnderTest' with any last move returns continues (test case %#)",
+	({ board, consecutiveTarget, gameWinConditionUnderTest, participants }) => {
+		const { result } = gameWinConditionUnderTest(
 			anyLastMove,
 			{
 				moves: createMoves(board),
-				participants: [p1, p2],
+				participants: participants,
 			},
 			{
 				boardSize: 5,
@@ -240,276 +46,116 @@ describe("Non-winning scenarios do not trigger a win", () => {
 		)
 
 		expect(result).toBe("continues")
-	})
-})
+	}
+)
 
-describe("Non-winning diagonal scenarios do not trigger a win", () => {
-	const nonWinningTestCases: GameContinuesTestCase[] = [
-		{
-			board: [
-				["", "", "", ""],
-				["", "", "", ""],
-				["", "", "", ""],
-				["", "", "", ""],
-			],
-			consecutiveTarget: 5,
-		},
+const allTheWinTestCases = [...horizontalWinTestCases] //, ...diagonalWinTestCases, ...verticalWinTestCases]
 
-		{
-			board: [
-				[p1, "", "", ""],
-				["", p1, p2, p2],
-				["", "", "", ""],
-				[p1, p1, p1, p1],
-			],
-			consecutiveTarget: 3,
-		},
-		{
-			board: [
-				["", "", "", p1],
-				["", p2, p1, ""],
-				["", p1, "", ""],
-				[p1, p1, "", ""],
-			],
-			consecutiveTarget: 5,
-		},
-		{
-			board: [
-				[p1, "", "", p1],
-				["", p1, p1, ""],
-				["", p1, p1, ""],
-				[p1, p1, "", p1],
-			],
-			consecutiveTarget: 5,
-		},
-	]
-
-	test.each(nonWinningTestCases)("With the board %a", ({ board, consecutiveTarget }) => {
-		const { result } = winByConsecutiveDiagonalPlacements(
-			anyLastMove,
+test.each(allTheWinTestCases)(
+	"Checking the rule '$gameWinConditionUnderTest' with the last move '($winningMove.placement.x, $winningMove.placement.y)' returns a win (test case %#)",
+	({ board, consecutiveTarget, winningMove, gameWinConditionUnderTest, participants }) => {
+		const { result: type } = gameWinConditionUnderTest(
+			winningMove,
 			{
 				moves: createMoves(board),
-				participants: [p1, p2],
+				participants,
 			},
 			{
-				boardSize: 5,
+				boardSize: 4,
 				consecutiveTarget: consecutiveTarget,
 			}
 		)
 
-		expect(result).toBe("continues")
-	})
-})
+		expect(type).toEqual("win")
+	}
+)
 
-describe("Winning a game diagnoally", () => {
-	const diagonalWinTestCases: GameWinTestCase[] = [
-		{
-			gameWinConditionUnderTest: winByConsecutiveDiagonalPlacements,
-			board: [
-				[p1, p1, p2, ""],
-				[p2, p1, "", ""],
-				["", "", p1, ""],
-				["", "", "", ""],
-			],
-			consecutiveTarget: 3,
-			winningMove: { mover: p1, placement: { x: 2, y: 2 } },
-			expectedWinningMoves: [
-				{ mover: p2, placement: { x: 0, y: 0 } },
-				{ mover: p2, placement: { x: 1, y: 1 } },
-				{ mover: p2, placement: { x: 2, y: 2 } },
-			],
-		},
-		{
-			gameWinConditionUnderTest: winByConsecutiveDiagonalPlacements,
-			board: [
-				["", p1, p1, p1],
-				["", p1, p2, ""],
-				[p2, "", "", ""],
-				["", p1, "", ""],
-			],
-			consecutiveTarget: 2,
-			winningMove: { mover: p1, placement: { x: 1, y: 1 } },
-			expectedWinningMoves: [
-				{ mover: p1, placement: { x: 1, y: 1 } },
-				{ mover: p1, placement: { x: 2, y: 0 } },
-			],
-		},
+test.each(allTheWinTestCases)(
+	"Checking the rule '$gameWinConditionUnderTest' with the last move '($winningMove.placement.x, $winningMove.placement.y)' returns the correct number of winning moves (test case %#)",
+	({ board, consecutiveTarget, winningMove, gameWinConditionUnderTest, participants }) => {
+		const result = gameWinConditionUnderTest(
+			winningMove,
+			{
+				moves: createMoves(board),
+				participants,
+			},
+			{
+				boardSize: 4,
+				consecutiveTarget: consecutiveTarget,
+			}
+		)
 
-		{
-			gameWinConditionUnderTest: winByConsecutiveDiagonalPlacements,
-			board: [
-				["", "", "", p1],
-				["", p2, p1, ""],
-				["", p1, "", ""],
-				[p1, p1, p2, ""],
-			],
-			consecutiveTarget: 4,
-			winningMove: { mover: p1, placement: { x: 0, y: 3 } },
-			expectedWinningMoves: [
-				{ mover: p1, placement: { x: 3, y: 0 } },
-				{ mover: p1, placement: { x: 2, y: 1 } },
-				{ mover: p1, placement: { x: 1, y: 2 } },
-				{ mover: p1, placement: { x: 0, y: 3 } },
-			],
-		},
+		expect((result as GameWin).winningMoves).toHaveLength(consecutiveTarget)
+	}
+)
 
-		{
-			gameWinConditionUnderTest: winByConsecutiveDiagonalPlacements,
-			board: [
-				[p1, "", "", ""],
-				["", p1, p2, ""],
-				["", "", p1, ""],
-				["", p1, p1, p2],
-			],
-			consecutiveTarget: 3,
-			winningMove: { mover: p1, placement: { x: 0, y: 0 } },
-			expectedWinningMoves: [
-				{ mover: p1, placement: { x: 0, y: 0 } },
-				{ mover: p1, placement: { x: 1, y: 1 } },
-				{ mover: p1, placement: { x: 2, y: 2 } },
-			],
-		},
+test.each(allTheWinTestCases)(
+	"Checking the rule '$gameWinConditionUnderTest' with the last move '($winningMove.placement.x, $winningMove.placement.y)' returns the correct moves (test case %#)",
+	({ board, consecutiveTarget, winningMove, expectedWinningMoves, gameWinConditionUnderTest, participants }) => {
+		const result = gameWinConditionUnderTest(
+			winningMove,
+			{
+				moves: createMoves(board),
+				participants,
+			},
+			{
+				boardSize: 4,
+				consecutiveTarget: consecutiveTarget,
+			}
+		)
 
-		{
-			gameWinConditionUnderTest: winByConsecutiveDiagonalPlacements,
-			board: [
-				["", "", "", ""],
-				["", p2, p2, ""],
-				["", "", "", p2],
-				[p1, p1, p1, p1],
-			],
-			consecutiveTarget: 2,
-			winningMove: { mover: p2, placement: { x: 3, y: 2 } },
-			expectedWinningMoves: [
-				{ mover: p2, placement: { x: 2, y: 1 } },
-				{ mover: p2, placement: { x: 3, y: 2 } },
-			],
-		},
+		expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(expectedWinningMoves as Move[]))
+	}
+)
 
-		{
-			gameWinConditionUnderTest: winByConsecutiveDiagonalPlacements,
-			board: [
-				["", "", "", ""],
-				["", p2, p2, ""],
-				["", "", p2, ""],
-				[p1, p1, p1, p2],
-			],
-			consecutiveTarget: 3,
-			winningMove: { mover: p2, placement: { x: 2, y: 2 } },
-			expectedWinningMoves: [
-				{ mover: p2, placement: { x: 1, y: 1 } },
-				{ mover: p2, placement: { x: 2, y: 2 } },
-				{ mover: p2, placement: { x: 3, y: 3 } },
-			],
-		},
+it("Even if the moves aren't ordered wins are still reported correctly nw-se", () => {
+	const winningMoves = [
+		{ mover: p1, placement: { x: 0, y: 0 } },
+		{ mover: p1, placement: { x: 2, y: 2 } },
+		{ mover: p1, placement: { x: 1, y: 1 } },
+		{ mover: p1, placement: { x: 3, y: 3 } },
 	]
 
-	it.each(diagonalWinTestCases)(
-		"Is triggered when player one wins with board %#",
-		({ board, consecutiveTarget, winningMove, gameWinConditionUnderTest }) => {
-			const { result: type } = gameWinConditionUnderTest(
-				winningMove,
-				{
-					moves: createMoves(board),
-					participants: [p1, p2],
-				},
-				{
-					boardSize: 4,
-					consecutiveTarget: consecutiveTarget,
-				}
-			)
-
-			expect(type).toEqual("win")
+	const result = winByConsecutiveDiagonalPlacements(
+		{
+			mover: p1,
+			placement: { x: 0, y: 0 },
+		},
+		{
+			moves: winningMoves,
+			participants: [p1, p2],
+		},
+		{
+			boardSize: 4,
+			consecutiveTarget: 4,
 		}
 	)
 
-	it.each(diagonalWinTestCases)(
-		"Returns the correct count of winning moves with board %#",
-		({ board, consecutiveTarget, winningMove, gameWinConditionUnderTest }) => {
-			const result = gameWinConditionUnderTest(
-				winningMove,
-				{
-					moves: createMoves(board),
-					participants: [p1, p2],
-				},
-				{
-					boardSize: 4,
-					consecutiveTarget: consecutiveTarget,
-				}
-			)
+	expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(winningMoves as Move[]))
+})
 
-			expect((result as GameWin).winningMoves).toHaveLength(consecutiveTarget)
+it("Even if the moves aren't ordered wins are still reported correctly sw-ne", () => {
+	const winningMoves = [
+		{ mover: p2, placement: { x: 0, y: 3 } },
+		{ mover: p2, placement: { x: 2, y: 1 } },
+		{ mover: p2, placement: { x: 1, y: 2 } },
+		{ mover: p2, placement: { x: 3, y: 0 } },
+	]
+
+	const result = winByConsecutiveDiagonalPlacements(
+		{
+			mover: p2,
+			placement: { x: 1, y: 2 },
+		},
+		{
+			moves: winningMoves,
+			participants: [p1, p2],
+		},
+		{
+			boardSize: 4,
+			consecutiveTarget: 4,
 		}
 	)
 
-	it.each(diagonalWinTestCases)(
-		"Returns the correct winning moves in board %#",
-		({ board, consecutiveTarget, winningMove, expectedWinningMoves, gameWinConditionUnderTest }) => {
-			const result = winByConsecutiveDiagonalPlacements(
-				winningMove,
-				{
-					moves: createMoves(board),
-					participants: [p1, p2],
-				},
-				{
-					boardSize: 4,
-					consecutiveTarget: consecutiveTarget,
-				}
-			)
-
-			expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(expectedWinningMoves as Move[]))
-		}
-	)
-
-	it("Even if the moves aren't ordered wins are still reported correctly nw-se", () => {
-		const winningMoves = [
-			{ mover: p1, placement: { x: 0, y: 0 } },
-			{ mover: p1, placement: { x: 2, y: 2 } },
-			{ mover: p1, placement: { x: 1, y: 1 } },
-			{ mover: p1, placement: { x: 3, y: 3 } },
-		]
-
-		const result = winByConsecutiveDiagonalPlacements(
-			{
-				mover: p1,
-				placement: { x: 0, y: 0 },
-			},
-			{
-				moves: winningMoves,
-				participants: [p1, p2],
-			},
-			{
-				boardSize: 4,
-				consecutiveTarget: 4,
-			}
-		)
-
-		expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(winningMoves as Move[]))
-	})
-
-	it("Even if the moves aren't ordered wins are still reported correctly sw-ne", () => {
-		const winningMoves = [
-			{ mover: p2, placement: { x: 0, y: 3 } },
-			{ mover: p2, placement: { x: 2, y: 1 } },
-			{ mover: p2, placement: { x: 1, y: 2 } },
-			{ mover: p2, placement: { x: 3, y: 0 } },
-		]
-
-		const result = winByConsecutiveDiagonalPlacements(
-			{
-				mover: p2,
-				placement: { x: 1, y: 2 },
-			},
-			{
-				moves: winningMoves,
-				participants: [p1, p2],
-			},
-			{
-				boardSize: 4,
-				consecutiveTarget: 4,
-			}
-		)
-
-		expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(winningMoves as Move[]))
-	})
+	expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(winningMoves as Move[]))
 })
