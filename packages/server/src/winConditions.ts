@@ -106,7 +106,6 @@ export const winByConsecutiveDiagonalPlacements: GameWinCondition = (
 	gameState: GameState,
 	gameConfiguration: GameConfiguration
 ) => {
-	// TODO there needs to be sorts in here
 	// So write some test cases that cover that scenario
 	// Rotate all coordinates 45 degrees about the origin
 	// using (x, y) -> (x + y, y - x)
@@ -127,7 +126,10 @@ export const winByConsecutiveDiagonalPlacements: GameWinCondition = (
 	const allYs = rotatedMoves.map(move => move.placement.y)
 
 	for (const yCoordinate of allYs) {
-		const currentRow = rotatedMoves.filter(placement => placement.placement.y === yCoordinate)
+		const currentRow = rotatedMoves
+			.filter(placement => placement.placement.y === yCoordinate)
+			.sort((move1, move2) => move1.placement.x - move2.placement.x)
+
 		if (currentRow.length < gameConfiguration.consecutiveTarget) continue
 		for (let movesChunk of overlappingChunks(currentRow, gameConfiguration.consecutiveTarget)) {
 			if (
@@ -154,7 +156,10 @@ export const winByConsecutiveDiagonalPlacements: GameWinCondition = (
 	const allXs = rotatedMoves.map(placement => placement.placement.x)
 
 	for (const xCoordinate of allXs) {
-		const currentColumn = rotatedMoves.filter(move => move.placement.x === xCoordinate)
+		const currentColumn = rotatedMoves
+			.filter(move => move.placement.x === xCoordinate)
+			.sort((move1, move2) => move1.placement.y - move2.placement.y)
+
 		if (currentColumn.length < gameConfiguration.consecutiveTarget) continue
 		for (let placementsChunk of overlappingChunks(currentColumn, gameConfiguration.consecutiveTarget)) {
 			if (

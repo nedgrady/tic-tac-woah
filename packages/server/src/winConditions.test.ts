@@ -8,8 +8,6 @@ import {
 	winByConsecutiveVerticalPlacements,
 } from "./winConditions"
 import { PlacementSpecification, createMoves } from "./gameTestHelpers"
-import Coordinates from "./Coordinates"
-import { faker } from "@faker-js/faker"
 import { winByConsecutiveDiagonalPlacements } from "./winConditions"
 
 interface TestCase {
@@ -305,7 +303,7 @@ describe("Non-winning diagonal scenarios do not trigger a win", () => {
 })
 
 describe("Winning a game diagnoally", () => {
-	const p1WinsTestCases: TestCase[] = [
+	const diagonalWinTestCases: TestCase[] = [
 		{
 			board: [
 				[p1, p1, p2, ""],
@@ -402,7 +400,7 @@ describe("Winning a game diagnoally", () => {
 		},
 	]
 
-	it.each(p1WinsTestCases)(
+	it.each(diagonalWinTestCases)(
 		"Is triggered when player one wins with board %#",
 		({ board, consecutiveTarget, winningMove }) => {
 			const { result: type } = winByConsecutiveDiagonalPlacements(
@@ -421,7 +419,7 @@ describe("Winning a game diagnoally", () => {
 		}
 	)
 
-	it.each(p1WinsTestCases)(
+	it.each(diagonalWinTestCases)(
 		"Returns the correct count of winning moves with board %#",
 		({ board, consecutiveTarget, winningMove, expectedWinningMoves }) => {
 			const result = winByConsecutiveDiagonalPlacements(
@@ -440,7 +438,7 @@ describe("Winning a game diagnoally", () => {
 		}
 	)
 
-	it.each(p1WinsTestCases)(
+	it.each(diagonalWinTestCases)(
 		"Returns the correct winning moves in board %#",
 		({ board, consecutiveTarget, winningMove, expectedWinningMoves }) => {
 			const result = winByConsecutiveDiagonalPlacements(
@@ -458,4 +456,56 @@ describe("Winning a game diagnoally", () => {
 			expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(expectedWinningMoves as Move[]))
 		}
 	)
+
+	it("Even if the moves aren't ordered wins are still reported correctly nw-se", () => {
+		const winningMoves = [
+			{ mover: p1, placement: { x: 0, y: 0 } },
+			{ mover: p1, placement: { x: 2, y: 2 } },
+			{ mover: p1, placement: { x: 1, y: 1 } },
+			{ mover: p1, placement: { x: 3, y: 3 } },
+		]
+
+		const result = winByConsecutiveDiagonalPlacements(
+			{
+				mover: p1,
+				placement: { x: 0, y: 0 },
+			},
+			{
+				moves: winningMoves,
+				participants: [p1, p2],
+			},
+			{
+				boardSize: 4,
+				consecutiveTarget: 4,
+			}
+		)
+
+		expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(winningMoves as Move[]))
+	})
+
+	it("Even if the moves aren't ordered wins are still reported correctly sw-ne", () => {
+		const winningMoves = [
+			{ mover: p2, placement: { x: 0, y: 3 } },
+			{ mover: p2, placement: { x: 2, y: 1 } },
+			{ mover: p2, placement: { x: 1, y: 2 } },
+			{ mover: p2, placement: { x: 3, y: 0 } },
+		]
+
+		const result = winByConsecutiveDiagonalPlacements(
+			{
+				mover: p2,
+				placement: { x: 1, y: 2 },
+			},
+			{
+				moves: winningMoves,
+				participants: [p1, p2],
+			},
+			{
+				boardSize: 4,
+				consecutiveTarget: 4,
+			}
+		)
+
+		expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(winningMoves as Move[]))
+	})
 })
