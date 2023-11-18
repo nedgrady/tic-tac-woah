@@ -13,9 +13,10 @@ import { faker } from "@faker-js/faker"
 import { winByConsecutiveDiagonalPlacements } from "./winConditions"
 
 interface TestCase {
-	board: PlacementSpecification
-	consecutiveTarget: number
-	winningMove: Move
+	readonly board: PlacementSpecification
+	readonly consecutiveTarget: number
+	readonly winningMove: Move
+	readonly expectedWinningMoves: readonly Move[]
 }
 
 function createParticipants(count: number): readonly Participant[] {
@@ -35,7 +36,7 @@ function ensureWin(winCondition: GameWinConditionResult): winCondition is GameWi
 }
 
 describe("Winning a game horizontally", () => {
-	const p1WinsTestCases: TestCase[] = [
+	const p1WinsTestCases: Omit<TestCase, "expectedWinningMoves">[] = [
 		{
 			board: [
 				[p1, p1, p1, ""],
@@ -197,7 +198,7 @@ describe("Winning a game vertically", () => {
 })
 
 describe("Non-winning scenarios do not trigger a win", () => {
-	const nonWinningTestCases: Omit<TestCase, "winningMove">[] = [
+	const nonWinningTestCases: Omit<TestCase, "winningMove" | "expectedWinningMoves">[] = [
 		{
 			board: [
 				[p1, p1, p1, p1],
@@ -246,7 +247,7 @@ describe("Non-winning scenarios do not trigger a win", () => {
 })
 
 describe("Non-winning diagonal scenarios do not trigger a win", () => {
-	const nonWinningTestCases: Omit<TestCase, "winningMove">[] = [
+	const nonWinningTestCases: Omit<TestCase, "winningMove" | "expectedWinningMoves">[] = [
 		{
 			board: [
 				["", "", "", ""],
@@ -314,6 +315,11 @@ describe("Winning a game diagnoally", () => {
 			],
 			consecutiveTarget: 3,
 			winningMove: { mover: p1, placement: { x: 2, y: 2 } },
+			expectedWinningMoves: [
+				{ mover: p2, placement: { x: 0, y: 0 } },
+				{ mover: p2, placement: { x: 1, y: 1 } },
+				{ mover: p2, placement: { x: 2, y: 2 } },
+			],
 		},
 
 		{
@@ -325,6 +331,10 @@ describe("Winning a game diagnoally", () => {
 			],
 			consecutiveTarget: 2,
 			winningMove: { mover: p1, placement: { x: 1, y: 1 } },
+			expectedWinningMoves: [
+				{ mover: p1, placement: { x: 1, y: 1 } },
+				{ mover: p1, placement: { x: 2, y: 0 } },
+			],
 		},
 
 		{
@@ -336,6 +346,12 @@ describe("Winning a game diagnoally", () => {
 			],
 			consecutiveTarget: 4,
 			winningMove: { mover: p1, placement: { x: 0, y: 3 } },
+			expectedWinningMoves: [
+				{ mover: p1, placement: { x: 3, y: 0 } },
+				{ mover: p1, placement: { x: 2, y: 1 } },
+				{ mover: p1, placement: { x: 1, y: 2 } },
+				{ mover: p1, placement: { x: 0, y: 3 } },
+			],
 		},
 
 		{
@@ -343,10 +359,15 @@ describe("Winning a game diagnoally", () => {
 				[p1, "", "", ""],
 				["", p1, p2, ""],
 				["", "", p1, ""],
-				["", p1, p1, p1],
+				["", p1, p1, p2],
 			],
 			consecutiveTarget: 3,
 			winningMove: { mover: p1, placement: { x: 0, y: 0 } },
+			expectedWinningMoves: [
+				{ mover: p1, placement: { x: 0, y: 0 } },
+				{ mover: p1, placement: { x: 1, y: 1 } },
+				{ mover: p1, placement: { x: 2, y: 2 } },
+			],
 		},
 
 		{
@@ -358,6 +379,10 @@ describe("Winning a game diagnoally", () => {
 			],
 			consecutiveTarget: 2,
 			winningMove: { mover: p2, placement: { x: 3, y: 2 } },
+			expectedWinningMoves: [
+				{ mover: p2, placement: { x: 2, y: 1 } },
+				{ mover: p2, placement: { x: 3, y: 2 } },
+			],
 		},
 
 		{
@@ -369,10 +394,15 @@ describe("Winning a game diagnoally", () => {
 			],
 			consecutiveTarget: 3,
 			winningMove: { mover: p2, placement: { x: 2, y: 2 } },
+			expectedWinningMoves: [
+				{ mover: p2, placement: { x: 1, y: 1 } },
+				{ mover: p2, placement: { x: 2, y: 2 } },
+				{ mover: p2, placement: { x: 3, y: 3 } },
+			],
 		},
 	]
 
-	test.each(p1WinsTestCases)(
+	it.each(p1WinsTestCases)(
 		"Is triggered when player one wins with board %#",
 		({ board, consecutiveTarget, winningMove }) => {
 			const { result: type } = winByConsecutiveDiagonalPlacements(
@@ -391,97 +421,41 @@ describe("Winning a game diagnoally", () => {
 		}
 	)
 
-	const northWestToSouthEastWinningMoves = [
-		{ mover: p2, placement: { x: 0, y: 0 } },
-		{ mover: p2, placement: { x: 1, y: 1 } },
-		{ mover: p2, placement: { x: 2, y: 2 } },
-	]
+	it.each(p1WinsTestCases)(
+		"Returns the correct count of winning moves with board %#",
+		({ board, consecutiveTarget, winningMove, expectedWinningMoves }) => {
+			const result = winByConsecutiveDiagonalPlacements(
+				winningMove,
+				{
+					moves: createMoves(board),
+					participants: [p1, p2],
+				},
+				{
+					boardSize: 4,
+					consecutiveTarget: consecutiveTarget,
+				}
+			)
 
-	it("Returns the correct count of winning moves", () => {
-		const result = winByConsecutiveDiagonalPlacements(
-			{ mover: p2, placement: { x: 2, y: 2 } },
-			{
-				moves: createMoves([
-					[p2, "", "", ""],
-					[p2, p2, "", ""],
-					[p1, "", p2, ""],
-					[p1, "", "", ""],
-				]),
-				participants: [p1, p2],
-			},
-			{
-				boardSize: 4,
-				consecutiveTarget: 3,
-			}
-		)
+			expect((result as GameWin).winningMoves).toHaveLength(consecutiveTarget)
+		}
+	)
 
-		expect((result as GameWin).winningMoves).toHaveLength(3)
-	})
+	it.each(p1WinsTestCases)(
+		"Returns the correct winning moves in board %#",
+		({ board, consecutiveTarget, winningMove, expectedWinningMoves }) => {
+			const result = winByConsecutiveDiagonalPlacements(
+				winningMove,
+				{
+					moves: createMoves(board),
+					participants: [p1, p2],
+				},
+				{
+					boardSize: 4,
+					consecutiveTarget: consecutiveTarget,
+				}
+			)
 
-	it.each(northWestToSouthEastWinningMoves)("Returns the move %o in the winning moves", winningMove => {
-		const result = winByConsecutiveDiagonalPlacements(
-			{ mover: p2, placement: { x: 2, y: 2 } },
-			{
-				moves: createMoves([
-					[p2, "", "", ""],
-					[p2, p2, "", ""],
-					[p1, "", p2, ""],
-					[p1, "", "", ""],
-				]),
-				participants: [p1, p2],
-			},
-			{
-				boardSize: 4,
-				consecutiveTarget: 3,
-			}
-		)
-		expect((result as GameWin).winningMoves).toContainEqual(winningMove)
-	})
-
-	const northWestToSouthEastWinningMoves2 = [
-		{ mover: p2, placement: { x: 2, y: 3 } },
-		{ mover: p2, placement: { x: 1, y: 2 } },
-		{ mover: p2, placement: { x: 0, y: 1 } },
-	]
-
-	it("Returns the correct count of winning moves 2", () => {
-		const result = winByConsecutiveDiagonalPlacements(
-			{ mover: p2, placement: { x: 0, y: 1 } },
-			{
-				moves: createMoves([
-					[p2, "", "", ""],
-					[p2, p1, "", ""],
-					[p1, p2, "", ""],
-					[p1, "", p2, ""],
-				]),
-				participants: [p1, p2],
-			},
-			{
-				boardSize: 4,
-				consecutiveTarget: 3,
-			}
-		)
-
-		expect((result as GameWin).winningMoves).toHaveLength(3)
-	})
-
-	it.each(northWestToSouthEastWinningMoves2)("Returns the move %o in the winning moves", winningMove => {
-		const result = winByConsecutiveDiagonalPlacements(
-			{ mover: p2, placement: { x: 2, y: 2 } },
-			{
-				moves: createMoves([
-					[p2, "", "", ""],
-					[p2, p1, "", ""],
-					[p1, p2, "", ""],
-					[p1, "", p2, ""],
-				]),
-				participants: [p1, p2],
-			},
-			{
-				boardSize: 4,
-				consecutiveTarget: 3,
-			}
-		)
-		expect((result as GameWin).winningMoves).toContainEqual(winningMove)
-	})
+			expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(expectedWinningMoves as Move[]))
+		}
+	)
 })

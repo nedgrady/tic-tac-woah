@@ -163,14 +163,13 @@ export const winByConsecutiveDiagonalPlacements: GameWinCondition = (
 			) {
 				return {
 					result: "win",
-					winningMoves: [],
-					// winningMoves: placementsChunk.map(winningMove => ({
-					// 	mover: latestMove.mover,
-					// 	placement: {
-					// 		x: (winningMove.placement.x - winningMove.placement.y) / 2,
-					// 		y: (winningMove.placement.x + winningMove.placement.y) / 2,
-					// 	},
-					// })),
+					winningMoves: placementsChunk.map(winningMove => ({
+						mover: latestMove.mover,
+						placement: {
+							x: (winningMove.placement.x - winningMove.placement.y) / 2,
+							y: (winningMove.placement.x + winningMove.placement.y) / 2,
+						},
+					})),
 				}
 			}
 		}
