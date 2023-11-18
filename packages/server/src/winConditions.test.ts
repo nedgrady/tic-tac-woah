@@ -3,6 +3,7 @@ import { Move } from "./Move"
 import { Participant } from "./Participant"
 import {
 	GameWin,
+	GameWinCondition,
 	GameWinConditionResult,
 	winByConsecutiveHorizontalPlacements,
 	winByConsecutiveVerticalPlacements,
@@ -10,12 +11,15 @@ import {
 import { PlacementSpecification, createMoves } from "./gameTestHelpers"
 import { winByConsecutiveDiagonalPlacements } from "./winConditions"
 
-interface TestCase {
+interface GameWinTestCase {
 	readonly board: PlacementSpecification
 	readonly consecutiveTarget: number
 	readonly winningMove: Move
 	readonly expectedWinningMoves: readonly Move[]
+	readonly gameWinConditionUnderTest: GameWinCondition
 }
+
+type GameContinuesTestCase = Omit<GameWinTestCase, "winningMove" | "expectedWinningMoves" | "gameWinConditionUnderTest">
 
 function createParticipants(count: number): readonly Participant[] {
 	return Array.from({ length: count }).map(() => new Participant())
@@ -28,13 +32,8 @@ const anyLastMove: Move = {
 
 const [p1, p2] = createParticipants(2)
 
-function ensureWin(winCondition: GameWinConditionResult): winCondition is GameWin {
-	expect(winCondition.result).toBe("win")
-	return (winCondition as GameWin).result === "win"
-}
-
 describe("Winning a game horizontally", () => {
-	const p1WinsTestCases: Omit<TestCase, "expectedWinningMoves">[] = [
+	const p1WinsTestCases: Omit<GameWinTestCase, "expectedWinningMoves" | "gameWinConditionUnderTest">[] = [
 		{
 			board: [
 				[p1, p1, p1, ""],
@@ -196,7 +195,7 @@ describe("Winning a game vertically", () => {
 })
 
 describe("Non-winning scenarios do not trigger a win", () => {
-	const nonWinningTestCases: Omit<TestCase, "winningMove" | "expectedWinningMoves">[] = [
+	const nonWinningTestCases: GameContinuesTestCase[] = [
 		{
 			board: [
 				[p1, p1, p1, p1],
@@ -245,7 +244,7 @@ describe("Non-winning scenarios do not trigger a win", () => {
 })
 
 describe("Non-winning diagonal scenarios do not trigger a win", () => {
-	const nonWinningTestCases: Omit<TestCase, "winningMove" | "expectedWinningMoves">[] = [
+	const nonWinningTestCases: GameContinuesTestCase[] = [
 		{
 			board: [
 				["", "", "", ""],
@@ -303,8 +302,9 @@ describe("Non-winning diagonal scenarios do not trigger a win", () => {
 })
 
 describe("Winning a game diagnoally", () => {
-	const diagonalWinTestCases: TestCase[] = [
+	const diagonalWinTestCases: GameWinTestCase[] = [
 		{
+			gameWinConditionUnderTest: winByConsecutiveDiagonalPlacements,
 			board: [
 				[p1, p1, p2, ""],
 				[p2, p1, "", ""],
@@ -319,8 +319,8 @@ describe("Winning a game diagnoally", () => {
 				{ mover: p2, placement: { x: 2, y: 2 } },
 			],
 		},
-
 		{
+			gameWinConditionUnderTest: winByConsecutiveDiagonalPlacements,
 			board: [
 				["", p1, p1, p1],
 				["", p1, p2, ""],
@@ -336,6 +336,7 @@ describe("Winning a game diagnoally", () => {
 		},
 
 		{
+			gameWinConditionUnderTest: winByConsecutiveDiagonalPlacements,
 			board: [
 				["", "", "", p1],
 				["", p2, p1, ""],
@@ -353,6 +354,7 @@ describe("Winning a game diagnoally", () => {
 		},
 
 		{
+			gameWinConditionUnderTest: winByConsecutiveDiagonalPlacements,
 			board: [
 				[p1, "", "", ""],
 				["", p1, p2, ""],
@@ -369,6 +371,7 @@ describe("Winning a game diagnoally", () => {
 		},
 
 		{
+			gameWinConditionUnderTest: winByConsecutiveDiagonalPlacements,
 			board: [
 				["", "", "", ""],
 				["", p2, p2, ""],
@@ -384,6 +387,7 @@ describe("Winning a game diagnoally", () => {
 		},
 
 		{
+			gameWinConditionUnderTest: winByConsecutiveDiagonalPlacements,
 			board: [
 				["", "", "", ""],
 				["", p2, p2, ""],
@@ -402,8 +406,8 @@ describe("Winning a game diagnoally", () => {
 
 	it.each(diagonalWinTestCases)(
 		"Is triggered when player one wins with board %#",
-		({ board, consecutiveTarget, winningMove }) => {
-			const { result: type } = winByConsecutiveDiagonalPlacements(
+		({ board, consecutiveTarget, winningMove, gameWinConditionUnderTest }) => {
+			const { result: type } = gameWinConditionUnderTest(
 				winningMove,
 				{
 					moves: createMoves(board),
@@ -421,8 +425,8 @@ describe("Winning a game diagnoally", () => {
 
 	it.each(diagonalWinTestCases)(
 		"Returns the correct count of winning moves with board %#",
-		({ board, consecutiveTarget, winningMove, expectedWinningMoves }) => {
-			const result = winByConsecutiveDiagonalPlacements(
+		({ board, consecutiveTarget, winningMove, gameWinConditionUnderTest }) => {
+			const result = gameWinConditionUnderTest(
 				winningMove,
 				{
 					moves: createMoves(board),
@@ -440,7 +444,7 @@ describe("Winning a game diagnoally", () => {
 
 	it.each(diagonalWinTestCases)(
 		"Returns the correct winning moves in board %#",
-		({ board, consecutiveTarget, winningMove, expectedWinningMoves }) => {
+		({ board, consecutiveTarget, winningMove, expectedWinningMoves, gameWinConditionUnderTest }) => {
 			const result = winByConsecutiveDiagonalPlacements(
 				winningMove,
 				{
