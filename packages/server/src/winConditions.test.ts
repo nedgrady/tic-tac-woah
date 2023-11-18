@@ -3,14 +3,14 @@ import { Move } from "./Move"
 import { Participant } from "./Participant"
 import {
 	GameWin,
-	GameWinCondition,
 	GameWinConditionResult,
-	overlappingChunks,
 	winByConsecutiveHorizontalPlacements,
 	winByConsecutiveVerticalPlacements,
 } from "./winConditions"
 import { PlacementSpecification, createMoves } from "./gameTestHelpers"
-import { GameConfiguration, GameState } from "./gameRules"
+import Coordinates from "./Coordinates"
+import { faker } from "@faker-js/faker"
+import { winByConsecutiveDiagonalPlacements } from "./winConditions"
 
 interface TestCase {
 	board: PlacementSpecification
@@ -390,84 +390,98 @@ describe("Winning a game diagnoally", () => {
 			expect(type).toEqual("win")
 		}
 	)
-})
 
-const winByConsecutiveDiagonalPlacements: GameWinCondition = (
-	latestMove: Move,
-	gameState: GameState,
-	gameConfiguration: GameConfiguration
-) => {
-	// TODO there needs to be sorts in here
-	// So write some test cases that cover that scenario
+	const northWestToSouthEastWinningMoves = [
+		{ mover: p2, placement: { x: 0, y: 0 } },
+		{ mover: p2, placement: { x: 1, y: 1 } },
+		{ mover: p2, placement: { x: 2, y: 2 } },
+	]
 
-	// Rotate all coordinates 45 degrees about the origin
-	// using (x, y) -> (x + y, y - x)
-	// to inverse use (x', y') -> ([x' - y'] / 2, [x' + y'] / 2])
-	// now we have the 'diagonals' nicely lined up in rows & columns :-)
-	const rotatedMoves = gameState.moves
-		.filter(move => move.mover === latestMove.mover)
-		.map(move => ({
-			...move,
-			placement: {
-				x: move.placement.x + move.placement.y,
-				y: move.placement.y - move.placement.x,
+	it("Returns the correct count of winning moves", () => {
+		const result = winByConsecutiveDiagonalPlacements(
+			{ mover: p2, placement: { x: 2, y: 2 } },
+			{
+				moves: createMoves([
+					[p2, "", "", ""],
+					[p2, p2, "", ""],
+					[p1, "", p2, ""],
+					[p1, "", "", ""],
+				]),
+				participants: [p1, p2],
 			},
-		}))
-
-	// Check the rows of the rotated coordinates, which in reality are NW -> SE diagonals
-	// But remember to step by 2 since we've rotated the grid
-	const allYs = rotatedMoves.map(move => move.placement.y)
-
-	for (const yCoordinate of allYs) {
-		const currentRow = rotatedMoves.filter(placement => placement.placement.y === yCoordinate)
-		if (currentRow.length < gameConfiguration.consecutiveTarget) continue
-		for (let movesChunk of overlappingChunks(currentRow, gameConfiguration.consecutiveTarget)) {
-			if (
-				movesChunk[movesChunk.length - 1].placement.x - movesChunk[0].placement.x ===
-				(gameConfiguration.consecutiveTarget - 1) * 2
-			) {
-				// Found a win, don't forget to rotate the coordinates back!
-				return {
-					result: "win",
-					winningMoves: [],
-					// winningMoves: movesChunk.map(winningMove => ({
-					// 	mover: latestMove.mover,
-					// 	placement: {
-					// 		x: (winningMove.placement.x - winningMove.placement.y) / 2,
-					// 		y: (winningMove.placement.x + winningMove.placement.y) / 2,
-					// 	},
-					// })),
-				}
+			{
+				boardSize: 4,
+				consecutiveTarget: 3,
 			}
-		}
-	}
+		)
 
-	// Check the columns of the rotated coordinates, which in reality are SW -> NEdiagonals
-	// But remember to step by 2 since we've rotated the grid
-	const allXs = rotatedMoves.map(placement => placement.placement.x)
+		expect((result as GameWin).winningMoves).toHaveLength(3)
+	})
 
-	for (const xCoordinate of allXs) {
-		const currentColumn = rotatedMoves.filter(move => move.placement.x === xCoordinate)
-		if (currentColumn.length < gameConfiguration.consecutiveTarget) continue
-		for (let placementsChunk of overlappingChunks(currentColumn, gameConfiguration.consecutiveTarget)) {
-			if (
-				placementsChunk[placementsChunk.length - 1].placement.y - placementsChunk[0].placement.y ===
-				(gameConfiguration.consecutiveTarget - 1) * 2
-			) {
-				return {
-					result: "win",
-					winningMoves: [],
-					// winningMoves: placementsChunk.map(winningMove => ({
-					// 	mover: latestMove.mover,
-					// 	placement: {
-					// 		x: (winningMove.placement.x - winningMove.placement.y) / 2,
-					// 		y: (winningMove.placement.x + winningMove.placement.y) / 2,
-					// 	},
-					// })),
-				}
+	it.each(northWestToSouthEastWinningMoves)("Returns the move %o in the winning moves", winningMove => {
+		const result = winByConsecutiveDiagonalPlacements(
+			{ mover: p2, placement: { x: 2, y: 2 } },
+			{
+				moves: createMoves([
+					[p2, "", "", ""],
+					[p2, p2, "", ""],
+					[p1, "", p2, ""],
+					[p1, "", "", ""],
+				]),
+				participants: [p1, p2],
+			},
+			{
+				boardSize: 4,
+				consecutiveTarget: 3,
 			}
-		}
-	}
+		)
+		expect((result as GameWin).winningMoves).toContainEqual(winningMove)
+	})
 
-	return { result: "continues" }
-}
+	const northWestToSouthEastWinningMoves2 = [
+		{ mover: p2, placement: { x: 2, y: 3 } },
+		{ mover: p2, placement: { x: 1, y: 2 } },
+		{ mover: p2, placement: { x: 0, y: 1 } },
+	]
+
+	it("Returns the correct count of winning moves 2", () => {
+		const result = winByConsecutiveDiagonalPlacements(
+			{ mover: p2, placement: { x: 0, y: 1 } },
+			{
+				moves: createMoves([
+					[p2, "", "", ""],
+					[p2, p1, "", ""],
+					[p1, p2, "", ""],
+					[p1, "", p2, ""],
+				]),
+				participants: [p1, p2],
+			},
+			{
+				boardSize: 4,
+				consecutiveTarget: 3,
+			}
+		)
+
+		expect((result as GameWin).winningMoves).toHaveLength(3)
+	})
+
+	it.each(northWestToSouthEastWinningMoves2)("Returns the move %o in the winning moves", winningMove => {
+		const result = winByConsecutiveDiagonalPlacements(
+			{ mover: p2, placement: { x: 2, y: 2 } },
+			{
+				moves: createMoves([
+					[p2, "", "", ""],
+					[p2, p1, "", ""],
+					[p1, p2, "", ""],
+					[p1, "", p2, ""],
+				]),
+				participants: [p1, p2],
+			},
+			{
+				boardSize: 4,
+				consecutiveTarget: 3,
+			}
+		)
+		expect((result as GameWin).winningMoves).toContainEqual(winningMove)
+	})
+})
