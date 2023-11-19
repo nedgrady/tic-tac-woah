@@ -127,7 +127,7 @@ app.get("/version", (_, response) => {
 app.get("/queue", async (_, response) => {
 	const sockets = await io.in("queue").fetchSockets()
 
-	const queueResponse: QueueResponse & { socketsDepth: number } = {
+	const queueResponse: QueueResponse & { socketsDepth: number; test?: string } = {
 		depth: queue.size,
 		socketsDepth: sockets.length,
 	}
