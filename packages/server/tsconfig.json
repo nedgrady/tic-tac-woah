@@ -10,7 +10,11 @@
 		"experimentalDecorators": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
-		"allowSyntheticDefaultImports": true
+		"allowSyntheticDefaultImports": true,
+		"baseUrl": "./src"
+		// "paths": {
+		// 	"@/*": ["./src"]
+		// }
 	},
 	"include": ["src"]
 }

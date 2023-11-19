@@ -1,10 +1,12 @@
-import { Participant } from "./Participant"
-import { GameContinuesTestCase, createParticipants } from "./domain/gameTestHelpers"
+import { createParticipants } from "domain/gameTestHelpers"
 import {
 	winByConsecutiveHorizontalPlacements,
 	winByConsecutiveDiagonalPlacements,
 	winByConsecutiveVerticalPlacements,
-} from "./domain/winConditions/winConditions"
+} from "./winConditions"
+import { GameWinTestCase } from "./winningGameTestCases"
+
+export type GameContinuesTestCase = Omit<GameWinTestCase, "winningMove" | "expectedWinningMoves">
 
 const [p1, p2] = createParticipants(2)
 

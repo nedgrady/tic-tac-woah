@@ -1,20 +1,8 @@
-import { Move } from "../Move"
-import { Participant } from "../Participant"
-import { GameWinCondition } from "./winConditions/winConditions"
+import { Move } from "./Move"
+import { Participant } from "./Participant"
 
 export type PlacementSpecification = (Participant | Empty)[][]
 export type Empty = ""
-
-export interface GameWinTestCase {
-	readonly board: PlacementSpecification
-	readonly consecutiveTarget: number
-	readonly winningMove: Move
-	readonly expectedWinningMoves: readonly Move[]
-	readonly gameWinConditionUnderTest: GameWinCondition
-	readonly participants: readonly Participant[]
-}
-
-export type GameContinuesTestCase = Omit<GameWinTestCase, "winningMove" | "expectedWinningMoves">
 
 export function createMoves(placementDefinitions: PlacementSpecification): readonly Move[] {
 	const moves: Move[] = []

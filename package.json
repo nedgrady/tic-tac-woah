@@ -23,6 +23,12 @@
 	],
 	"devDependencies": {
 		"@faker-js/faker": "^8.2.0",
-		"@types/lodash": "^4.14.201"
+		"@types/lodash": "^4.14.201",
+		"@typescript-eslint/eslint-plugin": "^6.11.0",
+		"@typescript-eslint/parser": "^6.11.0",
+		"eslint": "^8.54.0",
+		"eslint-import-resolver-typescript": "^3.6.1",
+		"eslint-plugin-import": "^2.29.0",
+		"eslint-plugin-react": "^7.33.2"
 	}
 }

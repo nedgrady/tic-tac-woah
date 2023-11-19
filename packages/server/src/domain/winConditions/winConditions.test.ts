@@ -1,21 +1,16 @@
-import { expect, it, test } from "vitest"
-import { Move } from "../../Move"
-import { Participant } from "../../Participant"
-import { GameWin } from "./winConditions"
-import { GameWinTestCase, createMoves } from "../gameTestHelpers"
-import { winByConsecutiveDiagonalPlacements } from "./winConditions"
+import { test, expect, it } from "vitest"
+
 import {
+	GameContinuesTestCase,
 	diagonalNonWinningTestCases,
 	horizontalNonWinTestCases,
 	vertialNonWinningTestCases,
-} from "../../continuingGameTestCases"
-import { horizontalWinTestCases } from "./winningGameTestCases"
-
-type GameContinuesTestCase = Omit<GameWinTestCase, "winningMove" | "expectedWinningMoves">
-
-function createParticipants(count: number): readonly Participant[] {
-	return Array.from({ length: count }).map(() => new Participant())
-}
+} from "./continuingGameTestCases"
+import { GameWin, winByConsecutiveDiagonalPlacements } from "./winConditions"
+import { horizontalWinTestCases, diagonalWinTestCases, verticalWinTestCases } from "./winningGameTestCases"
+import { Move } from "domain/Move"
+import { Participant } from "domain/Participant"
+import { createParticipants, createMoves } from "domain/gameTestHelpers"
 
 const [p1, p2] = createParticipants(2)
 
@@ -49,7 +44,7 @@ test.each(allTheNonWinningTestCases)(
 	}
 )
 
-const allTheWinTestCases = [...horizontalWinTestCases] //, ...diagonalWinTestCases, ...verticalWinTestCases]
+const allTheWinTestCases = [...horizontalWinTestCases, ...diagonalWinTestCases, ...verticalWinTestCases]
 
 test.each(allTheWinTestCases)(
 	"Checking the rule '$gameWinConditionUnderTest' with the last move '($winningMove.placement.x, $winningMove.placement.y)' returns a win (test case %#)",

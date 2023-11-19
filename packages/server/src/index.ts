@@ -4,15 +4,15 @@ import { createServer } from "http"
 import cors from "cors"
 import { Server, Socket } from "socket.io"
 import path from "path"
-import { Game } from "./Game"
-import { Participant } from "./Participant"
+
 import { instrument } from "@socket.io/admin-ui"
 import { CoordinatesDtoSchema, GameStartDto, MoveDto, QueueResponse } from "types"
-import { Move } from "./Move"
 import crypto from "crypto"
 import applicationInsights from "./logging/applicationInsights"
-import { standardRules } from "./gameRules"
-import { standardWinConditions } from "./domain/winConditions/winConditions"
+import { Game } from "domain/Game"
+import { Participant } from "domain/Participant"
+import { standardRules } from "domain/gameRules/gameRules"
+import { standardWinConditions } from "domain/winConditions/winConditions"
 
 interface ParticipantHandle {
 	readonly connection: Socket

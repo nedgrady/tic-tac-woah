@@ -1,6 +1,6 @@
+import { Move } from "domain/Move"
+import { GameConfiguration, GameState } from "domain/gameRules/gameRules"
 import _ from "lodash"
-import { Move } from "../../Move"
-import { GameState, GameConfiguration } from "../../gameRules"
 
 export type GameWinCondition = (
 	latestMove: Move,
@@ -20,7 +20,7 @@ export interface GameContinues {
 	readonly result: "continues"
 }
 
-const continueGame: GameWinConditionResult = { result: "continues" }
+export const continueGame: GameWinConditionResult = { result: "continues" }
 
 export const winByConsecutiveVerticalPlacements: GameWinCondition = (
 	latestMove: Move,
@@ -37,7 +37,7 @@ export const winByConsecutiveVerticalPlacements: GameWinCondition = (
 	for (const xCoordinate of allXs) {
 		const currentColumn = placementsByCurrentPlayer.filter(placement => placement.x === xCoordinate)
 		if (currentColumn.length < gameConfiguration.consecutiveTarget) continue
-		for (let placementsChunk of overlappingChunks(currentColumn, gameConfiguration.consecutiveTarget)) {
+		for (const placementsChunk of overlappingChunks(currentColumn, gameConfiguration.consecutiveTarget)) {
 			if (
 				placementsChunk[placementsChunk.length - 1].y - placementsChunk[0].y ===
 				gameConfiguration.consecutiveTarget - 1
@@ -58,7 +58,7 @@ export const winByConsecutiveHorizontalPlacements: GameWinCondition = (
 	gameState: GameState,
 	gameConfiguration: GameConfiguration
 ) => {
-	let placementsByCurrentPlayer = gameState.moves
+	const placementsByCurrentPlayer = gameState.moves
 		.filter(move => move.mover === latestMove.mover)
 		.sort((move1, move2) => move1.placement.x - move2.placement.x)
 		.map(move => move.placement)
@@ -68,7 +68,7 @@ export const winByConsecutiveHorizontalPlacements: GameWinCondition = (
 	for (const yCoordinate of allYs) {
 		const currentRow = placementsByCurrentPlayer.filter(placement => placement.y === yCoordinate)
 		if (currentRow.length < gameConfiguration.consecutiveTarget) continue
-		for (let placementsChunk of overlappingChunks(currentRow, gameConfiguration.consecutiveTarget)) {
+		for (const placementsChunk of overlappingChunks(currentRow, gameConfiguration.consecutiveTarget)) {
 			if (
 				placementsChunk[placementsChunk.length - 1].x - placementsChunk[0].x ===
 				gameConfiguration.consecutiveTarget - 1
@@ -131,7 +131,7 @@ export const winByConsecutiveDiagonalPlacements: GameWinCondition = (
 			.sort((move1, move2) => move1.placement.x - move2.placement.x)
 
 		if (currentRow.length < gameConfiguration.consecutiveTarget) continue
-		for (let movesChunk of overlappingChunks(currentRow, gameConfiguration.consecutiveTarget)) {
+		for (const movesChunk of overlappingChunks(currentRow, gameConfiguration.consecutiveTarget)) {
 			if (
 				movesChunk[movesChunk.length - 1].placement.x - movesChunk[0].placement.x ===
 				(gameConfiguration.consecutiveTarget - 1) * 2
@@ -161,7 +161,7 @@ export const winByConsecutiveDiagonalPlacements: GameWinCondition = (
 			.sort((move1, move2) => move1.placement.y - move2.placement.y)
 
 		if (currentColumn.length < gameConfiguration.consecutiveTarget) continue
-		for (let placementsChunk of overlappingChunks(currentColumn, gameConfiguration.consecutiveTarget)) {
+		for (const placementsChunk of overlappingChunks(currentColumn, gameConfiguration.consecutiveTarget)) {
 			if (
 				placementsChunk[placementsChunk.length - 1].placement.y - placementsChunk[0].placement.y ===
 				(gameConfiguration.consecutiveTarget - 1) * 2

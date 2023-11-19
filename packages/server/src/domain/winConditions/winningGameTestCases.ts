@@ -1,9 +1,21 @@
-import { GameWinTestCase, createParticipants } from "../gameTestHelpers"
+import { PlacementSpecification, createParticipants } from "domain/gameTestHelpers"
+import { Move } from "domain/Move"
+import { Participant } from "domain/Participant"
 import {
+	GameWinCondition,
 	winByConsecutiveDiagonalPlacements,
 	winByConsecutiveHorizontalPlacements,
 	winByConsecutiveVerticalPlacements,
 } from "./winConditions"
+
+export interface GameWinTestCase {
+	readonly board: PlacementSpecification
+	readonly consecutiveTarget: number
+	readonly winningMove: Move
+	readonly expectedWinningMoves: readonly Move[]
+	readonly gameWinConditionUnderTest: GameWinCondition
+	readonly participants: readonly Participant[]
+}
 
 /*
 Here is a 3x3 grid for your convenience

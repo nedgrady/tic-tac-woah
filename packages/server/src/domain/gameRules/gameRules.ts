@@ -1,5 +1,5 @@
-import { Move } from "./Move"
-import { Participant } from "./Participant"
+import { Move } from "domain/Move"
+import { Participant } from "domain/Participant"
 
 export type GameRuleFunction = (newMove: Move, gameState: GameState, gameConfiguration: GameConfiguration) => boolean
 
@@ -20,7 +20,7 @@ export interface GameState {
 
 export const moveMustBeWithinTheBoard: GameRuleFunction = (
 	newMove: Move,
-	gameState: GameState,
+	_gameState: GameState,
 	gameConfiguration: GameConfiguration
 ) => {
 	return (
@@ -34,7 +34,7 @@ export const moveMustBeWithinTheBoard: GameRuleFunction = (
 export const moveMustBeMadeByTheCorrectPlayer: GameRuleFunction = (
 	newMove: Move,
 	gameState: GameState,
-	gameConfiguration: GameConfiguration
+	_: GameConfiguration
 ) => {
 	return newMove.mover === gameState.participants[gameState.moves.length % gameState.participants.length]
 }
@@ -42,7 +42,7 @@ export const moveMustBeMadeByTheCorrectPlayer: GameRuleFunction = (
 export const moveMustBeMadeIntoAFreeSquare: GameRuleFunction = (
 	newMove: Move,
 	gameState: GameState,
-	gameConfiguration: GameConfiguration
+	_: GameConfiguration
 ) => {
 	return !gameState.moves.some(
 		existingMove =>

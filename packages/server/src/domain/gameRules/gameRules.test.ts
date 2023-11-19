@@ -1,0 +1,31 @@
+import { expect, test } from "vitest"
+
+import {
+	GameRuleTestCase,
+	moveOrderTestCases,
+	moveBoundsTestCases,
+	moveMustBeMadeIntoAFreeSquareTestCases,
+} from "./gameRuleTestCases"
+import { createMoves } from "domain/gameTestHelpers"
+
+export const moveRuleTestCases: readonly GameRuleTestCase[] = [
+	...moveOrderTestCases,
+	...moveBoundsTestCases,
+	...moveMustBeMadeIntoAFreeSquareTestCases,
+]
+
+test.each(moveRuleTestCases)(
+	"Testing rule '$rule' with move '$move' return $expectedRuleResult",
+	({ rule, move, board, participants, expectedRuleResult, boardSize }) => {
+		const isMoveAllowed = rule(
+			move,
+			{
+				moves: createMoves(board),
+				participants: participants,
+			},
+			{ boardSize: boardSize, consecutiveTarget: 3 }
+		)
+
+		expect(isMoveAllowed).toBe(expectedRuleResult)
+	}
+)
