@@ -26,6 +26,10 @@ function App() {
 			const move = MoveDtoSchema.parse(args)
 			dispatch(newMove(move))
 		})
+
+		return () => {
+			socket.off()
+		}
 	})
 
 	return (
