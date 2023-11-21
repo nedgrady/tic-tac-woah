@@ -42,7 +42,7 @@ export class Game {
 			participants: this.#participants,
 		}
 
-		for (let rule of this.#rules) {
+		for (const rule of this.#rules) {
 			if (!rule(newMove, gameState, gameConfiguration)) {
 				return
 			}
@@ -51,7 +51,7 @@ export class Game {
 		this.#movesReal.push(newMove)
 		this.#emitter.emit("Move", newMove)
 
-		for (let winCondition of this.#winConditions) {
+		for (const winCondition of this.#winConditions) {
 			const thing = winCondition(newMove, gameState, gameConfiguration)
 			if (thing.result === "win") {
 				this.#emitter.emit("Winning Move", thing.winningMoves)
@@ -73,6 +73,7 @@ export class Game {
 	) {
 		participants.forEach((participant, index) => {
 			participant.game = this
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			;(participant as any).idx = index
 		})
 		this.#participants = participants

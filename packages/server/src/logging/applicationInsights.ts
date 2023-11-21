@@ -19,7 +19,7 @@ applicationInsights.defaultClient.commonProperties = {
 	"tic-tac-woah.source": "default",
 }
 
-debug.log = (message: any, ...args: any[]) => {
+debug.log = (message: never, ...args: never[]) => {
 	console.log(message)
 	console.log(typeof message)
 	applicationInsights.defaultClient.trackTrace({
