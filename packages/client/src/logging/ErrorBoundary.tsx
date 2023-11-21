@@ -5,8 +5,8 @@ export interface ReactPropsWithChildren {
 	children: React.ReactElement
 }
 
-var reactPlugin = new ReactPlugin()
-var appInsights = new ApplicationInsights({
+const reactPlugin = new ReactPlugin()
+const appInsights = new ApplicationInsights({
 	config: {
 		instrumentationKey: "691cf8f7-d5ef-45df-a5ff-385d9429be4b",
 		extensions: [reactPlugin],

@@ -6,13 +6,13 @@ import { Server, Socket } from "socket.io"
 import path from "path"
 
 import { instrument } from "@socket.io/admin-ui"
-import { CoordinatesDtoSchema, GameStartDto, MoveDto, QueueResponse } from "types"
+import { CoordinatesDtoSchema, GameStartDto, GameWinDto, MoveDto, QueueResponse } from "types"
 import crypto from "crypto"
 import applicationInsights from "./logging/applicationInsights"
 import { Game } from "domain/Game"
 import { Participant } from "domain/Participant"
-import { standardRules } from "domain/gameRules/gameRules"
-import { standardWinConditions } from "domain/winConditions/winConditions"
+import { anyMoveIsAllowed, standardRules } from "domain/gameRules/gameRules"
+import { gameIsWonOnMoveNumber, standardWinConditions } from "domain/winConditions/winConditions"
 
 interface ParticipantHandle {
 	readonly connection: Socket
@@ -49,7 +49,7 @@ io.on("connection", async socket => {
 		socket.leave("queue")
 	})
 
-	if (queue.size === 3) {
+	if (queue.size === 1) {
 		const gameId = crypto.randomUUID()
 
 		console.log("Match made.")
@@ -61,7 +61,7 @@ io.on("connection", async socket => {
 
 		const participants = Object.freeze(players.map(player => player.participant))
 
-		const game = new Game(participants, 20, 5, standardRules, standardWinConditions)
+		const game = new Game(participants, 20, 5, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(3)])
 
 		game.onStart(() => {
 			players.forEach(player => {
@@ -92,6 +92,24 @@ io.on("connection", async socket => {
 			}
 
 			io.to(gameId).emit("move", moveDto)
+		})
+
+		game.onWin(winningMoves => {
+			const winningMovesDto: MoveDto[] = winningMoves.map(move => {
+				const mover = players.find(player => player.participant == move.mover)
+
+				if (!mover) throw new Error(`Could not locate mover ${move.mover}`)
+				return {
+					placement: move.placement,
+					mover: mover.connection.id,
+				}
+			})
+
+			const gameWinDto: GameWinDto = {
+				winningMoves: winningMovesDto,
+			}
+
+			io.to(gameId).emit("game win", gameWinDto)
 		})
 
 		game.start()

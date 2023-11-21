@@ -8,8 +8,6 @@ import { useTicTacWoahSocket } from "./ticTacWoahSocket"
 import { Play } from "./Play"
 import useSocketState from "./useSocketState"
 
-export type SocketState = "connected" | "disconnected" | "connecting"
-
 function App() {
 	const dispatch = useAppDispatch()
 	const theme = useAppTheme()
@@ -25,6 +23,10 @@ function App() {
 		socket.on("move", args => {
 			const move = MoveDtoSchema.parse(args)
 			dispatch(newMove(move))
+		})
+
+		socket.on("game win", args => {
+			console.log("game win", args)
 		})
 
 		return () => {

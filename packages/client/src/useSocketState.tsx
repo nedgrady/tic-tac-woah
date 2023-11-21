@@ -1,7 +1,8 @@
 import { useEffectOnce } from "react-use"
 import { Socket } from "socket.io-client"
 import { useState } from "react"
-import { SocketState } from "./App"
+
+export type SocketState = "connected" | "disconnected" | "connecting"
 
 export default function useSocketState(socket: Socket) {
 	const [socketState, setSocketState] = useState<SocketState>("disconnected")
