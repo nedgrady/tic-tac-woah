@@ -26,7 +26,6 @@ const FlexyGameContainer = styled.div`
 	flex-grow: 1;
 	max-height: 99dvh;
 `
-
 type Token = string
 const tokens: readonly Token[] = ["❌", "⭕", "🟥"]
 
@@ -57,7 +56,6 @@ export function Game() {
 	const limitingDimensionInPixels = Math.min(width, height)
 
 	const socket = useTicTacWoahSocket()
-	const socketState = useSocketState(socket)
 
 	useEffectOnce(() => {
 		socket.on("move", args => {
