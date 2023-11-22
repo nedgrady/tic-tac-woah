@@ -1,11 +1,15 @@
 import { useSelector } from "react-redux"
-import { Coordinate, Move, selectBoardState } from "../redux/gameSlice"
-import { useAppSelector } from "../redux/hooks"
+import { Coordinate, Move, newMove, selectBoardState } from "../redux/gameSlice"
+import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import React, { useState } from "react"
 import styled from "styled-components"
 import { useElementSize } from "usehooks-ts"
 import Board from "../Board"
 import { useMakeMove } from "../useMakeMove"
+import { useTicTacWoahSocket } from "../ticTacWoahSocket"
+import useSocketState from "../useSocketState"
+import { MoveDtoSchema } from "types"
+import { useEffectOnce } from "react-use"
 
 const FlexyGameContainer = styled.div`
 	@media all and (orientation: portrait) {
@@ -47,8 +51,28 @@ export function Game() {
 	const { board } = useGameDisplay()
 	const makeMove = useMakeMove()
 
+	const dispatch = useAppDispatch()
+
 	const [elementSizeRef, { width, height }] = useElementSize()
 	const limitingDimensionInPixels = Math.min(width, height)
+
+	const socket = useTicTacWoahSocket()
+	const socketState = useSocketState(socket)
+
+	useEffectOnce(() => {
+		socket.on("move", args => {
+			const move = MoveDtoSchema.parse(args)
+			dispatch(newMove(move))
+		})
+
+		socket.on("game win", args => {
+			console.log("game win", args)
+		})
+
+		return () => {
+			socket.off()
+		}
+	})
 
 	return (
 		<FlexyGameContainer ref={elementSizeRef}>

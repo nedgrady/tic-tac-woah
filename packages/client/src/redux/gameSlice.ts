@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { RootState } from "./store"
-import { GameStartDto, MoveDto } from "types"
+import { GameStartDto } from "types"
 
 export type GameStart = GameStartDto
 export type Move = {

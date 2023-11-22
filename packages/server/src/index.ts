@@ -49,7 +49,7 @@ io.on("connection", async socket => {
 		socket.leave("queue")
 	})
 
-	if (queue.size === 1) {
+	if (queue.size === 2) {
 		const gameId = crypto.randomUUID()
 
 		console.log("Match made.")
@@ -113,6 +113,7 @@ io.on("connection", async socket => {
 		})
 
 		game.start()
+		socket.leave("queue")
 		queue.clear()
 	}
 })
