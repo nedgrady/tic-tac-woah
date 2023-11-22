@@ -67,6 +67,7 @@ export function Game() {
 			console.log("game win", args)
 		})
 
+		// TODO - how to remove this duplication?
 		return () => {
 			socket.off()
 		}
