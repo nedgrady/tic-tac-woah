@@ -3,6 +3,7 @@ import { Home } from "./Home"
 import { Queue } from "./Queue"
 import { Root } from "./Root"
 import { Game } from "./game/Game"
+import { useAppSelector } from "./redux/hooks"
 
 const rootRoute = new RootRoute({
 	component: Root,
@@ -25,6 +26,10 @@ const activeGameRoute = new Route({
 	path: "game/$gameId",
 	component: ({ useParams }) => {
 		const { gameId } = useParams()
+
+		// TODO - this looks simiar to the logic in Play.tsx
+		const { game } = useAppSelector(state => state.gameReducer)
+		if (game.id === "Empty Game") return <Navigate to="/" />
 		return <Game />
 	},
 })
