@@ -11,8 +11,20 @@ import crypto from "crypto"
 import applicationInsights from "./logging/applicationInsights"
 import { Game } from "domain/Game"
 import { Participant } from "domain/Participant"
-import { anyMoveIsAllowed, standardRules } from "domain/gameRules/gameRules"
-import { gameIsWonOnMoveNumber, standardWinConditions } from "domain/winConditions/winConditions"
+import {
+	anyMoveIsAllowed,
+	moveMustBeMadeByTheCorrectPlayer,
+	moveMustBeMadeIntoAFreeSquare,
+	moveMustBeWithinTheBoard,
+	standardRules,
+} from "domain/gameRules/gameRules"
+import {
+	gameIsWonOnMoveNumber,
+	standardWinConditions,
+	winByConsecutiveDiagonalPlacements,
+	winByConsecutiveHorizontalPlacements,
+	winByConsecutiveVerticalPlacements,
+} from "domain/winConditions/winConditions"
 
 interface ParticipantHandle {
 	readonly connection: Socket
@@ -61,7 +73,17 @@ io.on("connection", async socket => {
 
 		const participants = Object.freeze(players.map(player => player.participant))
 
-		const game = new Game(participants, 20, 5, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(3)])
+		const game = new Game(
+			participants,
+			20,
+			4,
+			[moveMustBeMadeByTheCorrectPlayer, moveMustBeMadeIntoAFreeSquare, moveMustBeWithinTheBoard],
+			[
+				winByConsecutiveDiagonalPlacements,
+				winByConsecutiveHorizontalPlacements,
+				winByConsecutiveVerticalPlacements,
+			]
+		)
 
 		game.onStart(() => {
 			players.forEach(player => {
