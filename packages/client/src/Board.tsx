@@ -1,6 +1,8 @@
 import Box from "@mui/material/Box"
 import React from "react"
 import styled from "styled-components"
+import { Move } from "./redux/gameSlice"
+import { BoardMoveDisplay, EmptyBoardMoveDisplay } from "./game/Game"
 
 const Table = styled.table`
 	border-collapse: collapse;
@@ -13,7 +15,7 @@ const Td = styled.td`
 	border-style: solid;
 `
 interface BoardProps {
-	boardState: readonly (string | undefined)[][]
+	boardState: readonly (BoardMoveDisplay | EmptyBoardMoveDisplay)[][]
 	onPiecePlaced: (x: number, y: number) => void
 	limitingDimensionInPixels: number
 }
@@ -43,7 +45,12 @@ export default function Board({ boardState, onPiecePlaced, limitingDimensionInPi
 								onClick={() => onPiecePlaced(rowIndex, columnIndex)}
 								style={css}
 							>
-								<Box key={`${columnIndex}-${rowIndex}`}>{piece}</Box>
+								<Box
+									key={`${columnIndex}-${rowIndex}`}
+									sx={piece.isWinningMove ? { backgroundColor: "green" } : undefined}
+								>
+									{piece.token}
+								</Box>
 							</Td>
 						))}
 					</tr>

@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux"
-import { Coordinate, Move, newMove, selectBoardState } from "../redux/gameSlice"
+import { Coordinate, Move, newMove, selectBoardState, selectWinningMoves, gameWin } from "../redux/gameSlice"
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import React, { useState } from "react"
 import styled from "styled-components"
@@ -8,8 +8,9 @@ import Board from "../Board"
 import { useMakeMove } from "../useMakeMove"
 import { useTicTacWoahSocket } from "../ticTacWoahSocket"
 import useSocketState from "../useSocketState"
-import { MoveDtoSchema } from "types"
+import { GameWinSchema, MoveDtoSchema } from "types"
 import { useEffectOnce } from "react-use"
+import { boolean } from "zod"
 
 const FlexyGameContainer = styled.div`
 	@media all and (orientation: portrait) {
@@ -29,19 +30,46 @@ const FlexyGameContainer = styled.div`
 type Token = string
 const tokens: readonly Token[] = ["❌", "⭕", "🟥"]
 
-function useGameDisplay() {
+export interface BoardMoveDisplay {
+	readonly placement: Coordinate
+	readonly token: string
+	readonly isWinningMove: boolean
+}
+
+export interface EmptyBoardMoveDisplay {
+	readonly token: ""
+	readonly isWinningMove: false
+}
+
+const emptyBoardMoveDisplay: EmptyBoardMoveDisplay = {
+	isWinningMove: false,
+	token: "",
+}
+
+function useGameDisplay(): { board: readonly (BoardMoveDisplay | EmptyBoardMoveDisplay)[][] } {
 	const { game } = useAppSelector(state => state.gameReducer)
 	const boardState = useAppSelector(selectBoardState)
 
-	const tokensPlusEmpty = ["", ...tokens]
-	const playerPlusEmpty = [null, ...game.players]
+	const tokensPlusEmpty = [...tokens]
+	const playerPlusEmpty = [...game.players]
 
-	const playerTokens = new Map<string | null, Token>(
+	const playerTokens = new Map<string, Token>(
 		playerPlusEmpty.map((player, index) => [player, tokensPlusEmpty[index]])
 	)
 
 	// TODO - how to remove the undefined from the type?
-	const board: readonly (string | undefined)[][] = boardState.map(row => row.map(cell => playerTokens.get(cell)))
+	const board: readonly (BoardMoveDisplay | EmptyBoardMoveDisplay)[][] = boardState.map(row =>
+		row.map(cell =>
+			cell
+				? {
+						placement: cell.placement,
+						// TODO - the '?' scenario should never happen but how to get the types working without it?
+						token: playerTokens.get(cell.mover) ?? "?",
+						isWinningMove: cell.isWinningMove,
+				  }
+				: emptyBoardMoveDisplay
+		)
+	)
 
 	return { board }
 }
@@ -65,6 +93,8 @@ export function Game() {
 
 		socket.on("game win", args => {
 			console.log("game win", args)
+			const gameWinObj = GameWinSchema.parse(args)
+			dispatch(gameWin(gameWinObj))
 		})
 
 		// TODO - how to remove this duplication?
