@@ -10,7 +10,7 @@ WORKDIR /app
 RUN printenv
 
 # Top level
-# TODO - copy the lockfile?
+COPY package-lock.json .
 COPY package.json .
 
 RUN npm install
