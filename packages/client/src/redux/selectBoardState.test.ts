@@ -9,6 +9,7 @@ test("All slots are initially null", () => {
 				id: "Any Game",
 				players: [],
 				moves: [],
+				winningMoves: [],
 			},
 		},
 	})
@@ -32,6 +33,7 @@ test("Moves are reflected in the board", () => {
 						},
 					},
 				],
+				winningMoves: [],
 			},
 		},
 	})
@@ -71,6 +73,7 @@ test.each(threeMoves)("Move $placement by $mover is reflected in the board", mov
 				id: "Any Game",
 				players: [],
 				moves: threeMoves,
+				winningMoves: [],
 			},
 		},
 	})
@@ -94,6 +97,7 @@ test("Other slots on the board remain null after a move", () => {
 						},
 					},
 				],
+				winningMoves: [],
 			},
 		},
 	})
