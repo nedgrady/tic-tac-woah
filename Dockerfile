@@ -1,4 +1,4 @@
-FROM node:18.14.2-alpine3.17
+FROM node:20.0.0-alpine3.17
 
 ARG RENDER_WEBSOCKET_URL=https://tic-tac-woah.onrender.com/
 ARG RENDER_WEBSOCKET_PORT=80
