@@ -24,8 +24,9 @@ export const queueRoot = new Route({
 const activeGameRoute = new Route({
 	getParentRoute: () => rootRoute,
 	path: "game/$gameId",
-	component: ({ useParams }) => {
-		const { gameId } = useParams()
+	component: () => {
+		// TODO - probably use this
+		const gameId = activeGameRoute.useParams()
 
 		// TODO - this looks simiar to the logic in Play.tsx
 		const { game } = useAppSelector(state => state.gameReducer)

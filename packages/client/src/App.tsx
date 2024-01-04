@@ -2,6 +2,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material"
 import useAppTheme from "./theme/useAppTheme"
 import { RouterProvider } from "@tanstack/react-router"
 import router from "./Routes"
+import { Suspense } from "react"
 
 function App() {
 	const theme = useAppTheme()
@@ -9,7 +10,10 @@ function App() {
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
-			<RouterProvider router={router} basepath="tic-tac-woah" />
+			{/* TODO - 🤔*/}
+			<Suspense fallback={null}>
+				<RouterProvider router={router} basepath="tic-tac-woah" />
+			</Suspense>
 		</ThemeProvider>
 	)
 }
