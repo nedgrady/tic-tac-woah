@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux"
-import { Coordinate, Move, newMove, selectBoardState, selectWinningMoves, gameWin } from "../redux/gameSlice"
+import { Coordinate, Move, newMove, selectBoardState, gameWin, selectWinningMoves } from "../redux/gameSlice"
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 import { useElementSize } from "usehooks-ts"
 import Board from "../Board"
@@ -11,6 +11,7 @@ import useSocketState from "../useSocketState"
 import { GameWinSchema, MoveDtoSchema } from "types"
 import { useEffectOnce } from "react-use"
 import { boolean } from "zod"
+import { Dialog, DialogContent, DialogTitle, Modal } from "@mui/material"
 
 const FlexyGameContainer = styled.div`
 	@media all and (orientation: portrait) {
@@ -50,12 +51,7 @@ function useGameDisplay(): { board: readonly (BoardMoveDisplay | EmptyBoardMoveD
 	const { game } = useAppSelector(state => state.gameReducer)
 	const boardState = useAppSelector(selectBoardState)
 
-	const tokensPlusEmpty = [...tokens]
-	const playerPlusEmpty = [...game.players]
-
-	const playerTokens = new Map<string, Token>(
-		playerPlusEmpty.map((player, index) => [player, tokensPlusEmpty[index]])
-	)
+	const playerTokens = new Map<string, Token>(game.players.map((player, index) => [player, tokens[index]]))
 
 	// TODO - how to remove the undefined from the type?
 	const board: readonly (BoardMoveDisplay | EmptyBoardMoveDisplay)[][] = boardState.map(row =>
@@ -92,7 +88,6 @@ export function Game() {
 		})
 
 		socket.on("game win", args => {
-			console.log("game win", args)
 			const gameWinObj = GameWinSchema.parse(args)
 			dispatch(gameWin(gameWinObj))
 		})
@@ -103,13 +98,24 @@ export function Game() {
 		}
 	})
 
+	const winningMoves = useAppSelector(selectWinningMoves)
+	const game = useAppSelector(state => state.gameReducer.game)
+
+	const playerTokens = new Map<string, Token>(game.players.map((player, index) => [player, tokens[index]]))
+	const winningToken = playerTokens.get(winningMoves[0]?.mover)
 	return (
-		<FlexyGameContainer ref={elementSizeRef}>
-			<Board
-				boardState={board}
-				onPiecePlaced={(x, y) => makeMove({ x, y })}
-				limitingDimensionInPixels={limitingDimensionInPixels || 1000}
-			/>
-		</FlexyGameContainer>
+		<>
+			<Dialog open={winningMoves.length > 0}>
+				<DialogTitle>{winningMoves[0]?.mover} Wins</DialogTitle>
+				<DialogContent>With the dubiously discovered token {winningToken}</DialogContent>
+			</Dialog>
+			<FlexyGameContainer ref={elementSizeRef}>
+				<Board
+					boardState={board}
+					onPiecePlaced={(x, y) => makeMove({ x, y })}
+					limitingDimensionInPixels={limitingDimensionInPixels || 1000}
+				/>
+			</FlexyGameContainer>
+		</>
 	)
 }
