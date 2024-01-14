@@ -1,5 +1,9 @@
 import z from "zod"
 
+export const JoinQueueRequestSchema = z.object({})
+
+export type JoinQueueRequest = z.infer<typeof JoinQueueRequestSchema>
+
 export const QueueSchema = z.object({
 	depth: z.number(),
 })

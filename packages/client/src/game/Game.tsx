@@ -1,17 +1,13 @@
-import { useSelector } from "react-redux"
-import { Coordinate, Move, newMove, selectBoardState, gameWin, selectWinningMoves } from "../redux/gameSlice"
+import { Coordinate, newMove, selectBoardState, gameWin, selectWinningMoves } from "../redux/gameSlice"
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
-import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 import { useElementSize } from "usehooks-ts"
 import Board from "../Board"
 import { useMakeMove } from "../useMakeMove"
 import { useTicTacWoahSocket } from "../ticTacWoahSocket"
-import useSocketState from "../useSocketState"
 import { GameWinSchema, MoveDtoSchema } from "types"
 import { useEffectOnce } from "react-use"
-import { boolean } from "zod"
-import { Dialog, DialogContent, DialogTitle, Modal } from "@mui/material"
+import { Dialog, DialogContent, DialogTitle } from "@mui/material"
 
 const FlexyGameContainer = styled.div`
 	@media all and (orientation: portrait) {
@@ -62,6 +58,7 @@ function useGameDisplay(): { board: readonly (BoardMoveDisplay | EmptyBoardMoveD
 						// TODO - the '?' scenario should never happen but how to get the types working without it?
 						token: playerTokens.get(cell.mover) ?? "?",
 						isWinningMove: cell.isWinningMove,
+						// eslint-disable-next-line no-mixed-spaces-and-tabs
 				  }
 				: emptyBoardMoveDisplay
 		)
@@ -92,10 +89,10 @@ export function Game() {
 			dispatch(gameWin(gameWinObj))
 		})
 
-		// TODO - how to remove this duplication?
-		return () => {
-			socket.off()
-		}
+		// // TODO - how to remove this duplication?
+		// return () => {
+		// 	socket.off()
+		// }
 	})
 
 	const winningMoves = useAppSelector(selectWinningMoves)

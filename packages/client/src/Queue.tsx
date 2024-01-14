@@ -1,5 +1,5 @@
 import { useEffectOnce } from "react-use"
-import { GameStartDtoSchema } from "types"
+import { GameStartDtoSchema, JoinQueueRequest } from "types"
 import { useAppDispatch } from "./redux/hooks"
 import { startGame } from "./redux/gameSlice"
 import { useTicTacWoahSocket } from "./ticTacWoahSocket"
@@ -8,15 +8,30 @@ import { useNavigate } from "@tanstack/react-router"
 import { useQueue } from "./lobby/useQueue"
 import { Suspense } from "react"
 import { queueRoot } from "./Routes"
+import { UserMustBeAuthenticated, useTicTacWoahAuth } from "./auth/UsernameMustBePresent"
 
-export function Queue() {
+function ProtectedQueue() {
+	return (
+		<UserMustBeAuthenticated>
+			<Queue />
+		</UserMustBeAuthenticated>
+	)
+}
+
+function Queue() {
 	const dispatch = useAppDispatch()
 	const socket = useTicTacWoahSocket()
+	const auth = useTicTacWoahAuth()
 	const socketState = useSocketState(socket)
 	// TODO - how to not have to hardcode/import this?
 	const navigate = useNavigate({ from: queueRoot.id })
 
 	useEffectOnce(() => {
+		socket.auth = {
+			token: auth,
+			type: "tic-tac-woah-username",
+		}
+
 		socket.on("game start", args => {
 			const gameStart = GameStartDtoSchema.parse(args)
 			dispatch(startGame(gameStart))
@@ -26,9 +41,12 @@ export function Queue() {
 			})
 		})
 
-		return () => {
-			socket.off()
-		}
+		const joinQueueRequest: JoinQueueRequest = {}
+		socket.emit("join queue", joinQueueRequest)
+
+		// return () => {
+		// 	socket.off()
+		// }
 	})
 
 	const { queue } = useQueue()
@@ -45,3 +63,5 @@ export function Queue() {
 		</>
 	)
 }
+
+export { ProtectedQueue as Queue }

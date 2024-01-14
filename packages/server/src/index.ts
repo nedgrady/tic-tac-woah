@@ -27,14 +27,23 @@ import {
 } from "domain/winConditions/winConditions"
 
 interface ParticipantHandle {
-	readonly connection: Socket
+	readonly activeUser: ActiveUser
 	readonly participant: Participant
 }
+
+interface ActiveUser {
+	readonly connections: Set<Socket>
+	readonly uniqueIdentifier: string
+}
+
+const activeUsers: Map<string, ActiveUser> = new Map<string, ActiveUser>()
 
 const app = express()
 const httpServer = createServer(app)
 
-const queue: Set<Socket> = new Set<Socket>()
+const activeSockets: Map<string, Socket> = new Map<string, Socket>()
+
+const queue: Set<ActiveUser> = new Set<ActiveUser>()
 
 const io = new Server(httpServer, {
 	cors: {
@@ -49,95 +58,122 @@ instrument(io, {
 	mode: "development",
 })
 
+io.use((socket, next) => {
+	console.log("==== socket.io connection", socket.id)
+	socket.on("connect_error", error => {
+		console.log("==== socket.io connect error", error)
+	})
+	next()
+})
+
+io.use((socket, next) => {
+	const authToken = socket.handshake.auth.token
+	let user = activeUsers.get(authToken)
+
+	console.log("==== socket.io auth", authToken)
+
+	// If the user is not in the activeUsers map, add them
+	if (!user) {
+		user = { connections: new Set(), uniqueIdentifier: authToken }
+		activeUsers.set(authToken, user)
+	}
+	user.connections.add(socket)
+	next()
+})
+
 io.on("connection", async socket => {
 	socket.onAny((eventName, ...args) => {
 		console.log(`${socket.id} emitted ${eventName}`, args)
 	})
-	queue.add(socket)
-	socket.join("queue")
 
-	socket.on("disconnect", async () => {
-		queue.delete(socket)
-		socket.leave("queue")
-	})
+	socket.on("join queue", () => {
+		const user = activeUsers.get(socket.handshake.auth.token)
+		if (!user) throw new Error("User not found")
 
-	if (queue.size === 2) {
-		const gameId = crypto.randomUUID()
+		queue.add(user)
 
-		console.log("Match made.")
+		if (queue.size === 2) {
+			const gameId = crypto.randomUUID()
 
-		const players: readonly ParticipantHandle[] = Array.from(queue).map(socket => ({
-			connection: socket,
-			participant: new Participant(),
-		}))
+			console.log("Match made.")
 
-		const participants = Object.freeze(players.map(player => player.participant))
+			const players: readonly ParticipantHandle[] = Array.from(queue).map(user => ({
+				activeUser: user,
+				participant: new Participant(),
+			}))
 
-		const game = new Game(
-			participants,
-			20,
-			4,
-			[moveMustBeMadeByTheCorrectPlayer, moveMustBeMadeIntoAFreeSquare, moveMustBeWithinTheBoard],
-			[
-				winByConsecutiveDiagonalPlacements,
-				winByConsecutiveHorizontalPlacements,
-				winByConsecutiveVerticalPlacements,
-			]
-		)
+			const participants = Object.freeze(players.map(player => player.participant))
 
-		game.onStart(() => {
-			players.forEach(player => {
-				player.connection.join(gameId)
+			const game = new Game(participants, 20, 5, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(3)])
 
-				player.connection.on("move", payload => {
-					const coordinates = CoordinatesDtoSchema.parse(JSON.parse(payload))
-					player.participant.makeMove(coordinates)
+			game.onStart(() => {
+				players.forEach(player => {
+					player.activeUser.connections.forEach(connection => connection.join(gameId))
+
+					player.activeUser.connections.forEach(connection =>
+						connection.on("move", payload => {
+							const coordinates = CoordinatesDtoSchema.parse(JSON.parse(payload))
+							player.participant.makeMove(coordinates)
+						})
+					)
 				})
+
+				const gameStartDto: GameStartDto = {
+					id: gameId,
+					players: players.map(player => player.activeUser.uniqueIdentifier),
+				}
+
+				io.to(gameId).emit("game start", gameStartDto)
 			})
 
-			const gameStartDto: GameStartDto = {
-				id: gameId,
-				players: players.map(player => player.connection.id),
-			}
-
-			io.to(gameId).emit("game start", gameStartDto)
-		})
-
-		game.onMove(move => {
-			const mover = players.find(player => player.participant == move.mover)
-
-			if (!mover) throw new Error(`Could not locate mover ${move.mover}`)
-
-			const moveDto: MoveDto = {
-				placement: move.placement,
-				mover: mover.connection.id,
-			}
-
-			io.to(gameId).emit("move", moveDto)
-		})
-
-		game.onWin(winningMoves => {
-			const winningMovesDto: MoveDto[] = winningMoves.map(move => {
+			game.onMove(move => {
 				const mover = players.find(player => player.participant == move.mover)
 
 				if (!mover) throw new Error(`Could not locate mover ${move.mover}`)
-				return {
+
+				const moveDto: MoveDto = {
 					placement: move.placement,
-					mover: mover.connection.id,
+					mover: mover.activeUser.uniqueIdentifier,
 				}
+
+				io.to(gameId).emit("move", moveDto)
 			})
 
-			const gameWinDto: GameWinDto = {
-				winningMoves: winningMovesDto,
-			}
+			game.onWin(winningMoves => {
+				const winningMovesDto: MoveDto[] = winningMoves.map(move => {
+					const mover = players.find(player => player.participant == move.mover)
 
-			io.to(gameId).emit("game win", gameWinDto)
-		})
+					if (!mover) throw new Error(`Could not locate mover ${move.mover}`)
+					return {
+						placement: move.placement,
+						mover: mover.activeUser.uniqueIdentifier,
+					}
+				})
 
-		game.start()
-		socket.leave("queue")
-		queue.clear()
-	}
+				const gameWinDto: GameWinDto = {
+					winningMoves: winningMovesDto,
+				}
+
+				io.to(gameId).emit("game win", gameWinDto)
+			})
+
+			game.start()
+			queue.clear()
+		}
+	})
+
+	socket.on("disconnect", async () => {
+		console.log("==== socket.io disconnect", socket.id, socket.handshake.auth.token)
+		const activeUser = activeUsers.get(socket.handshake.auth.token)
+		if (!activeUser) throw new Error("User not found")
+
+		activeUser.connections.delete(socket)
+
+		if (activeUser.connections.size === 0) {
+			activeUsers.delete(activeUser.uniqueIdentifier)
+			queue.delete(activeUser)
+		}
+	})
 })
 
 // io.of("/").adapter.on("create-room", room => {
@@ -177,13 +213,13 @@ app.get("/queue", async (_, response) => {
 })
 
 app.get("/info", async (_, response) => {
-	const sockets = await io.in("queue").fetchSockets()
-	response.json(
-		sockets.map(socket => ({
-			id: socket.id,
-			rooms: socket.rooms,
-		}))
-	)
+	// return sockets and their active connections
+	const connectionsPerUser = Array.from(activeUsers).map(([uniqueIdentifier, activeUser]) => ({
+		uniqueIdentifier,
+		connections: Array.from(activeUser.connections).map(connection => connection.id),
+	}))
+
+	response.json(connectionsPerUser)
 })
 
 app.get("/health", (_, response) => {
