@@ -1,14 +1,12 @@
 import express from "express"
 import http, { createServer } from "http"
 import request from "supertest"
-import { test, beforeEach, afterEach, ArgumentsType, expect, vi, Awaitable } from "vitest"
+import { test, beforeEach, afterEach, ArgumentsType, expect, vi } from "vitest"
 import { Server as SocketIoServer, Socket as ServerSocket, Socket, RemoteSocket } from "socket.io"
 import { io as clientIo } from "socket.io-client"
 import { ActiveUser } from "index"
 import { faker } from "@faker-js/faker"
 import { identifyByTicTacWoahUsername } from "./identifyByTicTacWoahUsername"
-import { DefaultEventsMap } from "socket.io/dist/typed-events"
-import { z } from "zod"
 
 interface ServerToClientEvents {
 	noArg: () => void
