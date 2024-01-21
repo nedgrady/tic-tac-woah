@@ -143,7 +143,7 @@ test("Active user uniqueIdentifier is populated", async () => {
 	})
 })
 
-test("Active user connection is populated", async () => {
+test.only("Active user connection is populated", async () => {
 	socketIoServerUnderTest.use(identifyByTicTacWoahUsername)
 
 	const userName = faker.internet.userName()
@@ -156,11 +156,11 @@ test("Active user connection is populated", async () => {
 	clientSocket.connect()
 
 	await vi.waitFor(async () => {
-		expect(await socketIoServerUnderTest.fetchSockets()).toHaveLength(1)
-		const activeUserConnection = [
-			...(await socketIoServerUnderTest.fetchSockets())[0].data.activeUser.connections,
-		][0]
-		expect(activeUserConnection).not.toBeUndefined()
+		const activeSockets = await socketIoServerUnderTest.fetchSockets()
+		expect(activeSockets).toHaveLength(1)
+
+		const activeUserConnections = activeSockets[0].data.activeUser.connections
+		expect(activeUserConnections).toContainEqual(expect.objectContaining({ id: clientSocket.id + "asd" }))
 	})
 })
 
