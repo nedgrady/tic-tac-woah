@@ -31,7 +31,7 @@ interface ParticipantHandle {
 	readonly participant: Participant
 }
 
-interface ActiveUser {
+export interface ActiveUser {
 	readonly connections: Set<Socket>
 	readonly uniqueIdentifier: string
 }
@@ -40,8 +40,6 @@ const activeUsers: Map<string, ActiveUser> = new Map<string, ActiveUser>()
 
 const app = express()
 const httpServer = createServer(app)
-
-const activeSockets: Map<string, Socket> = new Map<string, Socket>()
 
 const queue: Set<ActiveUser> = new Set<ActiveUser>()
 
@@ -157,8 +155,8 @@ io.on("connection", async socket => {
 				io.to(gameId).emit("game win", gameWinDto)
 			})
 
-			game.start()
 			queue.clear()
+			game.start()
 		}
 	})
 
