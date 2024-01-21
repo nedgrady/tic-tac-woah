@@ -126,7 +126,7 @@ test("One player joins the queue has their connection populated", async () => {
 	await vi.waitFor(() => expect(queue.users.size).toBe(1))
 
 	const newUser = [...queue.users][0]
-	expect([...newUser.connections][0].id).toBe(clientSocket.id)
+	expect(newUser.connections).toContainEqual(expect.objectContaining({ id: clientSocket.id }))
 })
 
 test("Active user uniqueIdentifier is populated", async () => {
