@@ -7,27 +7,27 @@ import { io as clientIo } from "socket.io-client"
 import { ActiveUser } from "index"
 import { faker } from "@faker-js/faker"
 import { identifyByTicTacWoahUsername } from "./identifyByTicTacWoahUsername"
+import { TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 
-interface ServerToClientEvents {
+export interface ServerToClientEvents {
 	noArg: () => void
 	basicEmit: (a: number, b: string, c: Buffer) => void
 	withAck: (d: string, callback: (e: number) => void) => void
 }
 
-interface ClientToServerEvents {
+export interface ClientToServerEvents {
 	hello: () => void
 }
 
-interface InterServerEvents {
+export interface InterServerEvents {
 	ping: () => void
 }
 
-interface SocketData {
+export interface SocketData {
 	activeUser: ActiveUser
 	sockets: Set<ServerSocket>
 }
 
-type TicTacWoahSocketServer = SocketIoServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
 type TicTacWoahRemoteSocket = Awaited<ReturnType<TicTacWoahSocketServer["fetchSockets"]>>[0]
 
 function createTicTacWoahServer() {
@@ -59,6 +59,10 @@ const clientSocket = clientIo("http://localhost:9999", {
 	autoConnect: false,
 })
 
+const clientSocket2 = clientIo("http://localhost:9999", {
+	autoConnect: false,
+})
+
 beforeEach(
 	() =>
 		new Promise<void>(done => {
@@ -74,6 +78,7 @@ afterEach(
 	() =>
 		new Promise<void>(done => {
 			clientSocket.close()
+			clientSocket2.close()
 			socketIoServerUnderTest.close()
 			return httpServerUnderTest.close(() => {
 				done()
@@ -143,7 +148,7 @@ test("Active user uniqueIdentifier is populated", async () => {
 	})
 })
 
-test.only("Active user connection is populated", async () => {
+test("Active user connection is populated", async () => {
 	socketIoServerUnderTest.use(identifyByTicTacWoahUsername)
 
 	clientSocket.auth = {
@@ -159,6 +164,31 @@ test.only("Active user connection is populated", async () => {
 
 		const activeUserConnections = activeSockets[0].data.activeUser.connections
 		expect(activeUserConnections).toContainEqual(expect.objectContaining({ id: clientSocket.id }))
+	})
+})
+
+test("Two connections with the same username are captured on the same active user.", async () => {
+	socketIoServerUnderTest.use(identifyByTicTacWoahUsername)
+
+	clientSocket.auth = {
+		token: "Same username",
+		type: "tic-tac-woah-username",
+	}
+
+	clientSocket2.auth = {
+		token: "Same username",
+		type: "tic-tac-woah-username",
+	}
+
+	clientSocket.connect()
+	clientSocket2.connect()
+
+	await vi.waitFor(async () => {
+		const activeSockets = await socketIoServerUnderTest.fetchSockets()
+		expect(activeSockets).toHaveLength(2)
+
+		const activeUserConnections = activeSockets[0].data.activeUser.connections
+		expect(activeUserConnections).toHaveLength(2)
 	})
 })
 

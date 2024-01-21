@@ -1,13 +1,20 @@
-import { ArgumentsType } from "vitest"
-import { Socket, Server as SocketIoServer } from "socket.io"
+import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
+import { ActiveUser } from "index"
 
-export const identifyByTicTacWoahUsername: ArgumentsType<SocketIoServer["use"]>[0] = (socket, next) => {
-	console.log("==== socket.io auth", socket.handshake.auth.token)
-	const set = new Set<Socket>()
-	set.add(socket)
-	socket.data.activeUser = {
-		uniqueIdentifier: socket.handshake.auth.token,
-		connections: set,
+const activeUsers: Map<string, ActiveUser> = new Map<string, ActiveUser>()
+
+export const identifyByTicTacWoahUsername: TicTacWoahSocketServerMiddleware = (socket, next) => {
+	let activeUser = activeUsers.get(socket.handshake.auth.token)
+
+	if (!activeUser) {
+		activeUser = {
+			uniqueIdentifier: socket.handshake.auth.token,
+			connections: new Set(),
+		}
+		activeUsers.set(socket.handshake.auth.token, activeUser)
 	}
+	activeUser.connections.add(socket)
+	socket.data.activeUser = activeUser
+
 	next()
 }
