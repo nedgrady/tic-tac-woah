@@ -2,9 +2,10 @@ import express from "express"
 import http, { createServer } from "http"
 import request from "supertest"
 import { test, beforeEach, afterEach, ArgumentsType, expect, vi } from "vitest"
-import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
+import { Server as SocketIoServer, Socket as ServerSocket, Socket } from "socket.io"
 import { io as clientIo } from "socket.io-client"
 import { ActiveUser } from "index"
+import { faker } from "@faker-js/faker"
 
 // class TicTacWoahServer {
 // 	#expressServer: Express
@@ -117,7 +118,7 @@ test("One player joins the queue", async () => {
 	await vi.waitFor(() => expect(queue.users.size).toBe(1))
 })
 
-test.only("One player joins the queue has their connection populated", async () => {
+test("One player joins the queue has their connection populated", async () => {
 	const queue = new TicTacWoahQueue()
 	socketIoServerUnderTest.use(addConnectionToQueue(queue))
 	const socket = clientIo("http://localhost:9999", {
@@ -135,6 +136,32 @@ test.only("One player joins the queue has their connection populated", async () 
 
 	const newUser = [...queue.users][0]
 	expect([...newUser.connections][0].id).toBe(socket.id)
+})
+
+test("Active user uniqueIdentifier is populated", async () => {
+	socketIoServerUnderTest.use(identifyByTicTacWoahUsername)
+
+	const userName = faker.internet.userName()
+	const socket = clientIo("http://localhost:9999", {
+		autoConnect: false,
+		auth: {
+			token: userName,
+			type: "tic-tac-woah-username",
+		},
+	})
+
+	socket.connect()
+
+	await vi.waitFor(async () => expect(await socketIoServerUnderTest.fetchSockets()).toHaveLength(1))
+
+	const serverSocket = (await socketIoServerUnderTest.fetchSockets())[0]
+
+	await vi.waitFor(() =>
+		expect(serverSocket.data.activeUser).toMatchObject<ActiveUser>({
+			uniqueIdentifier: userName,
+			connections: expect.any(Set),
+		})
+	)
 })
 
 class TicTacWoahQueue {
@@ -161,4 +188,13 @@ function addConnectionToQueue(queue: TicTacWoahQueue): ArgumentsType<SocketIoSer
 		})
 		next()
 	}
+}
+
+const identifyByTicTacWoahUsername: ArgumentsType<SocketIoServer["use"]>[0] = (socket, next) => {
+	console.log("==== socket.io auth", socket.handshake.auth.token)
+	socket.data.activeUser = {
+		uniqueIdentifier: socket.handshake.auth.token,
+		connections: new Set(),
+	}
+	next()
 }
