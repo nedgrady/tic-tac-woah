@@ -1,22 +1,24 @@
 import express from "express"
 import http, { createServer } from "http"
 import request from "supertest"
-import { test, beforeEach, afterEach, ArgumentsType, expect, vi } from "vitest"
-import { Server as SocketIoServer, Socket as ServerSocket, Socket, RemoteSocket } from "socket.io"
-import { io as clientIo } from "socket.io-client"
+import { test, beforeEach, afterEach, expect, vi } from "vitest"
+import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
+import { io as clientIo, Socket as ClientSocket } from "socket.io-client"
 import { ActiveUser } from "index"
 import { faker } from "@faker-js/faker"
-import { identifyByTicTacWoahUsername } from "./identifyByTicTacWoahUsername"
-import { TicTacWoahSocketServer } from "TicTacWoahSocketServer"
+import { identifyAllSocketsAsTheSameUserFactory, identifyByTicTacWoahUsername } from "./identifyByTicTacWoahUsername"
+import { TicTacWoahSocketServer, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
+import { JoinQueueRequest } from "types"
 
 export interface ServerToClientEvents {
 	noArg: () => void
 	basicEmit: (a: number, b: string, c: Buffer) => void
 	withAck: (d: string, callback: (e: number) => void) => void
 }
+type AckCallback = (e: number) => void
 
 export interface ClientToServerEvents {
-	hello: () => void
+	joinQueue(joinQueueRequest: JoinQueueRequest, callback?: AckCallback): void
 }
 
 export interface InterServerEvents {
@@ -27,8 +29,6 @@ export interface SocketData {
 	activeUser: ActiveUser
 	sockets: Set<ServerSocket>
 }
-
-type TicTacWoahRemoteSocket = Awaited<ReturnType<TicTacWoahSocketServer["fetchSockets"]>>[0]
 
 function createTicTacWoahServer() {
 	const app = express()
@@ -55,11 +55,11 @@ function createTicTacWoahServer() {
 let httpServerUnderTest: http.Server
 let socketIoServerUnderTest: TicTacWoahSocketServer
 
-const clientSocket = clientIo("http://localhost:9999", {
+let clientSocket: ClientSocket<ServerToClientEvents, ClientToServerEvents> = clientIo("http://localhost:9999", {
 	autoConnect: false,
 })
 
-const clientSocket2 = clientIo("http://localhost:9999", {
+let clientSocket2 = clientIo("http://localhost:9999", {
 	autoConnect: false,
 })
 
@@ -67,10 +67,19 @@ beforeEach(
 	() =>
 		new Promise<void>(done => {
 			const { app, httpServer, io } = createTicTacWoahServer()
-			httpServer.listen(9999, done)
 
 			httpServerUnderTest = httpServer
 			socketIoServerUnderTest = io
+
+			clientSocket = clientIo("http://localhost:9999", {
+				autoConnect: false,
+			})
+
+			clientSocket2 = clientIo("http://localhost:9999", {
+				autoConnect: false,
+			})
+
+			httpServer.listen(9999, done)
 		})
 )
 
@@ -107,7 +116,7 @@ test("One player joins the queue", async () => {
 	socketIoServerUnderTest.use(addConnectionToQueue(queue))
 
 	clientSocket.on("connect", () => {
-		clientSocket.emit("join queue", "some data")
+		clientSocket.emit("joinQueue", {})
 	})
 	clientSocket.connect()
 
@@ -117,9 +126,9 @@ test("One player joins the queue", async () => {
 test("One player joins the queue has their connection populated", async () => {
 	const queue = new TicTacWoahQueue()
 	socketIoServerUnderTest.use(addConnectionToQueue(queue))
-
+	console.log("==== queue", queue.users.size)
 	clientSocket.on("connect", () => {
-		clientSocket.emit("join queue", "some data")
+		clientSocket.emit("joinQueue", {})
 	})
 	clientSocket.connect()
 
@@ -187,9 +196,58 @@ test("Two connections with the same username are captured on the same active use
 		const activeSockets = await socketIoServerUnderTest.fetchSockets()
 		expect(activeSockets).toHaveLength(2)
 
-		const activeUserConnections = activeSockets[0].data.activeUser.connections
-		expect(activeUserConnections).toHaveLength(2)
+		const activeUserFromConnection1 = activeSockets[0].data.activeUser
+		expect(activeUserFromConnection1.connections).toHaveLength(2)
+
+		const activeUserFromConnection2 = activeSockets[1].data.activeUser
+
+		expect(activeUserFromConnection1).toBe(activeUserFromConnection2)
 	})
+})
+
+test("Two connections with diffrent usernames are captured on diffrent active users.", async () => {
+	socketIoServerUnderTest.use(identifyByTicTacWoahUsername)
+
+	clientSocket.auth = {
+		token: "Different username 1",
+		type: "tic-tac-woah-username",
+	}
+
+	clientSocket2.auth = {
+		token: "Different username 2",
+		type: "tic-tac-woah-username",
+	}
+
+	clientSocket.connect()
+	clientSocket2.connect()
+
+	await vi.waitFor(async () => {
+		const activeSockets = await socketIoServerUnderTest.fetchSockets()
+		expect(activeSockets).toHaveLength(2)
+
+		const activeUserFromConnection1 = activeSockets[0].data.activeUser
+		const activeUserFromConnection2 = activeSockets[1].data.activeUser
+
+		expect(activeUserFromConnection1).not.toBe(activeUserFromConnection2)
+		expect(activeUserFromConnection1.connections).toHaveLength(1)
+		expect(activeUserFromConnection2.connections).toHaveLength(1)
+	})
+})
+
+test("The same user joining the queue twice only gets added once", async () => {
+	const queue = new TicTacWoahQueue()
+
+	socketIoServerUnderTest.use(identifyAllSocketsAsTheSameUserFactory())
+	socketIoServerUnderTest.use(addConnectionToQueue(queue))
+
+	clientSocket.connect()
+	clientSocket2.connect()
+
+	await clientSocket.emitWithAck("joinQueue", {})
+	await clientSocket2.emitWithAck("joinQueue", {})
+
+	// await Promise.all([connectPromise1, connectPromise2])
+	await vi.waitFor(() => expect(queue.users.size).toBe(1))
 })
 
 class TicTacWoahQueue {
@@ -206,13 +264,15 @@ class TicTacWoahQueue {
 	}
 }
 
-function addConnectionToQueue(queue: TicTacWoahQueue): ArgumentsType<SocketIoServer["use"]>[0] {
+function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	return (socket, next) => {
 		const set = new Set<ServerSocket>()
 		set.add(socket)
-		socket.on("join queue", () => {
-			console.log("==== socket.io connection", socket.id)
-			queue.add({ uniqueIdentifier: "", connections: set })
+		socket.on("joinQueue", (joinQueueRequest, callback) => {
+			if (queue.users.size === 0) {
+				queue.add({ uniqueIdentifier: "", connections: set })
+			}
+			callback && callback(0)
 		})
 		next()
 	}
