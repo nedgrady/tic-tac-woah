@@ -115,10 +115,8 @@ test("One player joins the queue", async () => {
 	const queue = new TicTacWoahQueue()
 	socketIoServerUnderTest.use(addConnectionToQueue(queue))
 
-	clientSocket.on("connect", () => {
-		clientSocket.emit("joinQueue", {})
-	})
 	clientSocket.connect()
+	await clientSocket.emitWithAck("joinQueue", {})
 
 	await vi.waitFor(() => expect(queue.users.size).toBe(1))
 })
@@ -126,11 +124,9 @@ test("One player joins the queue", async () => {
 test("One player joins the queue has their connection populated", async () => {
 	const queue = new TicTacWoahQueue()
 	socketIoServerUnderTest.use(addConnectionToQueue(queue))
-	console.log("==== queue", queue.users.size)
-	clientSocket.on("connect", () => {
-		clientSocket.emit("joinQueue", {})
-	})
+
 	clientSocket.connect()
+	await clientSocket.emitWithAck("joinQueue", {})
 
 	await vi.waitFor(() => expect(queue.users.size).toBe(1))
 
@@ -246,7 +242,6 @@ test("The same user joining the queue twice only gets added once", async () => {
 	await clientSocket.emitWithAck("joinQueue", {})
 	await clientSocket2.emitWithAck("joinQueue", {})
 
-	// await Promise.all([connectPromise1, connectPromise2])
 	await vi.waitFor(() => expect(queue.users.size).toBe(1))
 })
 
