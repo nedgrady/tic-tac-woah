@@ -6,7 +6,11 @@ import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
 import { io as clientIo, Socket as ClientSocket } from "socket.io-client"
 import { ActiveUser } from "index"
 import { faker } from "@faker-js/faker"
-import { identifyAllSocketsAsTheSameUser, identifyByTicTacWoahUsername } from "./identifyByTicTacWoahUsername"
+import {
+	identifyAllSocketsAsTheSameUser,
+	identifyByTicTacWoahUsername,
+	identifySocketsInSequence,
+} from "./identifyByTicTacWoahUsername"
 import { TicTacWoahSocketServer, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 import { JoinQueueRequest } from "types"
 
@@ -265,6 +269,32 @@ test("The queue captures the same activeUser object as the identification middle
 	await vi.waitFor(() => expect(queue.users).toContain(someActiveUser))
 })
 
+test("Two users joining the queue are added to the queue", async () => {
+	const queue = new TicTacWoahQueue()
+
+	const twoUsers: [ActiveUser, ActiveUser] = [
+		{
+			connections: new Set(),
+			uniqueIdentifier: "User 1",
+		},
+		{
+			connections: new Set(),
+			uniqueIdentifier: "User 2",
+		},
+	]
+
+	socketIoServerUnderTest.use(identifySocketsInSequence(twoUsers))
+	socketIoServerUnderTest.use(addConnectionToQueue(queue))
+
+	clientSocket.connect()
+	clientSocket2.connect()
+
+	await clientSocket.emitWithAck("joinQueue", {})
+	await clientSocket2.emitWithAck("joinQueue", {})
+
+	vi.waitFor(() => expect([...queue.users]).toBe(expect.arrayContaining(twoUsers)))
+})
+
 class TicTacWoahQueue {
 	#queue: Set<ActiveUser> = new Set<ActiveUser>()
 
@@ -282,9 +312,7 @@ class TicTacWoahQueue {
 function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	return (socket, next) => {
 		socket.on("joinQueue", (joinQueueRequest, callback) => {
-			if (queue.users.size === 0) {
-				queue.add(socket.data.activeUser)
-			}
+			queue.add(socket.data.activeUser)
 			callback && callback(0)
 		})
 		next()

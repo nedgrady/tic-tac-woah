@@ -37,3 +37,23 @@ export const identifyAllSocketsAsTheSameUser: (
 
 	return identifyAllSocketsAsTheSameUser
 }
+
+export const identifySocketsInSequence: (
+	activeUsers: ActiveUser[]
+) => TicTacWoahSocketServerMiddleware = activeUsers => {
+	let index = 0
+
+	const identifySocketsInSequence: TicTacWoahSocketServerMiddleware = (socket, next) => {
+		if (socket.data.activeUser) return next()
+
+		const activeUser = activeUsers[index]
+		activeUser.connections.add(socket)
+		socket.data.activeUser = activeUser
+		next()
+
+		// Rotate the index
+		index = (index + 1) % activeUsers.length
+	}
+
+	return identifySocketsInSequence
+}
