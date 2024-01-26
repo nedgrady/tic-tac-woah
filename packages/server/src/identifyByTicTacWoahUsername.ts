@@ -20,8 +20,10 @@ export const identifyByTicTacWoahUsername: TicTacWoahSocketServerMiddleware = (s
 	next()
 }
 
-export const identifyAllSocketsAsTheSameUserFactory: () => TicTacWoahSocketServerMiddleware = () => {
-	const singleActiveUser = {
+export const identifyAllSocketsAsTheSameUser: (
+	activeUser?: ActiveUser
+) => TicTacWoahSocketServerMiddleware = activeUser => {
+	const singleActiveUser = activeUser ?? {
 		uniqueIdentifier: "Single user from identifyAllSocketsAsTheSameUser",
 		connections: new Set<TicTacWoahServerSocket>(),
 	}

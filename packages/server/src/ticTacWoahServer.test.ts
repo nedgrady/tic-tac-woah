@@ -6,7 +6,7 @@ import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
 import { io as clientIo, Socket as ClientSocket } from "socket.io-client"
 import { ActiveUser } from "index"
 import { faker } from "@faker-js/faker"
-import { identifyAllSocketsAsTheSameUserFactory, identifyByTicTacWoahUsername } from "./identifyByTicTacWoahUsername"
+import { identifyAllSocketsAsTheSameUser, identifyByTicTacWoahUsername } from "./identifyByTicTacWoahUsername"
 import { TicTacWoahSocketServer, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 import { JoinQueueRequest } from "types"
 
@@ -113,6 +113,7 @@ test("Something web sockets", () => {
 
 test("One player joins the queue", async () => {
 	const queue = new TicTacWoahQueue()
+	socketIoServerUnderTest.use(identifyAllSocketsAsTheSameUser())
 	socketIoServerUnderTest.use(addConnectionToQueue(queue))
 
 	clientSocket.connect()
@@ -123,6 +124,7 @@ test("One player joins the queue", async () => {
 
 test("One player joins the queue has their connection populated", async () => {
 	const queue = new TicTacWoahQueue()
+	socketIoServerUnderTest.use(identifyAllSocketsAsTheSameUser())
 	socketIoServerUnderTest.use(addConnectionToQueue(queue))
 
 	clientSocket.connect()
@@ -233,7 +235,7 @@ test("Two connections with diffrent usernames are captured on diffrent active us
 test("The same user joining the queue twice only gets added once", async () => {
 	const queue = new TicTacWoahQueue()
 
-	socketIoServerUnderTest.use(identifyAllSocketsAsTheSameUserFactory())
+	socketIoServerUnderTest.use(identifyAllSocketsAsTheSameUser())
 	socketIoServerUnderTest.use(addConnectionToQueue(queue))
 
 	clientSocket.connect()
@@ -243,6 +245,24 @@ test("The same user joining the queue twice only gets added once", async () => {
 	await clientSocket2.emitWithAck("joinQueue", {})
 
 	await vi.waitFor(() => expect(queue.users.size).toBe(1))
+})
+
+test("The queue captures the same activeUser object as the identification middleware", async () => {
+	const queue = new TicTacWoahQueue()
+
+	const someActiveUser: ActiveUser = {
+		connections: new Set(),
+		uniqueIdentifier: "Some active user",
+	}
+
+	socketIoServerUnderTest.use(identifyAllSocketsAsTheSameUser(someActiveUser))
+	socketIoServerUnderTest.use(addConnectionToQueue(queue))
+
+	clientSocket.connect()
+
+	await clientSocket.emitWithAck("joinQueue", {})
+
+	await vi.waitFor(() => expect(queue.users).toContain(someActiveUser))
 })
 
 class TicTacWoahQueue {
@@ -265,7 +285,7 @@ function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketServerMid
 		set.add(socket)
 		socket.on("joinQueue", (joinQueueRequest, callback) => {
 			if (queue.users.size === 0) {
-				queue.add({ uniqueIdentifier: "", connections: set })
+				queue.add(socket.data.activeUser)
 			}
 			callback && callback(0)
 		})
