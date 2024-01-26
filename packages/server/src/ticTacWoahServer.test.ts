@@ -281,8 +281,6 @@ class TicTacWoahQueue {
 
 function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	return (socket, next) => {
-		const set = new Set<ServerSocket>()
-		set.add(socket)
 		socket.on("joinQueue", (joinQueueRequest, callback) => {
 			if (queue.users.size === 0) {
 				queue.add(socket.data.activeUser)
