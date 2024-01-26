@@ -1,6 +1,5 @@
 import { TicTacWoahServerSocket, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 import { ActiveUser } from "index"
-import { Socket } from "socket.io"
 
 const activeUsers: Map<string, ActiveUser> = new Map<string, ActiveUser>()
 

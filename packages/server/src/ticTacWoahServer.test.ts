@@ -6,7 +6,7 @@ import {
 	identifyAllSocketsAsTheSameUser,
 	identifyByTicTacWoahUsername,
 	identifySocketsInSequence,
-} from "./identifyByTicTacWoahUsername"
+} from "./socketIdentificationStrategies"
 import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 import { ticTacWoahTest } from "./ticTacWoahTest"
 
