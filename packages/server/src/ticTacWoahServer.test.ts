@@ -1,9 +1,5 @@
-import express from "express"
-import http, { createServer } from "http"
 import request from "supertest"
-import { test, beforeEach, afterEach, expect, vi } from "vitest"
-import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
-import { io as clientIo, Socket as ClientSocket } from "socket.io-client"
+import { expect, vi } from "vitest"
 import { ActiveUser } from "index"
 import { faker } from "@faker-js/faker"
 import {
@@ -11,265 +7,256 @@ import {
 	identifyByTicTacWoahUsername,
 	identifySocketsInSequence,
 } from "./identifyByTicTacWoahUsername"
-import { TicTacWoahSocketServer, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
-import { JoinQueueRequest } from "types"
+import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
+import { ticTacWoahTest } from "./ticTacWoahTest"
 
-export interface ServerToClientEvents {
-	noArg: () => void
-	basicEmit: (a: number, b: string, c: Buffer) => void
-	withAck: (d: string, callback: (e: number) => void) => void
-}
-type AckCallback = (e: number) => void
+// function createTicTacWoahServer() {
+// 	const app = express()
+// 	const httpServer = createServer(app)
 
-export interface ClientToServerEvents {
-	joinQueue(joinQueueRequest: JoinQueueRequest, callback?: AckCallback): void
-}
+// 	const io = new SocketIoServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
+// 		httpServer,
+// 		{
+// 			cors: {
+// 				origin: ["https://admin.socket.io", "http://localhost:5173"],
+// 				methods: ["GET", "POST"],
+// 				credentials: true,
+// 			},
+// 		}
+// 	)
 
-export interface InterServerEvents {
-	ping: () => void
-}
+// 	return {
+// 		app,
+// 		httpServer,
+// 		io,
+// 	}
+// }
 
-export interface SocketData {
-	activeUser: ActiveUser
-	sockets: Set<ServerSocket>
-}
+// let httpServerUnderTest: http.Server
+// let socketIoServerUnderTest: TicTacWoahSocketServer
 
-function createTicTacWoahServer() {
-	const app = express()
-	const httpServer = createServer(app)
+// let clientSocket: ClientSocket<ServerToClientEvents, ClientToServerEvents> = clientIo("http://localhost:9999", {
+// 	autoConnect: false,
+// })
 
-	const io = new SocketIoServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
-		httpServer,
-		{
-			cors: {
-				origin: ["https://admin.socket.io", "http://localhost:5173"],
-				methods: ["GET", "POST"],
-				credentials: true,
-			},
-		}
-	)
+// let clientSocket2 = clientIo("http://localhost:9999", {
+// 	autoConnect: false,
+// })
 
-	return {
-		app,
-		httpServer,
-		io,
-	}
-}
+// beforeEach(
+// 	() =>
+// 		new Promise<void>(done => {
+// 			const { app, httpServer, io } = createTicTacWoahServer()
 
-let httpServerUnderTest: http.Server
-let socketIoServerUnderTest: TicTacWoahSocketServer
+// 			httpServerUnderTest = httpServer
+// 			socketIoServerUnderTest = io
 
-let clientSocket: ClientSocket<ServerToClientEvents, ClientToServerEvents> = clientIo("http://localhost:9999", {
-	autoConnect: false,
-})
+// 			clientSocket = clientIo("http://localhost:9999", {
+// 				autoConnect: false,
+// 			})
 
-let clientSocket2 = clientIo("http://localhost:9999", {
-	autoConnect: false,
-})
+// 			clientSocket2 = clientIo("http://localhost:9999", {
+// 				autoConnect: false,
+// 			})
 
-beforeEach(
-	() =>
-		new Promise<void>(done => {
-			const { app, httpServer, io } = createTicTacWoahServer()
+// 			httpServer.listen(9999, done)
+// 		})
+// )
 
-			httpServerUnderTest = httpServer
-			socketIoServerUnderTest = io
+// afterEach(
+// 	() =>
+// 		new Promise<void>(done => {
+// 			clientSocket.close()
+// 			clientSocket2.close()
+// 			socketIoServerUnderTest.close()
+// 			return httpServerUnderTest.close(() => {
+// 				done()
+// 			})
+// 		})
+// )
 
-			clientSocket = clientIo("http://localhost:9999", {
-				autoConnect: false,
-			})
-
-			clientSocket2 = clientIo("http://localhost:9999", {
-				autoConnect: false,
-			})
-
-			httpServer.listen(9999, done)
-		})
-)
-
-afterEach(
-	() =>
-		new Promise<void>(done => {
-			clientSocket.close()
-			clientSocket2.close()
-			socketIoServerUnderTest.close()
-			return httpServerUnderTest.close(() => {
-				done()
-			})
-		})
-)
-
-test("Health returns 200", () => {
+ticTacWoahTest("Health returns 200", ({ ticTacWoahTestContext }) => {
 	return new Promise(done => {
-		request(httpServerUnderTest).get("/health").expect(200, done)
+		request(ticTacWoahTestContext.httpServer).get("/health").expect(200, done)
 	})
 })
 
-test("Something web sockets", () => {
+ticTacWoahTest("Something web sockets", ({ ticTacWoahTestContext }) => {
 	return new Promise(done => {
-		clientSocket.on("connect", () => {
+		ticTacWoahTestContext.clientSocket.on("connect", () => {
 			done("pass")
 		})
 
-		clientSocket.connect()
+		ticTacWoahTestContext.clientSocket.connect()
 	})
 })
 
-test("One player joins the queue", async () => {
+ticTacWoahTest("One player joins the queue", async ({ ticTacWoahTestContext }) => {
 	const queue = new TicTacWoahQueue()
-	socketIoServerUnderTest.use(identifyAllSocketsAsTheSameUser())
-	socketIoServerUnderTest.use(addConnectionToQueue(queue))
+	ticTacWoahTestContext.serverIo.use(identifyAllSocketsAsTheSameUser())
+	ticTacWoahTestContext.serverIo.use(addConnectionToQueue(queue))
 
-	clientSocket.connect()
-	await clientSocket.emitWithAck("joinQueue", {})
+	ticTacWoahTestContext.clientSocket.connect()
+	await ticTacWoahTestContext.clientSocket.emitWithAck("joinQueue", {})
 
 	await vi.waitFor(() => expect(queue.users.size).toBe(1))
 })
 
-test("One player joins the queue has their connection populated", async () => {
+ticTacWoahTest("One player joins the queue has their connection populated", async ({ ticTacWoahTestContext }) => {
 	const queue = new TicTacWoahQueue()
-	socketIoServerUnderTest.use(identifyAllSocketsAsTheSameUser())
-	socketIoServerUnderTest.use(addConnectionToQueue(queue))
+	ticTacWoahTestContext.serverIo.use(identifyAllSocketsAsTheSameUser())
+	ticTacWoahTestContext.serverIo.use(addConnectionToQueue(queue))
 
-	clientSocket.connect()
-	await clientSocket.emitWithAck("joinQueue", {})
+	ticTacWoahTestContext.clientSocket.connect()
+	await ticTacWoahTestContext.clientSocket.emitWithAck("joinQueue", {})
 
 	await vi.waitFor(() => expect(queue.users.size).toBe(1))
 
 	const newUser = [...queue.users][0]
-	expect(newUser.connections).toContainEqual(expect.objectContaining({ id: clientSocket.id }))
+	expect(newUser.connections).toContainEqual(expect.objectContaining({ id: ticTacWoahTestContext.clientSocket.id }))
 })
 
-test("Active user uniqueIdentifier is populated", async () => {
-	socketIoServerUnderTest.use(identifyByTicTacWoahUsername)
+ticTacWoahTest("Active user uniqueIdentifier is populated", async ({ ticTacWoahTestContext }) => {
+	ticTacWoahTestContext.serverIo.use(identifyByTicTacWoahUsername)
 
 	const userName = faker.internet.userName()
 
-	clientSocket.auth = {
+	ticTacWoahTestContext.clientSocket.auth = {
 		token: userName,
 		type: "tic-tac-woah-username",
 	}
 
-	clientSocket.connect()
+	ticTacWoahTestContext.clientSocket.connect()
 
 	await vi.waitFor(async () => {
-		expect(await socketIoServerUnderTest.fetchSockets()).toHaveLength(1)
-		const serverSocket = (await socketIoServerUnderTest.fetchSockets())[0]
+		expect(await ticTacWoahTestContext.serverIo.fetchSockets()).toHaveLength(1)
+		const serverSocket = (await ticTacWoahTestContext.serverIo.fetchSockets())[0]
 		expect(serverSocket.data.activeUser.uniqueIdentifier).toBe(userName)
 	})
 })
 
-test("Active user connection is populated", async () => {
-	socketIoServerUnderTest.use(identifyByTicTacWoahUsername)
+ticTacWoahTest("Active user connection is populated", async ({ ticTacWoahTestContext }) => {
+	ticTacWoahTestContext.serverIo.use(identifyByTicTacWoahUsername)
 
-	clientSocket.auth = {
+	ticTacWoahTestContext.clientSocket.auth = {
 		token: "any username",
 		type: "tic-tac-woah-username",
 	}
 
-	clientSocket.connect()
+	ticTacWoahTestContext.clientSocket.connect()
 
 	await vi.waitFor(async () => {
-		const activeSockets = await socketIoServerUnderTest.fetchSockets()
+		const activeSockets = await ticTacWoahTestContext.serverIo.fetchSockets()
 		expect(activeSockets).toHaveLength(1)
 
 		const activeUserConnections = activeSockets[0].data.activeUser.connections
-		expect(activeUserConnections).toContainEqual(expect.objectContaining({ id: clientSocket.id }))
+		expect(activeUserConnections).toContainEqual(
+			expect.objectContaining({ id: ticTacWoahTestContext.clientSocket.id })
+		)
 	})
 })
 
-test("Two connections with the same username are captured on the same active user.", async () => {
-	socketIoServerUnderTest.use(identifyByTicTacWoahUsername)
+ticTacWoahTest(
+	"Two connections with the same username are captured on the same active user.",
+	async ({ ticTacWoahTestContext }) => {
+		ticTacWoahTestContext.serverIo.use(identifyByTicTacWoahUsername)
 
-	clientSocket.auth = {
-		token: "Same username",
-		type: "tic-tac-woah-username",
+		ticTacWoahTestContext.clientSocket.auth = {
+			token: "Same username",
+			type: "tic-tac-woah-username",
+		}
+
+		ticTacWoahTestContext.clientSocket2.auth = {
+			token: "Same username",
+			type: "tic-tac-woah-username",
+		}
+
+		ticTacWoahTestContext.clientSocket.connect()
+		ticTacWoahTestContext.clientSocket2.connect()
+
+		await vi.waitFor(async () => {
+			const activeSockets = await ticTacWoahTestContext.serverIo.fetchSockets()
+			expect(activeSockets).toHaveLength(2)
+
+			const activeUserFromConnection1 = activeSockets[0].data.activeUser
+			expect(activeUserFromConnection1.connections).toHaveLength(2)
+
+			const activeUserFromConnection2 = activeSockets[1].data.activeUser
+
+			expect(activeUserFromConnection1).toBe(activeUserFromConnection2)
+		})
 	}
+)
 
-	clientSocket2.auth = {
-		token: "Same username",
-		type: "tic-tac-woah-username",
+ticTacWoahTest(
+	"Two connections with diffrent usernames are captured on diffrent active users.",
+	async ({ ticTacWoahTestContext }) => {
+		ticTacWoahTestContext.serverIo.use(identifyByTicTacWoahUsername)
+
+		ticTacWoahTestContext.clientSocket.auth = {
+			token: "Different username 1",
+			type: "tic-tac-woah-username",
+		}
+
+		ticTacWoahTestContext.clientSocket2.auth = {
+			token: "Different username 2",
+			type: "tic-tac-woah-username",
+		}
+
+		ticTacWoahTestContext.clientSocket.connect()
+		ticTacWoahTestContext.clientSocket2.connect()
+
+		await vi.waitFor(async () => {
+			const activeSockets = await ticTacWoahTestContext.serverIo.fetchSockets()
+			expect(activeSockets).toHaveLength(2)
+
+			const activeUserFromConnection1 = activeSockets[0].data.activeUser
+			const activeUserFromConnection2 = activeSockets[1].data.activeUser
+
+			expect(activeUserFromConnection1).not.toBe(activeUserFromConnection2)
+			expect(activeUserFromConnection1.connections).toHaveLength(1)
+			expect(activeUserFromConnection2.connections).toHaveLength(1)
+		})
 	}
+)
 
-	clientSocket.connect()
-	clientSocket2.connect()
-
-	await vi.waitFor(async () => {
-		const activeSockets = await socketIoServerUnderTest.fetchSockets()
-		expect(activeSockets).toHaveLength(2)
-
-		const activeUserFromConnection1 = activeSockets[0].data.activeUser
-		expect(activeUserFromConnection1.connections).toHaveLength(2)
-
-		const activeUserFromConnection2 = activeSockets[1].data.activeUser
-
-		expect(activeUserFromConnection1).toBe(activeUserFromConnection2)
-	})
-})
-
-test("Two connections with diffrent usernames are captured on diffrent active users.", async () => {
-	socketIoServerUnderTest.use(identifyByTicTacWoahUsername)
-
-	clientSocket.auth = {
-		token: "Different username 1",
-		type: "tic-tac-woah-username",
-	}
-
-	clientSocket2.auth = {
-		token: "Different username 2",
-		type: "tic-tac-woah-username",
-	}
-
-	clientSocket.connect()
-	clientSocket2.connect()
-
-	await vi.waitFor(async () => {
-		const activeSockets = await socketIoServerUnderTest.fetchSockets()
-		expect(activeSockets).toHaveLength(2)
-
-		const activeUserFromConnection1 = activeSockets[0].data.activeUser
-		const activeUserFromConnection2 = activeSockets[1].data.activeUser
-
-		expect(activeUserFromConnection1).not.toBe(activeUserFromConnection2)
-		expect(activeUserFromConnection1.connections).toHaveLength(1)
-		expect(activeUserFromConnection2.connections).toHaveLength(1)
-	})
-})
-
-test("The same user joining the queue twice only gets added once", async () => {
+ticTacWoahTest("The same user joining the queue twice only gets added once", async ({ ticTacWoahTestContext }) => {
 	const queue = new TicTacWoahQueue()
 
-	socketIoServerUnderTest.use(identifyAllSocketsAsTheSameUser())
-	socketIoServerUnderTest.use(addConnectionToQueue(queue))
+	ticTacWoahTestContext.serverIo.use(identifyAllSocketsAsTheSameUser())
+	ticTacWoahTestContext.serverIo.use(addConnectionToQueue(queue))
 
-	clientSocket.connect()
-	clientSocket2.connect()
+	ticTacWoahTestContext.clientSocket.connect()
+	ticTacWoahTestContext.clientSocket2.connect()
 
-	await clientSocket.emitWithAck("joinQueue", {})
-	await clientSocket2.emitWithAck("joinQueue", {})
+	await ticTacWoahTestContext.clientSocket.emitWithAck("joinQueue", {})
+	await ticTacWoahTestContext.clientSocket.emitWithAck("joinQueue", {})
 
 	await vi.waitFor(() => expect(queue.users.size).toBe(1))
 })
 
-test("The queue captures the same activeUser object as the identification middleware", async () => {
-	const queue = new TicTacWoahQueue()
+ticTacWoahTest(
+	"The queue captures the same activeUser object as the identification middleware",
+	async ({ ticTacWoahTestContext }) => {
+		const queue = new TicTacWoahQueue()
 
-	const someActiveUser: ActiveUser = {
-		connections: new Set(),
-		uniqueIdentifier: "Some active user",
+		const someActiveUser: ActiveUser = {
+			connections: new Set(),
+			uniqueIdentifier: "Some active user",
+		}
+
+		ticTacWoahTestContext.serverIo.use(identifyAllSocketsAsTheSameUser(someActiveUser))
+		ticTacWoahTestContext.serverIo.use(addConnectionToQueue(queue))
+
+		ticTacWoahTestContext.clientSocket.connect()
+
+		await ticTacWoahTestContext.clientSocket.emitWithAck("joinQueue", {})
+
+		await vi.waitFor(() => expect(queue.users).toContain(someActiveUser))
 	}
+)
 
-	socketIoServerUnderTest.use(identifyAllSocketsAsTheSameUser(someActiveUser))
-	socketIoServerUnderTest.use(addConnectionToQueue(queue))
-
-	clientSocket.connect()
-
-	await clientSocket.emitWithAck("joinQueue", {})
-
-	await vi.waitFor(() => expect(queue.users).toContain(someActiveUser))
-})
-
-test("Two users joining the queue are added to the queue", async () => {
+ticTacWoahTest("Two users joining the queue are added to the queue", async ({ ticTacWoahTestContext }) => {
 	const queue = new TicTacWoahQueue()
 
 	const twoUsers: [ActiveUser, ActiveUser] = [
@@ -283,14 +270,14 @@ test("Two users joining the queue are added to the queue", async () => {
 		},
 	]
 
-	socketIoServerUnderTest.use(identifySocketsInSequence(twoUsers))
-	socketIoServerUnderTest.use(addConnectionToQueue(queue))
+	ticTacWoahTestContext.serverIo.use(identifySocketsInSequence(twoUsers))
+	ticTacWoahTestContext.serverIo.use(addConnectionToQueue(queue))
 
-	clientSocket.connect()
-	clientSocket2.connect()
+	ticTacWoahTestContext.clientSocket.connect()
+	ticTacWoahTestContext.clientSocket2.connect()
 
-	await clientSocket.emitWithAck("joinQueue", {})
-	await clientSocket2.emitWithAck("joinQueue", {})
+	await ticTacWoahTestContext.clientSocket.emitWithAck("joinQueue", {})
+	await ticTacWoahTestContext.clientSocket2.emitWithAck("joinQueue", {})
 
 	vi.waitFor(() => expect([...queue.users]).toBe(expect.arrayContaining(twoUsers)))
 })
