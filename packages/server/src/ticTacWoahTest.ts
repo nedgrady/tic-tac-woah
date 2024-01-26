@@ -5,12 +5,6 @@ import { Server as SocketIoServer } from "socket.io"
 import { io as clientIo } from "socket.io-client"
 import { TicTacWoahClientSocket, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 
-// declare module "vitest" {
-// 	export interface TestContext {
-// 		ticTacWoahTestContext: TicTacWoahTestContext
-// 	}
-// }
-
 function createTicTacWoahServer() {
 	const app = express()
 	const httpServer = createServer(app)
@@ -29,49 +23,6 @@ function createTicTacWoahServer() {
 		io,
 	}
 }
-
-// let httpServerUnderTest: http.Server
-// let socketIoServerUnderTest: TicTacWoahSocketServer
-
-// let clientSocket: ClientSocket<ServerToClientEvents, ClientToServerEvents> = clientIo("http://localhost:9999", {
-// 	autoConnect: false,
-// })
-
-// let clientSocket2 = clientIo("http://localhost:9999", {
-// 	autoConnect: false,
-// })
-
-// beforeEach(
-// 	async context =>
-// 		new Promise<void>(done => {
-// 			const { app, httpServer, io } = createTicTacWoahServer()
-
-// 			httpServerUnderTest = httpServer
-// 			socketIoServerUnderTest = io
-
-// 			clientSocket = clientIo("http://localhost:9999", {
-// 				autoConnect: false,
-// 			})
-
-// 			clientSocket2 = clientIo("http://localhost:9999", {
-// 				autoConnect: false,
-// 			})
-
-// 			httpServer.listen(9999, done)
-// 		})
-// )
-
-// afterEach(
-// 	() =>
-// 		new Promise<void>(done => {
-// 			clientSocket.close()
-// 			clientSocket2.close()
-// 			socketIoServerUnderTest.close()
-// 			return httpServerUnderTest.close(() => {
-// 				done()
-// 			})
-// 		})
-// )
 
 type TicTacWoahTestContext = {
 	httpServer: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>
