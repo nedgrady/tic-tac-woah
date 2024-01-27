@@ -2,8 +2,9 @@ import { identifyAllSocketsAsTheSameUser } from "auth/socketIdentificationStrate
 import { ticTacWoahTest } from "ticTacWoahTest"
 import { vi, expect } from "vitest"
 import { TicTacWoahQueue, addConnectionToQueue } from "./addConnectionToQueue"
-import { ActiveUser, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
+import { ActiveUser } from "TicTacWoahSocketServer"
 import { removeConnectionFromActiveUser } from "removeConnectionFromActiveUser"
+import { removeConnectionFromQueue } from "./removeConnectionFromQueue"
 
 ticTacWoahTest("One player leaves the queue", async ({ ticTacWoahTestContext }) => {
 	const queue = new TicTacWoahQueue()
@@ -87,15 +88,3 @@ ticTacWoahTest(
 		await vi.waitFor(() => expect([...queue.users]).toEqual(expect.arrayContaining([remainsInQueue])))
 	}
 )
-
-function removeConnectionFromQueue(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
-	return (socket, next) => {
-		socket.on("disconnect", () => {
-			if (socket.data.activeUser.connections.size === 1) {
-				queue.remove(socket.data.activeUser)
-			}
-		})
-
-		next()
-	}
-}
