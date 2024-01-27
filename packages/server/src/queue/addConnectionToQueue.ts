@@ -7,7 +7,9 @@ export class TicTacWoahQueue {
 		this.#queue.add(user)
 	}
 
-	remove(user: ActiveUser) {}
+	remove(user: ActiveUser) {
+		this.#queue.clear()
+	}
 
 	get users() {
 		return this.#queue
