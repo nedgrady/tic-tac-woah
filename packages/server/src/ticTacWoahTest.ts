@@ -50,6 +50,8 @@ export const ticTacWoahTest = test.extend<Thing>({
 			autoConnect: false,
 		})
 
+		// TODO - add some logging (if enabled) to help debug tests?
+
 		await new Promise<void>(done => httpServer.listen(port, done))
 
 		const ticTacWoahTestContext = {

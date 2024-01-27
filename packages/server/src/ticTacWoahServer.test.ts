@@ -2,7 +2,9 @@ import request from "supertest"
 import { expect, vi } from "vitest"
 import { faker } from "@faker-js/faker"
 import { ticTacWoahTest } from "./ticTacWoahTest"
-import { identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
+import { identifyAllSocketsAsTheSameUser, identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
+import { ActiveUser } from "TicTacWoahSocketServer"
+import { removeConnectionFromActiveUser } from "removeConnectionFromActiveUser"
 
 ticTacWoahTest("Health returns 200", ({ ticTacWoahTestContext }) => {
 	return new Promise(done => {
@@ -120,6 +122,38 @@ ticTacWoahTest(
 			expect(activeUserFromConnection1).not.toBe(activeUserFromConnection2)
 			expect(activeUserFromConnection1.connections).toHaveLength(1)
 			expect(activeUserFromConnection2.connections).toHaveLength(1)
+		})
+	}
+)
+
+ticTacWoahTest(
+	"Disconnecting a socket removes it from the active user connections",
+	async ({ ticTacWoahTestContext }) => {
+		const activeUser: ActiveUser = {
+			connections: new Set(),
+			uniqueIdentifier: "Some active user",
+		}
+
+		ticTacWoahTestContext.serverIo
+			.use(identifyAllSocketsAsTheSameUser(activeUser))
+			.use(removeConnectionFromActiveUser)
+
+		ticTacWoahTestContext.clientSocket.connect()
+		ticTacWoahTestContext.clientSocket2.connect()
+
+		await vi.waitFor(async () => {
+			const activeSockets = await ticTacWoahTestContext.serverIo.fetchSockets()
+			expect(activeSockets).toHaveLength(2)
+		})
+
+		ticTacWoahTestContext.clientSocket.disconnect()
+
+		await vi.waitFor(async () => {
+			const activeSockets = await ticTacWoahTestContext.serverIo.fetchSockets()
+			expect(activeSockets).toHaveLength(1)
+
+			expect(activeUser.connections).toHaveLength(1)
+			expect(activeUser.connections).toContain(activeSockets[0])
 		})
 	}
 )
