@@ -88,5 +88,5 @@ ticTacWoahTest("Two users joining the queue are added to the queue", async ({ ti
 	await ticTacWoahTestContext.clientSocket.emitWithAck("joinQueue", {})
 	await ticTacWoahTestContext.clientSocket2.emitWithAck("joinQueue", {})
 
-	vi.waitFor(() => expect([...queue.users]).toBe(expect.arrayContaining(twoUsers)))
+	await vi.waitFor(() => expect([...queue.users]).toEqual(expect.arrayContaining(twoUsers)))
 })
