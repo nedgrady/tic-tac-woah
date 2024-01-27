@@ -25,15 +25,11 @@ import {
 	winByConsecutiveHorizontalPlacements,
 	winByConsecutiveVerticalPlacements,
 } from "domain/winConditions/winConditions"
+import { ActiveUser } from "TicTacWoahSocketServer"
 
 interface ParticipantHandle {
 	readonly activeUser: ActiveUser
 	readonly participant: Participant
-}
-
-export interface ActiveUser {
-	readonly connections: Set<Socket>
-	readonly uniqueIdentifier: string
 }
 
 const activeUsers: Map<string, ActiveUser> = new Map<string, ActiveUser>()

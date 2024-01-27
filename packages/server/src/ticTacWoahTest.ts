@@ -4,6 +4,7 @@ import { test } from "vitest"
 import { Server as SocketIoServer } from "socket.io"
 import { io as clientIo } from "socket.io-client"
 import { TicTacWoahClientSocket, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
+import portfinder from "portfinder"
 
 function createTicTacWoahServer() {
 	const app = express()
@@ -39,16 +40,17 @@ export const ticTacWoahTest = test.extend<Thing>({
 	// eslint-disable-next-line no-empty-pattern
 	ticTacWoahTestContext: async ({}, use) => {
 		const { app, httpServer, io: serverIo } = createTicTacWoahServer()
+		const port = await portfinder.getPortPromise()
 
-		const clientSocket: TicTacWoahClientSocket = clientIo("http://localhost:9998", {
+		const clientSocket: TicTacWoahClientSocket = clientIo(`http://localhost:${port}`, {
 			autoConnect: false,
 		})
 
-		const clientSocket2: TicTacWoahClientSocket = clientIo("http://localhost:9998", {
+		const clientSocket2: TicTacWoahClientSocket = clientIo(`http://localhost:${port}`, {
 			autoConnect: false,
 		})
 
-		await new Promise<void>(done => httpServer.listen(9998, done))
+		await new Promise<void>(done => httpServer.listen(port, done))
 
 		const ticTacWoahTestContext = {
 			app,
@@ -57,6 +59,7 @@ export const ticTacWoahTest = test.extend<Thing>({
 			clientSocket,
 			clientSocket2,
 		}
+
 		await use(ticTacWoahTestContext)
 
 		// cleanup the fixture after each test function

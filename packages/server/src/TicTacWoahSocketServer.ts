@@ -1,5 +1,4 @@
 import { type Socket as ClientSocket } from "socket.io-client"
-import { ActiveUser } from "index"
 import { JoinQueueRequest } from "types"
 import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
 
@@ -35,3 +34,8 @@ export type TicTacWoahServerSocket = ServerSocket<ClientToServerEvents, ServerTo
 export type TicTacWoahSocketServerMiddleware = Parameters<TicTacWoahSocketServer["use"]>[0]
 
 export type TicTacWoahClientSocket = ClientSocket<ServerToClientEvents, ClientToServerEvents>
+
+export interface ActiveUser {
+	readonly connections: Set<TicTacWoahServerSocket>
+	readonly uniqueIdentifier: string
+}
