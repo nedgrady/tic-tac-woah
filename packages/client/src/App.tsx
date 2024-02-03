@@ -1,8 +1,9 @@
-import { CssBaseline, ThemeProvider } from "@mui/material"
+import { ThemeProvider } from "@mui/material/styles"
 import useAppTheme from "./theme/useAppTheme"
 import { RouterProvider } from "@tanstack/react-router"
 import router from "./Routes"
 import { Suspense } from "react"
+import CssBaseline from "@mui/material/CssBaseline"
 
 function App() {
 	const theme = useAppTheme()
