@@ -5,7 +5,7 @@ export function removeConnectionFromQueue(queue: TicTacWoahQueue): TicTacWoahSoc
 	return (socket, next) => {
 		socket.on("disconnect", () => {
 			if (socket.data.activeUser.connections.size === 1) {
-				queue.remove(socket.data.activeUser)
+				queue.remove(socket.data.activeUser.uniqueIdentifier)
 			}
 		})
 

@@ -2,7 +2,8 @@ import { identifyAllSocketsAsTheSameUser, identifySocketsInSequence } from "auth
 import { ticTacWoahTest } from "ticTacWoahTest"
 import { vi, expect } from "vitest"
 import { TicTacWoahQueue, addConnectionToQueue } from "./addConnectionToQueue"
-import { ActiveUser } from "TicTacWoahSocketServer"
+import { ActiveUser, TicTacWoahUserHandle } from "TicTacWoahSocketServer"
+import { fa, faker } from "@faker-js/faker"
 
 ticTacWoahTest("One player joins the queue", async ({ ticTacWoahTestContext }) => {
 	const queue = new TicTacWoahQueue()
@@ -13,20 +14,6 @@ ticTacWoahTest("One player joins the queue", async ({ ticTacWoahTestContext }) =
 	await ticTacWoahTestContext.clientSocket.emitWithAck("joinQueue", {})
 
 	await vi.waitFor(() => expect(queue.users.size).toBe(1))
-})
-
-ticTacWoahTest("One player joins the queue has their connection populated", async ({ ticTacWoahTestContext }) => {
-	const queue = new TicTacWoahQueue()
-	ticTacWoahTestContext.serverIo.use(identifyAllSocketsAsTheSameUser())
-	ticTacWoahTestContext.serverIo.use(addConnectionToQueue(queue))
-
-	ticTacWoahTestContext.clientSocket.connect()
-	await ticTacWoahTestContext.clientSocket.emitWithAck("joinQueue", {})
-
-	await vi.waitFor(() => expect(queue.users.size).toBe(1))
-
-	const newUser = [...queue.users][0]
-	expect(newUser.connections).toContainEqual(expect.objectContaining({ id: ticTacWoahTestContext.clientSocket.id }))
 })
 
 ticTacWoahTest("The same user joining the queue twice only gets added once", async ({ ticTacWoahTestContext }) => {
@@ -44,42 +31,38 @@ ticTacWoahTest("The same user joining the queue twice only gets added once", asy
 	await vi.waitFor(() => expect(queue.users.size).toBe(1))
 })
 
-ticTacWoahTest(
-	"The queue captures the same activeUser object as the identification middleware",
-	async ({ ticTacWoahTestContext }) => {
-		const queue = new TicTacWoahQueue()
+ticTacWoahTest("The queue captures the correct user handle", async ({ ticTacWoahTestContext }) => {
+	const queue = new TicTacWoahQueue()
 
-		const someActiveUser: ActiveUser = {
-			connections: new Set(),
-			uniqueIdentifier: "Some active user",
-		}
-
-		ticTacWoahTestContext.serverIo.use(identifyAllSocketsAsTheSameUser(someActiveUser))
-		ticTacWoahTestContext.serverIo.use(addConnectionToQueue(queue))
-
-		ticTacWoahTestContext.clientSocket.connect()
-
-		await ticTacWoahTestContext.clientSocket.emitWithAck("joinQueue", {})
-
-		await vi.waitFor(() => expect(queue.users).toContain(someActiveUser))
+	const uniqueIdentifier = faker.string.uuid()
+	const someActiveUser: ActiveUser = {
+		connections: new Set(),
+		uniqueIdentifier: uniqueIdentifier,
 	}
-)
+
+	ticTacWoahTestContext.serverIo.use(identifyAllSocketsAsTheSameUser(someActiveUser))
+	ticTacWoahTestContext.serverIo.use(addConnectionToQueue(queue))
+
+	ticTacWoahTestContext.clientSocket.connect()
+
+	await ticTacWoahTestContext.clientSocket.emitWithAck("joinQueue", {})
+
+	await vi.waitFor(() => expect(queue.users).toContain(uniqueIdentifier))
+})
 
 ticTacWoahTest("Two users joining the queue are added to the queue", async ({ ticTacWoahTestContext }) => {
 	const queue = new TicTacWoahQueue()
 
-	const twoUsers: [ActiveUser, ActiveUser] = [
-		{
-			connections: new Set(),
-			uniqueIdentifier: "User 1",
-		},
-		{
-			connections: new Set(),
-			uniqueIdentifier: "User 2",
-		},
-	]
+	const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = ["User 1", "User 2"]
 
-	ticTacWoahTestContext.serverIo.use(identifySocketsInSequence(twoUsers))
+	ticTacWoahTestContext.serverIo.use(
+		identifySocketsInSequence(
+			twoUsers.map(handle => ({
+				connections: new Set(),
+				uniqueIdentifier: handle,
+			}))
+		)
+	)
 	ticTacWoahTestContext.serverIo.use(addConnectionToQueue(queue))
 
 	ticTacWoahTestContext.clientSocket.connect()

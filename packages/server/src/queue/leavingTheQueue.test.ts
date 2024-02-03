@@ -3,20 +3,19 @@ import { ticTacWoahTest } from "ticTacWoahTest"
 import { vi, expect } from "vitest"
 import { TicTacWoahQueue, addConnectionToQueue } from "./addConnectionToQueue"
 import { ActiveUser } from "TicTacWoahSocketServer"
-import { removeConnectionFromActiveUser } from "removeConnectionFromActiveUser"
+import { removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
 import { removeConnectionFromQueue } from "./removeConnectionFromQueue"
+import { faker } from "@faker-js/faker"
 
 ticTacWoahTest("One player leaves the queue", async ({ ticTacWoahTestContext }) => {
 	const queue = new TicTacWoahQueue()
-	const queueLeaver: ActiveUser = {
-		connections: new Set(),
-		uniqueIdentifier: "Some active user",
-	}
+	const queueLeaver = faker.string.uuid()
 
 	queue.add(queueLeaver)
 
-	ticTacWoahTestContext.serverIo.use(identifyAllSocketsAsTheSameUser(queueLeaver))
-	ticTacWoahTestContext.serverIo.use(removeConnectionFromQueue(queue))
+	ticTacWoahTestContext.serverIo
+		.use(identifyAllSocketsAsTheSameUser({ uniqueIdentifier: queueLeaver, connections: new Set() }))
+		.use(removeConnectionFromQueue(queue))
 
 	ticTacWoahTestContext.clientSocket.connect()
 
@@ -31,20 +30,15 @@ ticTacWoahTest(
 	"One player leaves the queue that is populated with a second user",
 	async ({ ticTacWoahTestContext }) => {
 		const queue = new TicTacWoahQueue()
-		const queueLeaver: ActiveUser = {
-			connections: new Set(),
-			uniqueIdentifier: "Some leaving user",
-		}
-
-		const remainsInQueue: ActiveUser = {
-			connections: new Set(),
-			uniqueIdentifier: "Some reamaing user",
-		}
+		const remainsInQueue = "Some leaving user"
+		const queueLeaver = "Some reamaing user"
 
 		queue.add(remainsInQueue)
 		queue.add(queueLeaver)
 
-		ticTacWoahTestContext.serverIo.use(identifyAllSocketsAsTheSameUser(queueLeaver))
+		ticTacWoahTestContext.serverIo.use(
+			identifyAllSocketsAsTheSameUser({ uniqueIdentifier: queueLeaver, connections: new Set() })
+		)
 		ticTacWoahTestContext.serverIo.use(removeConnectionFromQueue(queue))
 
 		ticTacWoahTestContext.clientSocket.connect()
@@ -54,7 +48,7 @@ ticTacWoahTest(
 		ticTacWoahTestContext.clientSocket.disconnect()
 
 		await vi.waitFor(() => expect(queue.users.size).toBe(1))
-		await vi.waitFor(() => expect([...queue.users]).toEqual(expect.arrayContaining([remainsInQueue])))
+		await vi.waitFor(() => expect(queue.users).toContain(remainsInQueue))
 	}
 )
 
@@ -85,6 +79,6 @@ ticTacWoahTest(
 		await vi.waitFor(async () => expect(await ticTacWoahTestContext.serverIo.fetchSockets()).toHaveLength(1))
 
 		await vi.waitFor(() => expect(queue.users.size).toBe(1))
-		await vi.waitFor(() => expect([...queue.users]).toEqual(expect.arrayContaining([remainsInQueue])))
+		await vi.waitFor(() => expect(queue.users).toContain(remainsInQueue.uniqueIdentifier))
 	}
 )

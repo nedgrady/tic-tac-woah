@@ -42,7 +42,7 @@ function Queue() {
 		})
 
 		const joinQueueRequest: JoinQueueRequest = {}
-		socket.emit("join queue", joinQueueRequest)
+		socket.emit("joinQueue", joinQueueRequest)
 
 		// return () => {
 		// 	socket.off()

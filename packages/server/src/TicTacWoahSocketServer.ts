@@ -35,7 +35,10 @@ export type TicTacWoahSocketServerMiddleware = Parameters<TicTacWoahSocketServer
 
 export type TicTacWoahClientSocket = ClientSocket<ServerToClientEvents, ClientToServerEvents>
 
+export type TicTacWoahUserHandle = string
+
 export interface ActiveUser {
 	readonly connections: Set<TicTacWoahServerSocket>
-	readonly uniqueIdentifier: string
+	readonly uniqueIdentifier: TicTacWoahUserHandle
+	readonly objectId?: string
 }

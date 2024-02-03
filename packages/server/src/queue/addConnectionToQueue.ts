@@ -1,13 +1,13 @@
-import { ActiveUser, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
+import { ActiveUser, TicTacWoahSocketServerMiddleware, TicTacWoahUserHandle } from "TicTacWoahSocketServer"
 
 export class TicTacWoahQueue {
-	#queue: Set<ActiveUser> = new Set<ActiveUser>()
+	#queue: Set<TicTacWoahUserHandle> = new Set<TicTacWoahUserHandle>()
 
-	add(user: ActiveUser) {
+	add(user: TicTacWoahUserHandle) {
 		this.#queue.add(user)
 	}
 
-	remove(user: ActiveUser) {
+	remove(user: TicTacWoahUserHandle) {
 		this.#queue.delete(user)
 	}
 
@@ -19,7 +19,7 @@ export class TicTacWoahQueue {
 export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	return (socket, next) => {
 		socket.on("joinQueue", (joinQueueRequest, callback) => {
-			queue.add(socket.data.activeUser)
+			queue.add(socket.data.activeUser.uniqueIdentifier)
 			callback && callback(0)
 		})
 		next()

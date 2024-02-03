@@ -5,6 +5,7 @@ import { Server as SocketIoServer } from "socket.io"
 import { io as clientIo } from "socket.io-client"
 import { TicTacWoahClientSocket, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import portfinder from "portfinder"
+import { instrument } from "@socket.io/admin-ui"
 
 function createTicTacWoahServer() {
 	const app = express()
@@ -16,6 +17,11 @@ function createTicTacWoahServer() {
 			methods: ["GET", "POST"],
 			credentials: true,
 		},
+	})
+
+	instrument(io, {
+		auth: false,
+		mode: "development",
 	})
 
 	return {

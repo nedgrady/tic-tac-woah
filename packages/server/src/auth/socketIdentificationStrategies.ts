@@ -4,16 +4,16 @@ const activeUsers: Map<string, ActiveUser> = new Map<string, ActiveUser>()
 
 export const identifyByTicTacWoahUsername: TicTacWoahSocketServerMiddleware = (socket, next) => {
 	let activeUser = activeUsers.get(socket.handshake.auth.token)
-
 	if (!activeUser) {
 		activeUser = {
 			uniqueIdentifier: socket.handshake.auth.token,
 			connections: new Set(),
+			objectId: crypto.randomUUID(),
 		}
 		activeUsers.set(socket.handshake.auth.token, activeUser)
 	}
-	activeUser.connections.add(socket)
 	socket.data.activeUser = activeUser
+	activeUser.connections.add(socket)
 
 	next()
 }
@@ -27,7 +27,6 @@ export const identifyAllSocketsAsTheSameUser: (
 	}
 
 	const identifyAllSocketsAsTheSameUser: TicTacWoahSocketServerMiddleware = (socket, next) => {
-		// userSockets is accessible here and persists between calls
 		singleActiveUser.connections.add(socket)
 		socket.data.activeUser = singleActiveUser
 		next()
@@ -54,4 +53,15 @@ export const identifySocketsInSequence: (
 	}
 
 	return identifySocketsInSequence
+}
+
+export const removeConnectionFromActiveUser: TicTacWoahSocketServerMiddleware = (socket, next) => {
+	socket.on("disconnect", () => {
+		socket.data.activeUser.connections.delete(socket)
+	})
+
+	// if (socket.data.activeUser.connections.size === 0) {
+	// 	activeUsers.delete(socket.data.activeUser.uniqueIdentifier)
+	// }
+	next()
 }
