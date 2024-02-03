@@ -60,6 +60,9 @@ export const removeConnectionFromActiveUser: TicTacWoahSocketServerMiddleware = 
 		socket.data.activeUser.connections.delete(socket)
 	})
 
+	// TODO - consider removing from activeUsers if no connections here
+	// this works for now, as an active user having an empty set will have
+	// no side-effects.
 	// if (socket.data.activeUser.connections.size === 0) {
 	// 	activeUsers.delete(socket.data.activeUser.uniqueIdentifier)
 	// }

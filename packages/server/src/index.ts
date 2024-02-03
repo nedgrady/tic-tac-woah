@@ -9,7 +9,12 @@ import { instrument } from "@socket.io/admin-ui"
 import { QueueResponse } from "types"
 // import applicationInsights from "./logging/applicationInsights"
 import { Participant } from "domain/Participant"
-import { ActiveUser, TicTacWoahServerSocket, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
+import {
+	ActiveUser,
+	TicTacWoahServerSocket,
+	TicTacWoahSocketServer,
+	TicTacWoahUserHandle,
+} from "TicTacWoahSocketServer"
 import { identifyAllSocketsAsTheSameUser, identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
@@ -200,12 +205,9 @@ app.get("/version", (_, response) => {
 })
 
 app.get("/queue", async (_, response) => {
-	const sockets = await io.in("queue").fetchSockets()
-
-	const queueResponse: QueueResponse & { socketsDepth: number; thing?: unknown } = {
+	const queueResponse: QueueResponse & { members?: TicTacWoahUserHandle[] } = {
 		depth: ttQueue.users.size,
-		socketsDepth: sockets.length,
-		thing: [...ttQueue.users.keys()],
+		members: [...ttQueue.users.keys()],
 	}
 
 	response.json(queueResponse)

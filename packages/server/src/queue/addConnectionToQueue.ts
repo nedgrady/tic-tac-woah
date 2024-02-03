@@ -1,4 +1,4 @@
-import { ActiveUser, TicTacWoahSocketServerMiddleware, TicTacWoahUserHandle } from "TicTacWoahSocketServer"
+import { TicTacWoahSocketServerMiddleware, TicTacWoahUserHandle } from "TicTacWoahSocketServer"
 
 export class TicTacWoahQueue {
 	#queue: Set<TicTacWoahUserHandle> = new Set<TicTacWoahUserHandle>()
