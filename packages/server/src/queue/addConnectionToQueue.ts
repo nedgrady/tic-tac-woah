@@ -2,7 +2,13 @@ import { TicTacWoahSocketServerMiddleware, TicTacWoahUserHandle } from "TicTacWo
 
 export class TicTacWoahQueue {
 	#queue: Set<TicTacWoahUserHandle> = new Set<TicTacWoahUserHandle>()
-
+	objectId: string
+	/**
+	 *
+	 */
+	constructor() {
+		this.objectId = crypto.randomUUID()
+	}
 	add(user: TicTacWoahUserHandle) {
 		this.#queue.add(user)
 	}
@@ -22,6 +28,7 @@ export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketSe
 			queue.add(socket.data.activeUser.uniqueIdentifier)
 			callback && callback(0)
 		})
+
 		next()
 	}
 }

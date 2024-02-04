@@ -1,11 +1,12 @@
 import { type Socket as ClientSocket } from "socket.io-client"
-import { JoinQueueRequest } from "types"
+import { GameStartDto, JoinQueueRequest } from "types"
 import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
 
 export interface ServerToClientEvents {
 	noArg: () => void
 	basicEmit: (a: number, b: string, c: Buffer) => void
 	withAck: (d: string, callback: (e: number) => void) => void
+	gameStart: (gameStart: GameStartDto) => void
 }
 export type AckCallback = (e: number) => void
 
