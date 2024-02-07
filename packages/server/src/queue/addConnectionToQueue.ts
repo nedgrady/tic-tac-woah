@@ -1,7 +1,11 @@
-import { TicTacWoahSocketServerMiddleware, TicTacWoahUserHandle } from "TicTacWoahSocketServer"
+import { ActiveUser, TicTacWoahSocketServerMiddleware, TicTacWoahUserHandle } from "TicTacWoahSocketServer"
+import { EventEmitter } from "events"
+
+export type QueueAddedListener = (queueState: ReadonlySet<TicTacWoahUserHandle>) => void
 
 export class TicTacWoahQueue {
-	#queue: Set<TicTacWoahUserHandle> = new Set<TicTacWoahUserHandle>()
+	readonly #queue: ActiveUser[] = []
+	readonly #emitter: EventEmitter = new EventEmitter()
 	objectId: string
 	/**
 	 *
@@ -9,15 +13,29 @@ export class TicTacWoahQueue {
 	constructor() {
 		this.objectId = crypto.randomUUID()
 	}
-	add(user: TicTacWoahUserHandle) {
-		this.#queue.add(user)
+	add(newUser: ActiveUser) {
+		if (
+			this.#queue.findIndex(
+				userInQueueAlready => userInQueueAlready.uniqueIdentifier === newUser.uniqueIdentifier
+			) !== -1
+		)
+			return
+		this.#queue.push(newUser)
+		this.#emitter.emit("Added", this.#queue)
 	}
 
-	remove(user: TicTacWoahUserHandle) {
-		this.#queue.delete(user)
+	onAdded(listener: QueueAddedListener) {
+		this.#emitter.on("Added", listener)
 	}
 
-	get users() {
+	remove(user: ActiveUser) {
+		const id = user.uniqueIdentifier
+		const index = this.#queue.findIndex(u => u.uniqueIdentifier === id)
+		if (index === -1) return
+		this.#queue.splice(index, 1)
+	}
+
+	get users(): readonly ActiveUser[] {
 		return this.#queue
 	}
 }
@@ -25,7 +43,7 @@ export class TicTacWoahQueue {
 export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	return (socket, next) => {
 		socket.on("joinQueue", (joinQueueRequest, callback) => {
-			queue.add(socket.data.activeUser.uniqueIdentifier)
+			queue.add(socket.data.activeUser)
 			callback && callback(0)
 		})
 

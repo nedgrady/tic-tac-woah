@@ -9,19 +9,20 @@ import { faker } from "@faker-js/faker"
 
 ticTacWoahTest("One player leaves the queue", async ({ setup: { startAndConnectCount } }) => {
 	const queue = new TicTacWoahQueue()
-	const queueLeaver = faker.string.uuid()
+	const queueLeaver: ActiveUser = {
+		uniqueIdentifier: faker.string.uuid(),
+		connections: new Set(),
+	}
 
 	queue.add(queueLeaver)
 
 	const startCtx = await startAndConnectCount(1, server =>
-		server
-			.use(identifyAllSocketsAsTheSameUser({ uniqueIdentifier: queueLeaver, connections: new Set() }))
-			.use(removeConnectionFromQueue(queue))
+		server.use(identifyAllSocketsAsTheSameUser(queueLeaver)).use(removeConnectionFromQueue(queue))
 	)
 
 	startCtx.clientSockets[0].disconnect()
 
-	await vi.waitFor(() => expect(queue.users.size).toBe(0))
+	await vi.waitFor(() => expect(queue.users).toHaveLength(0))
 
 	return startCtx.done()
 })
@@ -30,22 +31,27 @@ ticTacWoahTest(
 	"One player leaves the queue that is populated with a second user",
 	async ({ setup: { startAndConnectCount } }) => {
 		const queue = new TicTacWoahQueue()
-		const remainsInQueue = "Some leaving user"
-		const queueLeaver = "Some reamaing user"
+
+		const remainsInQueue: ActiveUser = {
+			uniqueIdentifier: "Some leaving user",
+			connections: new Set(),
+		}
+		const queueLeaver: ActiveUser = {
+			uniqueIdentifier: "Some reamaing user",
+			connections: new Set(),
+		}
 
 		queue.add(remainsInQueue)
 		queue.add(queueLeaver)
 
 		const startCtx = await startAndConnectCount(1, server =>
-			server
-				.use(identifyAllSocketsAsTheSameUser({ uniqueIdentifier: queueLeaver, connections: new Set() }))
-				.use(removeConnectionFromQueue(queue))
+			server.use(identifyAllSocketsAsTheSameUser(queueLeaver)).use(removeConnectionFromQueue(queue))
 		)
 
 		startCtx.clientSockets[0].disconnect()
 
-		await vi.waitFor(() => expect(queue.users.size).toBe(1))
-		await vi.waitFor(() => expect(queue.users).toContain(remainsInQueue))
+		await vi.waitFor(() => expect(queue.users).toHaveLength(1))
+		await vi.waitFor(() => expect(queue.users).toContainActiveUser(remainsInQueue))
 	}
 )
 
@@ -74,7 +80,7 @@ ticTacWoahTest(
 
 		await vi.waitFor(async () => expect(await startCtx.serverIo.fetchSockets()).toHaveLength(1))
 
-		await vi.waitFor(() => expect(queue.users.size).toBe(1))
-		await vi.waitFor(() => expect(queue.users).toContain(remainsInQueue.uniqueIdentifier))
+		await vi.waitFor(() => expect(queue.users).toHaveLength(1))
+		await vi.waitFor(() => expect(queue.users).toContainActiveUser(remainsInQueue))
 	}
 )

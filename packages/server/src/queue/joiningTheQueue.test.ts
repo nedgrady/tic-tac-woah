@@ -18,7 +18,7 @@ ticTacWoahTest("One player joins the queue", async ({ setup: { startAndConnect }
 
 	await startCtx.clientSocket.emitWithAck("joinQueue", {})
 
-	await vi.waitFor(() => expect(queue.users.size).toBe(1))
+	await vi.waitFor(() => expect(queue.users).toHaveLength(1))
 })
 
 ticTacWoahTest("The same user joining the queue twice only gets added once", async ({ setup: { startAndConnect } }) => {
@@ -31,7 +31,7 @@ ticTacWoahTest("The same user joining the queue twice only gets added once", asy
 	await startCtx.clientSocket.emitWithAck("joinQueue", {})
 	await startCtx.clientSocket2.emitWithAck("joinQueue", {})
 
-	await vi.waitFor(() => expect(queue.users.size).toBe(1))
+	await vi.waitFor(() => expect(queue.users).toHaveLength(1))
 })
 
 ticTacWoahTest("The queue captures the correct user handle", async ({ setup: { startAndConnect } }) => {
@@ -49,25 +49,19 @@ ticTacWoahTest("The queue captures the correct user handle", async ({ setup: { s
 
 	await startCtx.clientSocket.emitWithAck("joinQueue", {})
 
-	await vi.waitFor(() => expect(queue.users).toContain(uniqueIdentifier))
+	await vi.waitFor(() => expect(queue.users).toContainSingleActiveUser(someActiveUser))
 })
 
-ticTacWoahTest("Two users joining the queue are added to the queue", async ({ setup: { startAndConnect } }) => {
+ticTacWoahTest.only("Two users joining the queue are added to the queue", async ({ setup: { startAndConnect } }) => {
 	const queue = new TicTacWoahQueue()
 
-	const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = ["User 1", "User 2"]
+	const twoUsers: ActiveUser[] = ["User 1", "User 2"].map(handle => ({
+		connections: new Set(),
+		uniqueIdentifier: handle,
+	}))
 
 	const startCtx = await startAndConnect(server =>
-		server
-			.use(
-				identifySocketsInSequence(
-					twoUsers.map(handle => ({
-						connections: new Set(),
-						uniqueIdentifier: handle,
-					}))
-				)
-			)
-			.use(addConnectionToQueue(queue))
+		server.use(identifySocketsInSequence(twoUsers)).use(addConnectionToQueue(queue))
 	)
 
 	startCtx.clientSocket.connect()
@@ -76,7 +70,9 @@ ticTacWoahTest("Two users joining the queue are added to the queue", async ({ se
 	await startCtx.clientSocket.emitWithAck("joinQueue", {})
 	await startCtx.clientSocket2.emitWithAck("joinQueue", {})
 
-	await vi.waitFor(() => expect([...queue.users]).toEqual(expect.arrayContaining(twoUsers)))
+	await vi.waitFor(() => {
+		expect(queue.users).toOnlyContainActiveUsers(...twoUsers)
+	})
 })
 
 ticTacWoahTest(
@@ -102,10 +98,12 @@ ticTacWoahTest(
 		await startCtx.clientSocket.emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(queue.users.size).toBe(1)
+			expect(queue.users).toHaveLength(1)
 		})
 
 		expect(startCtx.serverSocket.emit).not.toHaveBeenCalled()
+
+		return startCtx.done()
 	}
 )
 
@@ -135,7 +133,7 @@ ticTacWoahTest(
 		await clientSocket2.emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(queue.users.size).toBe(2)
+			expect(queue.users.length).toBe(1)
 		})
 
 		await vi.waitFor(() => {
@@ -148,9 +146,18 @@ ticTacWoahTest(
 )
 
 export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
+	// queue.onAdded(users => {
+	// 	if (users.size === 2) {
+	// 		// TODO - start game for each user
+	// 	}
+	// })
+
+	// return (socket, next) => {
+	// 	next()
+	// }
 	return (socket, next) => {
 		socket.on("joinQueue", () => {
-			if (queue.users.size === 2) socket.emit("gameStart", { id: "TODO", players: [] })
+			if (queue.users.length === 2) socket.emit("gameStart", { id: "TODO", players: [] })
 		})
 		next()
 	}

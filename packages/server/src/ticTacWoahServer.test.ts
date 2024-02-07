@@ -1,5 +1,5 @@
 import request from "supertest"
-import { expect, vi } from "vitest"
+import { expect, vi, test } from "vitest"
 import { faker } from "@faker-js/faker"
 import { ticTacWoahTest } from "./ticTacWoahTest"
 import { identifyAllSocketsAsTheSameUser, identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"

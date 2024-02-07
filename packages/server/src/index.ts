@@ -206,8 +206,8 @@ app.get("/version", (_, response) => {
 
 app.get("/queue", async (_, response) => {
 	const queueResponse: QueueResponse & { members?: TicTacWoahUserHandle[] } = {
-		depth: ttQueue.users.size,
-		members: [...ttQueue.users.keys()],
+		depth: ttQueue.users.length,
+		members: ttQueue.users.map(user => user.uniqueIdentifier),
 	}
 
 	response.json(queueResponse)
