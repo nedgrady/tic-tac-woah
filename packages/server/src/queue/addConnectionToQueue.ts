@@ -1,7 +1,7 @@
 import { ActiveUser, TicTacWoahSocketServerMiddleware, TicTacWoahUserHandle } from "TicTacWoahSocketServer"
 import { EventEmitter } from "events"
 
-export type QueueAddedListener = (queueState: ReadonlySet<TicTacWoahUserHandle>) => void
+export type QueueAddedListener = (queueState: readonly ActiveUser[]) => void
 
 export class TicTacWoahQueue {
 	readonly #queue: ActiveUser[] = []

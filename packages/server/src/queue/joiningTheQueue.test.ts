@@ -107,7 +107,7 @@ ticTacWoahTest(
 	}
 )
 
-ticTacWoahTest.skip(
+ticTacWoahTest(
 	"With a game size of 2, two users joining the queue are matched into a game",
 	async ({ setup: { startAndConnect } }) => {
 		const queue = new TicTacWoahQueue()
@@ -133,10 +133,6 @@ ticTacWoahTest.skip(
 		await clientSocket2.emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(queue.users.length).toBe(1)
-		})
-
-		await vi.waitFor(() => {
 			expect(serverSocket.emit).toHaveBeenCalledWith("gameStart", expect.anything())
 			expect(serverSocket2.emit).toHaveBeenCalledWith("gameStart", expect.anything())
 		})
@@ -146,19 +142,15 @@ ticTacWoahTest.skip(
 )
 
 export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
-	// queue.onAdded(users => {
-	// 	if (users.size === 2) {
-	// 		// TODO - start game for each user
-	// 	}
-	// })
-
-	// return (socket, next) => {
-	// 	next()
-	// }
+	queue.onAdded(users => {
+		if (users.length === 2) {
+			users.forEach(user => {
+				const connection = [...user.connections][0]
+				connection.emit("gameStart", { id: "TODO", players: [] })
+			})
+		}
+	})
 	return (socket, next) => {
-		socket.on("joinQueue", () => {
-			if (queue.users.length === 2) socket.emit("gameStart", { id: "TODO", players: [] })
-		})
 		next()
 	}
 }
