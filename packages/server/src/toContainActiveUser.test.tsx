@@ -79,7 +79,7 @@ test("Other properties on the Socket are ignored", () => {
 	const b: ActiveUser = {
 		uniqueIdentifier: "123",
 		connections: new Set(),
-	}
+	} as unknown as ActiveUser
 
 	a.connections.add({ id: "123", someOtherProperty: "Something" } as unknown as Socket)
 	b.connections.add({ id: "123", someOtherProperty: "Different" } as unknown as Socket)

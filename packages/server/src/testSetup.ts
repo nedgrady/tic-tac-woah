@@ -2,6 +2,7 @@ import { expect } from "vitest"
 import * as matchers from "jest-extended"
 import { ActiveUser } from "TicTacWoahSocketServer"
 import { Socket } from "socket.io-client"
+import { th } from "@faker-js/faker"
 expect.extend(matchers)
 
 type ActiveUserEqualityContract = Pick<ActiveUser, "uniqueIdentifier"> & { connectionIds: string[] }
@@ -45,32 +46,28 @@ expect.extend({
 	toContainSingleActiveUser(received: ActiveUser[], activeUser: ActiveUser) {
 		const pass: boolean = received.length === 1 && this.equals(received[0], activeUser)
 
-		const diff = this.utils.diff(received.map(formatActiveUser), formatActiveUser(activeUser))
-
 		return {
-			message: () => `Expected ActiveUser array to contain the received ActiveUser\n. ${diff}`,
+			message: () =>
+				`Expected ActiveUser array to contain the received ActiveUser\n. ${this.utils.diff(
+					received.map(formatActiveUser),
+					formatActiveUser(activeUser)
+				)}`,
 			pass,
 		}
 	},
 
 	toOnlyContainActiveUsers(received: ActiveUser[], ...expectedUsers: ActiveUser[]) {
-		const receivedFmt = received.map(receivedUser => ({
-			uniqueIdentifier: receivedUser.uniqueIdentifier,
-			connections: receivedUser.connections.size,
-		}))
-
-		const activeUsersFmt = expectedUsers.map(expectedUser => ({
-			uniqueIdentifier: expectedUser.uniqueIdentifier,
-			connections: expectedUser.connections.size,
-		}))
-
 		const pass =
 			expectedUsers.every(expectedUser =>
 				received.some(receivedUser => this.equals(receivedUser, expectedUser))
 			) && received.every(receivedUser => expectedUsers.some(user => this.equals(receivedUser, user)))
 
 		return {
-			message: () => `Expected ${receivedFmt} to ${this.isNot ? "not" : ""} contain exactly ${activeUsersFmt}`,
+			message: () =>
+				`Expected ActiveUser array to only contain the received ActiveUser user array.\n${this.utils.diff(
+					received.map(formatActiveUser),
+					expectedUsers.map(formatActiveUser)
+				)}`,
 			pass,
 		}
 	},
