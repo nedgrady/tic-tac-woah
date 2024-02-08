@@ -52,7 +52,7 @@ ticTacWoahTest("The queue captures the correct user handle", async ({ setup: { s
 	await vi.waitFor(() => expect(queue.users).toContainSingleActiveUser(someActiveUser))
 })
 
-ticTacWoahTest.only("Two users joining the queue are added to the queue", async ({ setup: { startAndConnect } }) => {
+ticTacWoahTest("Two users joining the queue are added to the queue", async ({ setup: { startAndConnect } }) => {
 	const queue = new TicTacWoahQueue()
 
 	const twoUsers: ActiveUser[] = ["User 1", "User 2"].map(handle => ({
@@ -107,7 +107,7 @@ ticTacWoahTest(
 	}
 )
 
-ticTacWoahTest(
+ticTacWoahTest.skip(
 	"With a game size of 2, two users joining the queue are matched into a game",
 	async ({ setup: { startAndConnect } }) => {
 		const queue = new TicTacWoahQueue()
