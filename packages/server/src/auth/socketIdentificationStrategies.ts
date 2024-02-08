@@ -29,7 +29,6 @@ export const identifyAllSocketsAsTheSameUser: (
 	const identifyAllSocketsAsTheSameUser: TicTacWoahSocketServerMiddleware = (socket, next) => {
 		singleActiveUser.connections.add(socket)
 		socket.data.activeUser = singleActiveUser
-		console.log("==== socket.io auth")
 		next()
 	}
 

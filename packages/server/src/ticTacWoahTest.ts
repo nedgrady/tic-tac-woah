@@ -12,8 +12,6 @@ import {
 } from "TicTacWoahSocketServer"
 import portfinder from "portfinder"
 import { instrument } from "@socket.io/admin-ui"
-import { s } from "vitest/dist/reporters-1evA5lom"
-import e from "cors"
 
 type TicTacWoahRemoteServerSocket = Awaited<ReturnType<TicTacWoahSocketServer["fetchSockets"]>>[0]
 
@@ -32,6 +30,11 @@ function createTicTacWoahServer() {
 	instrument(io, {
 		auth: false,
 		mode: "development",
+	})
+
+	httpServer.on("error", error => {
+		console.log("Error in server CAUGHT")
+		// console.log("Error in server", error)
 	})
 
 	return {
@@ -187,11 +190,46 @@ export async function startAndConnectCount(
 export const ticTacWoahTest = test.extend<TicTacWoahTest>({
 	// eslint-disable-next-line no-empty-pattern
 	setup: async ({}, use) => {
-		await use({
-			startServer: start,
-			startAndConnect,
-			startAndConnectCount,
+		let capturedDone = async () => {}
+
+		const startProxy = new Proxy(start, {
+			apply: async (target, thisArg, args) => {
+				const result = Reflect.apply(target, thisArg, args)
+				result.then(async (value: unknown) => {
+					capturedDone = (value as { done: () => Promise<void> }).done
+				})
+				return result
+			},
 		})
+
+		const startAndConnectProxy = new Proxy(startAndConnect, {
+			apply: async (target, thisArg, args) => {
+				const result = Reflect.apply(target, thisArg, args)
+				result.then(async (value: unknown) => {
+					capturedDone = (value as { done: () => Promise<void> }).done
+				})
+				return result
+			},
+		})
+
+		const startAndConnectCountProxy = new Proxy(startAndConnectCount, {
+			apply: async (target, thisArg, args) => {
+				const result = Reflect.apply(target, thisArg, args)
+				result.then(async (value: unknown) => {
+					capturedDone = (value as { done: () => Promise<void> }).done
+				})
+				return result
+			},
+		})
+
+		await use({
+			startServer: startProxy,
+			startAndConnect: startAndConnectProxy,
+			startAndConnectCount: startAndConnectCountProxy,
+		})
+
+		// heaven forbid a test uses more than one setup function
+		if (capturedDone) return capturedDone()
 	},
 })
 
@@ -204,58 +242,3 @@ type TicTacWoahTestContext = {
 type TicTacWoahTest = {
 	setup: TicTacWoahTestContext
 }
-
-// export const ticTacWoahTest = test.extend<Thing>({
-// 	// eslint-disable-next-line no-empty-pattern
-// 	ticTacWoahTestContext: async ({}, use) => {
-// 		const { app, httpServer, io: serverIo } = createTicTacWoahServer()
-// 		const port = await portfinder.getPortPromise()
-
-// 		const clientSocketEvents = new Map<EventName, EventPayload<EventName>[]>()
-
-// 		const clientSocket: TicTacWoahClientSocket = clientIo(`http://localhost:${port}`, {
-// 			autoConnect: false,
-// 		})
-
-// 		clientSocket.onAny((eventName, ...args) => {
-// 			clientSocketEvents.set(eventName, args)
-// 		})
-// 		// TODO - how to get rid of these casts? Spreading the socket whines about
-// 		// private properties missing :(
-// 		;(clientSocket as AssertableTicTacWoahClientSocket).events = clientSocketEvents
-
-// 		const clientSocket2Events = new Map<EventName, EventPayload<EventName>[]>()
-// 		const clientSocket2: TicTacWoahClientSocket = clientIo(`http://localhost:${port}`, {
-// 			autoConnect: false,
-// 		})
-
-// 		clientSocket2.onAny((eventName, ...args) => {
-// 			clientSocket2Events.set(eventName, args)
-// 		})
-// 		;(clientSocket2 as AssertableTicTacWoahClientSocket).events = clientSocketEvents
-
-// 		// TODO - add some logging (if enabled) to help debug tests?
-
-// 		await new Promise<void>(done => httpServer.listen(port, done))
-
-// 		const ticTacWoahTestContext = {
-// 			app,
-// 			httpServer,
-// 			serverIo,
-// 			clientSocket: clientSocket as AssertableTicTacWoahClientSocket,
-// 			clientSocket2: clientSocket2 as AssertableTicTacWoahClientSocket,
-// 		}
-
-// 		await use(ticTacWoahTestContext)
-
-// 		// cleanup the fixture after each test function
-// 		await new Promise<void>(done => {
-// 			clientSocket.close()
-// 			clientSocket2.close()
-// 			serverIo.close()
-// 			httpServer.close(() => {
-// 				done()
-// 			})
-// 		})
-// 	},
-// })

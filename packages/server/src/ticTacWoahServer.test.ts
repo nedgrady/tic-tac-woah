@@ -12,7 +12,7 @@ import { io } from "socket.io-client"
 ticTacWoahTest("Health returns 200", async ({ setup: { startServer } }) => {
 	const startCtx = await startServer()
 
-	request(startCtx.httpServer).get("/health").expect(200, startCtx.done)
+	request(startCtx.httpServer).get("/health").expect(200)
 })
 
 ticTacWoahTest("Active user uniqueIdentifier is populated", async ({ setup: { startServer } }) => {

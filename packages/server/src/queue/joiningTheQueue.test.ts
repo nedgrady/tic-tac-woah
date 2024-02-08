@@ -102,12 +102,10 @@ ticTacWoahTest(
 		})
 
 		expect(startCtx.serverSocket.emit).not.toHaveBeenCalled()
-
-		return startCtx.done()
 	}
 )
 
-ticTacWoahTest(
+ticTacWoahTest.only(
 	"With a game size of 2, two users joining the queue are matched into a game",
 	async ({ setup: { startAndConnect } }) => {
 		const queue = new TicTacWoahQueue()
@@ -127,7 +125,7 @@ ticTacWoahTest(
 				.use(matchmaking(queue))
 		}
 
-		const { done, clientSocket, clientSocket2, serverSocket, serverSocket2 } = await startAndConnect(preConfigure)
+		const { clientSocket, clientSocket2, serverSocket, serverSocket2 } = await startAndConnect(preConfigure)
 
 		await clientSocket.emitWithAck("joinQueue", {})
 		await clientSocket2.emitWithAck("joinQueue", {})
@@ -136,13 +134,12 @@ ticTacWoahTest(
 			expect(serverSocket.emit).toHaveBeenCalledWith("gameStart", expect.anything())
 			expect(serverSocket2.emit).toHaveBeenCalledWith("gameStart", expect.anything())
 		})
-
-		return done()
 	}
 )
 
 export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	queue.onAdded(users => {
+		throw new Error("Not implemented")
 		if (users.length === 2) {
 			users.forEach(user => {
 				const connection = [...user.connections][0]
@@ -151,6 +148,7 @@ export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddl
 		}
 	})
 	return (socket, next) => {
+		// throw new Error("Not implemented 1")
 		next()
 	}
 }

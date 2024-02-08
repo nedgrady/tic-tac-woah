@@ -23,8 +23,6 @@ ticTacWoahTest("One player leaves the queue", async ({ setup: { startAndConnectC
 	startCtx.clientSockets[0].disconnect()
 
 	await vi.waitFor(() => expect(queue.users).toHaveLength(0))
-
-	return startCtx.done()
 })
 
 ticTacWoahTest(
