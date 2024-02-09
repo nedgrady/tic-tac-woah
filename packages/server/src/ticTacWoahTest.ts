@@ -32,11 +32,6 @@ function createTicTacWoahServer() {
 		mode: "development",
 	})
 
-	httpServer.on("error", error => {
-		console.log("Error in server CAUGHT")
-		// console.log("Error in server", error)
-	})
-
 	return {
 		app,
 		httpServer,

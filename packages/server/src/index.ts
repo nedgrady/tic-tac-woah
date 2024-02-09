@@ -47,6 +47,25 @@ instrument(io, {
 	mode: "development",
 })
 
+type SocketIoMiddleware = (...args: never[]) => Promise<void> | ((...args: never[]) => void)
+
+function errorHandler(handler: SocketIoMiddleware): SocketIoMiddleware {
+	const handleError = (err: unknown) => {
+		console.error("Unhandled Socket.IO error", err)
+	}
+
+	const wrappedHandler: SocketIoMiddleware = async function (this: never, ...args) {
+		try {
+			await handler.apply(this, args)
+			// No need to check for ret.catch because handler is always async
+		} catch (e) {
+			handleError(e)
+		}
+	}
+
+	return wrappedHandler
+}
+
 io.use((socket, next) => {
 	console.log("==== socket.io connection", socket.id)
 	socket.on("error", error => {

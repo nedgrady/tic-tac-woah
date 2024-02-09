@@ -1,13 +1,10 @@
 import request from "supertest"
-import { expect, vi, test } from "vitest"
+import { expect, vi } from "vitest"
 import { faker } from "@faker-js/faker"
 import { ticTacWoahTest } from "./ticTacWoahTest"
 import { identifyAllSocketsAsTheSameUser, identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
-import { ActiveUser, TicTacWoahServerSocket } from "TicTacWoahSocketServer"
+import { ActiveUser } from "TicTacWoahSocketServer"
 import { removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
-import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { removeConnectionFromQueue } from "queue/removeConnectionFromQueue"
-import { io } from "socket.io-client"
 
 ticTacWoahTest("Health returns 200", async ({ setup: { startServer } }) => {
 	const startCtx = await startServer()

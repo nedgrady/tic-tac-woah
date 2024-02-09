@@ -9,6 +9,7 @@ import {
 	TicTacWoahUserHandle,
 } from "TicTacWoahSocketServer"
 import { faker } from "@faker-js/faker"
+import { io } from "socket.io-client"
 
 ticTacWoahTest("One player joins the queue", async ({ setup: { startAndConnect } }) => {
 	const queue = new TicTacWoahQueue()
@@ -105,7 +106,7 @@ ticTacWoahTest(
 	}
 )
 
-ticTacWoahTest.only(
+ticTacWoahTest(
 	"With a game size of 2, two users joining the queue are matched into a game",
 	async ({ setup: { startAndConnect } }) => {
 		const queue = new TicTacWoahQueue()
@@ -139,7 +140,6 @@ ticTacWoahTest.only(
 
 export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	queue.onAdded(users => {
-		throw new Error("Not implemented")
 		if (users.length === 2) {
 			users.forEach(user => {
 				const connection = [...user.connections][0]
@@ -148,7 +148,6 @@ export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddl
 		}
 	})
 	return (socket, next) => {
-		// throw new Error("Not implemented 1")
 		next()
 	}
 }
