@@ -21,7 +21,7 @@ export class TicTacWoahQueue {
 		)
 			return
 		this.#queue.push(newUser)
-		this.#emitter.emit("Added", this.#queue)
+		this.#emitter.emit("Added", [...this.#queue])
 	}
 
 	onAdded(listener: QueueAddedListener) {

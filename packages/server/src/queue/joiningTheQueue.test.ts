@@ -144,20 +144,59 @@ ticTacWoahTest(
 				id: expect.any(String),
 				players: twoUsers,
 			})
+
+			expect(queue.users).toHaveLength(0)
 		})
 	}
 )
 
-type T = ServerToClientEvents["gameStart"]
+ticTacWoahTest("All active clients are notified of the game start", async ({ setup: { startAndConnectCount } }) => {
+	const queue = new TicTacWoahQueue()
+	const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = ["User A", "User B"]
+
+	const preConfigure = (server: TicTacWoahSocketServer) => {
+		server
+			.use(
+				identifySocketsInSequence(
+					twoUsers.map(handle => ({
+						connections: new Set(),
+						uniqueIdentifier: handle,
+					}))
+				)
+			)
+			.use(addConnectionToQueue(queue))
+			.use(matchmaking(queue))
+	}
+
+	const { serverSockets, clientSockets } = await startAndConnectCount(4, preConfigure)
+
+	clientSockets.forEach(socket => socket.emitWithAck("joinQueue", {}))
+
+	await vi.waitFor(() => {
+		serverSockets.forEach((serverSocket, socketIndex) => {
+			expect(serverSocket.emit, `socket index ${socketIndex}`).toHaveBeenCalledWith<["gameStart", GameStartDto]>(
+				"gameStart",
+				{
+					id: expect.any(String),
+					players: twoUsers,
+				}
+			)
+		})
+	})
+})
 
 export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	queue.onAdded(users => {
 		if (users.length === 2) {
 			const participants = users.map(user => user.uniqueIdentifier)
 			users.forEach(user => {
-				const connection = [...user.connections][0]
-				connection.emit("gameStart", { id: "TODO", players: participants })
+				user.connections.forEach(connection => {
+					connection.emit("gameStart", { id: "TODO", players: participants })
+				})
 			})
+
+			queue.remove(users[0])
+			queue.remove(users[1])
 		}
 	})
 	return (socket, next) => {
