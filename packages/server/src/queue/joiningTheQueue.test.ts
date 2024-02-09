@@ -4,12 +4,16 @@ import { vi, expect } from "vitest"
 import { TicTacWoahQueue, addConnectionToQueue } from "./addConnectionToQueue"
 import {
 	ActiveUser,
+	ServerToClientEvents,
+	TicTacWoahServerSocket,
 	TicTacWoahSocketServer,
 	TicTacWoahSocketServerMiddleware,
 	TicTacWoahUserHandle,
 } from "TicTacWoahSocketServer"
 import { faker } from "@faker-js/faker"
 import { io } from "socket.io-client"
+import { Socket } from "socket.io"
+import { GameStartDto } from "types"
 
 ticTacWoahTest("One player joins the queue", async ({ setup: { startAndConnect } }) => {
 	const queue = new TicTacWoahQueue()
@@ -110,7 +114,7 @@ ticTacWoahTest(
 	"With a game size of 2, two users joining the queue are matched into a game",
 	async ({ setup: { startAndConnect } }) => {
 		const queue = new TicTacWoahQueue()
-		const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = ["User 1", "User 2"]
+		const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = [faker.string.uuid(), faker.string.uuid()]
 
 		const preConfigure = (server: TicTacWoahSocketServer) => {
 			server
@@ -132,18 +136,27 @@ ticTacWoahTest(
 		await clientSocket2.emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(serverSocket.emit).toHaveBeenCalledWith("gameStart", expect.anything())
-			expect(serverSocket2.emit).toHaveBeenCalledWith("gameStart", expect.anything())
+			expect(serverSocket.emit).toHaveBeenCalledWith<["gameStart", GameStartDto]>("gameStart", {
+				id: expect.any(String),
+				players: twoUsers,
+			})
+			expect(serverSocket2.emit).toHaveBeenCalledWith<["gameStart", GameStartDto]>("gameStart", {
+				id: expect.any(String),
+				players: twoUsers,
+			})
 		})
 	}
 )
 
+type T = ServerToClientEvents["gameStart"]
+
 export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	queue.onAdded(users => {
 		if (users.length === 2) {
+			const participants = users.map(user => user.uniqueIdentifier)
 			users.forEach(user => {
 				const connection = [...user.connections][0]
-				connection.emit("gameStart", { id: "TODO", players: [] })
+				connection.emit("gameStart", { id: "TODO", players: participants })
 			})
 		}
 	})
