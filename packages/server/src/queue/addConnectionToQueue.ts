@@ -13,6 +13,7 @@ export class TicTacWoahQueue {
 	constructor() {
 		this.objectId = crypto.randomUUID()
 	}
+
 	add(newUser: ActiveUser) {
 		if (
 			this.#queue.findIndex(
@@ -22,6 +23,9 @@ export class TicTacWoahQueue {
 			return
 		this.#queue.push(newUser)
 		this.#emitter.emit("Added", [...this.#queue])
+		console.log(
+			`Added user ${newUser.uniqueIdentifier} Queue state: ${this.#queue.map(u => u.uniqueIdentifier).join(", ")}`
+		)
 	}
 
 	onAdded(listener: QueueAddedListener) {
@@ -33,6 +37,9 @@ export class TicTacWoahQueue {
 		const index = this.#queue.findIndex(u => u.uniqueIdentifier === id)
 		if (index === -1) return
 		this.#queue.splice(index, 1)
+		console.log(
+			`Removed user ${user.uniqueIdentifier} Queue state: ${this.#queue.map(u => u.uniqueIdentifier).join(", ")}`
+		)
 	}
 
 	get users(): readonly ActiveUser[] {
@@ -50,3 +57,33 @@ export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketSe
 		next()
 	}
 }
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function loggedMethod(_target: any, _propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
+	const originalMethod = descriptor.value
+
+	function replacementMethod(this: any, ...args: any[]) {
+		if (isActiveUser(args[0])) {
+			console.log(`Active user: ${args[0].uniqueIdentifier}`)
+		}
+
+		console.log(`Calling ${_propertyKey} with`, args)
+		const result = originalMethod.apply(this, args)
+
+		return result
+	}
+
+	descriptor.value = replacementMethod
+	return descriptor
+
+	function isActiveUser(value: any): value is ActiveUser {
+		return (
+			typeof value === "object" &&
+			value !== null &&
+			value.connections instanceof Set &&
+			typeof value.uniqueIdentifier === "string" &&
+			(typeof value.objectId === "string" || typeof value.objectId === "undefined")
+		)
+	}
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */

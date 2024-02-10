@@ -13,6 +13,7 @@ import {
 	ActiveUser,
 	TicTacWoahServerSocket,
 	TicTacWoahSocketServer,
+	TicTacWoahSocketServerMiddleware,
 	TicTacWoahUserHandle,
 } from "TicTacWoahSocketServer"
 import { identifyAllSocketsAsTheSameUser, identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
@@ -20,6 +21,7 @@ import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueu
 import { removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
 import { removeConnectionFromQueue } from "queue/removeConnectionFromQueue"
 import _ from "lodash"
+import { matchmaking } from "matchmaking/matchmaking"
 // import _ from "lodash"
 
 interface ParticipantHandle {
@@ -47,14 +49,12 @@ instrument(io, {
 	mode: "development",
 })
 
-type SocketIoMiddleware = (...args: never[]) => Promise<void> | ((...args: never[]) => void)
-
-function errorHandler(handler: SocketIoMiddleware): SocketIoMiddleware {
+function errorHandler(handler: TicTacWoahSocketServerMiddleware): TicTacWoahSocketServerMiddleware {
 	const handleError = (err: unknown) => {
 		console.error("Unhandled Socket.IO error", err)
 	}
 
-	const wrappedHandler: SocketIoMiddleware = async function (this: never, ...args) {
+	const wrappedHandler: TicTacWoahSocketServerMiddleware = async function (this: never, ...args) {
 		try {
 			await handler.apply(this, args)
 			// No need to check for ret.catch because handler is always async
@@ -101,12 +101,7 @@ io.use(identifyByTicTacWoahUsername)
 	.use(addConnectionToQueue(ttQueue))
 	.use(removeConnectionFromQueue(ttQueue))
 	.use(removeConnectionFromActiveUser)
-
-io.on("connection", async socket => {
-	socket.onAny((eventName, ...args) => {
-		console.log(`${socket.id} emitted ${eventName}`, args)
-	})
-})
+// .use(matchmaking(ttQueue))
 
 // 	socket.on("join queue", () => {
 // 		const user = activeUsers.get(socket.handshake.auth.token)

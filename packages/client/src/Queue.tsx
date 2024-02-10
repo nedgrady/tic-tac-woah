@@ -32,7 +32,7 @@ function Queue() {
 			type: "tic-tac-woah-username",
 		}
 
-		socket.on("game start", args => {
+		socket.on("gameStart", args => {
 			const gameStart = GameStartDtoSchema.parse(args)
 			dispatch(startGame(gameStart))
 			navigate({

@@ -7,13 +7,13 @@ import {
 	ServerToClientEvents,
 	TicTacWoahServerSocket,
 	TicTacWoahSocketServer,
-	TicTacWoahSocketServerMiddleware,
 	TicTacWoahUserHandle,
 } from "TicTacWoahSocketServer"
 import { faker } from "@faker-js/faker"
 import { io } from "socket.io-client"
 import { Socket } from "socket.io"
 import { GameStartDto } from "types"
+import { matchmaking } from "matchmaking/matchmaking"
 
 ticTacWoahTest("One player joins the queue", async ({ setup: { startAndConnect } }) => {
 	const queue = new TicTacWoahQueue()
@@ -184,22 +184,3 @@ ticTacWoahTest("All active clients are notified of the game start", async ({ set
 		})
 	})
 })
-
-export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
-	queue.onAdded(users => {
-		if (users.length === 2) {
-			const participants = users.map(user => user.uniqueIdentifier)
-			users.forEach(user => {
-				user.connections.forEach(connection => {
-					connection.emit("gameStart", { id: "TODO", players: participants })
-				})
-			})
-
-			queue.remove(users[0])
-			queue.remove(users[1])
-		}
-	})
-	return (socket, next) => {
-		next()
-	}
-}
