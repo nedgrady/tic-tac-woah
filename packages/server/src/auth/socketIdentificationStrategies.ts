@@ -6,7 +6,7 @@ export const identifyByTicTacWoahUsername: TicTacWoahSocketServerMiddleware = (s
 	let activeUser = activeUsers.get(socket.handshake.auth.token)
 	if (!activeUser) {
 		activeUser = {
-			uniqueIdentifier: socket.handshake.auth.token,
+			uniqueIdentifier: socket.handshake.auth.token.toString(),
 			connections: new Set(),
 			objectId: crypto.randomUUID(),
 		}

@@ -13,6 +13,8 @@ export default defineConfig({
 			domain: `${path.resolve(__dirname, "./src/domain/")}`,
 			queue: `${path.resolve(__dirname, "./src/queue/")}`,
 			auth: `${path.resolve(__dirname, "./src/auth/")}`,
+			matchmaking: `${path.resolve(__dirname, "./src/matchmaking/")}`,
+			utilities: `${path.resolve(__dirname, "./src/utilities/")}`,
 		},
 	},
 	plugins: [tsconfigPaths()],

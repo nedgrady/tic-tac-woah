@@ -1,19 +1,40 @@
 import express from "express"
 import http, { createServer } from "http"
 import vitest, { describe, expect, test, vi } from "vitest"
-import { Server as SocketIoServer } from "socket.io"
+import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
+import { Socket as ClientSocket } from "socket.io-client"
 import { io as clientIo } from "socket.io-client"
 import {
+	ClientToServerEvents,
 	ServerToClientEvents,
 	TicTacWoahClientSocket,
+	TicTacWoahEventMap,
+	TicTacWoahRemoteServerSocket,
 	TicTacWoahServerSocket,
 	TicTacWoahSocketServer,
 	TicTacWoahSocketServerMiddleware,
 } from "TicTacWoahSocketServer"
-import portfinder from "portfinder"
 import { instrument } from "@socket.io/admin-ui"
+import { StrongMap } from "utilities/StrongMap"
 
-type TicTacWoahRemoteServerSocket = Awaited<ReturnType<TicTacWoahSocketServer["fetchSockets"]>>[0]
+export type AssertableTicTacWoahRemoteServerSocket = Omit<TicTacWoahRemoteServerSocket, "omit"> & {
+	emit: vitest.MockedFunction<TicTacWoahRemoteServerSocket["emit"]>
+}
+
+type AssertableTicTacWoahClientSocket = TicTacWoahClientSocket & {
+	events: StrongMap<TicTacWoahEventMap>
+}
+
+export interface TicTacWoahConnectedTestContext {
+	done: () => Promise<void>
+	app: express.Express
+	httpServer: http.Server
+	serverIo: TicTacWoahSocketServer
+	clientSocket: AssertableTicTacWoahClientSocket
+	clientSocket2: AssertableTicTacWoahClientSocket
+	serverSocket: TicTacWoahRemoteServerSocket
+	serverSocket2: TicTacWoahRemoteServerSocket
+}
 
 function createTicTacWoahServer() {
 	const app = express()
@@ -39,42 +60,63 @@ function createTicTacWoahServer() {
 	}
 }
 
-export async function startAndConnect(preConfigure?: (server: TicTacWoahSocketServer) => void) {
+export async function startAndConnect(
+	preConfigure?: (server: TicTacWoahSocketServer) => void
+): Promise<TicTacWoahConnectedTestContext> {
 	const { app, httpServer, io: serverIo } = createTicTacWoahServer()
-	const port = await portfinder.getPortPromise()
 
 	preConfigure?.(serverIo)
 
+	await new Promise<void>(done => httpServer.listen(done))
+
+	const port = (httpServer.address() as { port: number }).port
 	const clientSocket: TicTacWoahClientSocket = clientIo(`http://localhost:${port}`, {
 		autoConnect: false,
 	})
-
 	const clientSocket2: TicTacWoahClientSocket = clientIo(`http://localhost:${port}`, {
 		autoConnect: false,
 	})
 
-	await new Promise<void>(done => httpServer.listen(port, done))
-
 	clientSocket.connect()
 	clientSocket2.connect()
 
-	let serverSocket: TicTacWoahRemoteServerSocket | undefined
-	let serverSocket2: TicTacWoahRemoteServerSocket | undefined
+	const clientEvents = new StrongMap<TicTacWoahEventMap>()
+	const clientEvents2 = new StrongMap<TicTacWoahEventMap>()
 
-	await vi.waitFor(async () => {
-		serverSocket = (await serverIo.fetchSockets()).find(socket => socket.id === clientSocket.id)
-		expect(serverSocket).toBeDefined()
-
-		serverSocket2 = (await serverIo.fetchSockets()).find(socket => socket.id === clientSocket2.id)
-		expect(serverSocket2).toBeDefined()
+	clientSocket.onAny((eventName, ...args) => {
+		clientEvents.add(eventName, args[0])
 	})
 
-	if (!serverSocket || !serverSocket2) {
+	clientSocket2.onAny((eventName, ...args) => {
+		clientEvents2.add(eventName, args[0])
+	})
+
+	const clientWithEvents = clientSocket as AssertableTicTacWoahClientSocket
+	const clientWithEvents2 = clientSocket2 as AssertableTicTacWoahClientSocket
+
+	clientWithEvents.events = clientEvents
+	clientWithEvents2.events = clientEvents2
+
+	let serverSocketPreSpy: TicTacWoahRemoteServerSocket | undefined
+	let serverSocketPreSpy2: TicTacWoahRemoteServerSocket | undefined
+
+	await vi.waitFor(async () => {
+		serverSocketPreSpy = (await serverIo.fetchSockets()).find(socket => socket.id === clientSocket.id)
+		expect(serverSocketPreSpy).toBeDefined()
+
+		serverSocketPreSpy2 = (await serverIo.fetchSockets()).find(socket => socket.id === clientSocket2.id)
+		expect(serverSocketPreSpy2).toBeDefined()
+	})
+
+	if (!serverSocketPreSpy || !serverSocketPreSpy2) {
 		throw new Error("Could not find server sockets")
 	}
 
-	vi.spyOn(serverSocket, "emit")
-	vi.spyOn(serverSocket2, "emit")
+	vi.spyOn(serverSocketPreSpy, "emit")
+	vi.spyOn(serverSocketPreSpy2, "emit")
+
+	const serverSocket = serverSocketPreSpy
+	const serverSocket2 = serverSocketPreSpy2
 
 	return {
 		done: async () => {
@@ -90,8 +132,8 @@ export async function startAndConnect(preConfigure?: (server: TicTacWoahSocketSe
 		app,
 		httpServer,
 		serverIo,
-		clientSocket,
-		clientSocket2,
+		clientSocket: clientWithEvents,
+		clientSocket2: clientWithEvents2,
 		serverSocket,
 		serverSocket2,
 	}
@@ -99,19 +141,18 @@ export async function startAndConnect(preConfigure?: (server: TicTacWoahSocketSe
 
 export async function start(preConfigure?: (server: TicTacWoahSocketServer) => void) {
 	const { app, httpServer, io: serverIo } = createTicTacWoahServer()
-	const port = await portfinder.getPortPromise()
 
 	preConfigure?.(serverIo)
 
+	await new Promise<void>(done => httpServer.listen(done))
+
+	const port = (httpServer.address() as { port: number }).port
 	const clientSocket: TicTacWoahClientSocket = clientIo(`http://localhost:${port}`, {
 		autoConnect: false,
 	})
-
 	const clientSocket2: TicTacWoahClientSocket = clientIo(`http://localhost:${port}`, {
 		autoConnect: false,
 	})
-
-	await new Promise<void>(done => httpServer.listen(port, done))
 
 	return {
 		done: async () => {
@@ -137,17 +178,17 @@ export async function startAndConnectCount(
 	preConfigure?: (server: TicTacWoahSocketServer) => void
 ) {
 	const { app, httpServer, io: serverIo } = createTicTacWoahServer()
-	const port = await portfinder.getPortPromise()
 
 	preConfigure?.(serverIo)
 
+	await new Promise<void>(done => httpServer.listen(done))
+
+	const port = (httpServer.address() as { port: number }).port
 	const clientSockets: TicTacWoahClientSocket[] = Array.from({ length: connectedClientCount }, () =>
 		clientIo(`http://localhost:${port}`, {
 			autoConnect: false,
 		})
 	)
-
-	await new Promise<void>(done => httpServer.listen(port, done))
 
 	clientSockets.forEach(socket => socket.connect())
 

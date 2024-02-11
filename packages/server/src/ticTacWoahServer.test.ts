@@ -31,6 +31,23 @@ ticTacWoahTest("Active user uniqueIdentifier is populated", async ({ setup: { st
 	})
 })
 
+ticTacWoahTest("When the token is numerical, it is converted to a string", async ({ setup: { startServer } }) => {
+	const startCtx = await startServer(server => server.use(identifyByTicTacWoahUsername))
+
+	startCtx.clientSocket.auth = {
+		token: 1,
+		type: "tic-tac-woah-username",
+	}
+
+	startCtx.clientSocket.connect()
+
+	await vi.waitFor(async () => {
+		expect(await startCtx.serverIo.fetchSockets()).toHaveLength(1)
+		const serverSocket = (await startCtx.serverIo.fetchSockets())[0]
+		expect(serverSocket.data.activeUser.uniqueIdentifier).toBe("1")
+	})
+})
+
 ticTacWoahTest("Active user connection is populated", async ({ setup: { startServer } }) => {
 	const startCtx = await startServer(server => server.use(identifyByTicTacWoahUsername))
 

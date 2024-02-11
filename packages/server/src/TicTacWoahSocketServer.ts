@@ -1,6 +1,7 @@
 import { type Socket as ClientSocket } from "socket.io-client"
 import { GameStartDto, JoinQueueRequest } from "types"
 import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
+import { StrongMap } from "utilities/StrongMap"
 
 export interface ServerToClientEvents {
 	noArg: () => void
@@ -36,6 +37,8 @@ export type TicTacWoahSocketServerMiddleware = Parameters<TicTacWoahSocketServer
 
 export type TicTacWoahClientSocket = ClientSocket<ServerToClientEvents, ClientToServerEvents>
 
+export type TicTacWoahRemoteServerSocket = Awaited<ReturnType<TicTacWoahSocketServer["fetchSockets"]>>[0]
+
 export type TicTacWoahUserHandle = string
 
 export interface ActiveUser {
@@ -43,3 +46,9 @@ export interface ActiveUser {
 	readonly uniqueIdentifier: TicTacWoahUserHandle
 	readonly objectId?: string
 }
+
+export type TicTacWoahEventName = keyof ServerToClientEvents
+export type TicTacWoahEventPayload<EventName extends TicTacWoahEventName> = Parameters<
+	ServerToClientEvents[EventName]
+>[0]
+export type TicTacWoahEventMap = { [EventNameKey in TicTacWoahEventName]: TicTacWoahEventPayload<EventNameKey> }

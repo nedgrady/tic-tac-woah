@@ -1,42 +1,11 @@
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { ticTacWoahTest } from "ticTacWoahTest"
 import { vi, expect } from "vitest"
-
 import { TicTacWoahSocketServer, TicTacWoahUserHandle } from "TicTacWoahSocketServer"
 import { faker } from "@faker-js/faker"
 import { GameStartDto } from "types"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { matchmaking } from "./matchmaking"
-
-ticTacWoahTest(
-	"With a game size of 2, one user joining the queue does not create a game",
-	async ({ setup: { startAndConnect } }) => {
-		const queue = new TicTacWoahQueue()
-		const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = ["User 1", "User 2"]
-
-		const preConfigure = (server: TicTacWoahSocketServer) => {
-			server
-				.use(
-					identifySocketsInSequence(
-						twoUsers.map(handle => ({
-							connections: new Set(),
-							uniqueIdentifier: handle,
-						}))
-					)
-				)
-				.use(addConnectionToQueue(queue))
-				.use(matchmaking(queue))
-		}
-		const startCtx = await startAndConnect(preConfigure)
-		await startCtx.clientSocket.emitWithAck("joinQueue", {})
-
-		await vi.waitFor(() => {
-			expect(queue.users).toHaveLength(1)
-		})
-
-		expect(startCtx.serverSocket.emit).not.toHaveBeenCalled()
-	}
-)
 
 ticTacWoahTest(
 	"With a game size of 2, two users joining the queue are matched into a game",

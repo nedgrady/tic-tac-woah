@@ -101,7 +101,7 @@ io.use(identifyByTicTacWoahUsername)
 	.use(addConnectionToQueue(ttQueue))
 	.use(removeConnectionFromQueue(ttQueue))
 	.use(removeConnectionFromActiveUser)
-// .use(matchmaking(ttQueue))
+	.use(matchmaking(ttQueue))
 
 // 	socket.on("join queue", () => {
 // 		const user = activeUsers.get(socket.handshake.auth.token)
