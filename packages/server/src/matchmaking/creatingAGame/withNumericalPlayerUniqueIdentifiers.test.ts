@@ -2,10 +2,9 @@ import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketSe
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { startAndConnect, ticTacWoahTest } from "ticTacWoahTest"
-import { vi, expect, beforeAll, describe, it, test } from "vitest"
-import { faker } from "@faker-js/faker"
-import { GameStartDto, GameStartDtoSchema } from "types"
+import { startAndConnect } from "ticTacWoahTest"
+import { expect, beforeAll, describe, it } from "vitest"
+import { GameStartDtoSchema } from "types"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnect>>
 
@@ -54,24 +53,4 @@ describe("it", () => {
 
 		return testContext.value.done
 	})
-
-	it("The response can be parsed by the GameStartDtoSchema", () => {
-		// expect(testContext.value.serverSocket.emit).toHaveBeenCalledWith<["gameStart", GameStartDto]>("gameStart", {
-		// 	id: expect.any(String),
-		// 	players: expect.arrayContaining(twoUsers),
-		// })
-
-		const gameStartDto = testContext.value.clientSocket.events.get("gameStart")[0]
-
-		console.log(gameStartDto)
-
-		expect(() => GameStartDtoSchema.parse(gameStartDto)).not.toThrow()
-	})
-
-	// it("Game start is sent to the second player", () => {
-	// 	expect(testContext.value.serverSocket2.emit).toHaveBeenCalledWith<["gameStart", GameStartDto]>("gameStart", {
-	// 		id: expect.any(String),
-	// 		players: expect.arrayContaining(twoUsers),
-	// 	})
-	// })
 })

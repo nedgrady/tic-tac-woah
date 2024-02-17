@@ -1,18 +1,18 @@
 import { type Socket as ClientSocket } from "socket.io-client"
-import { GameStartDto, JoinQueueRequest } from "types"
+import { GameStartDto, JoinQueueRequest, MoveDto } from "types"
 import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
-import { StrongMap } from "utilities/StrongMap"
 
 export interface ServerToClientEvents {
 	noArg: () => void
 	basicEmit: (a: number, b: string, c: Buffer) => void
-	withAck: (d: string, callback: (e: number) => void) => void
+	// withAck: (d: string, callback: (e: number) => void) => void
 	gameStart: (gameStart: GameStartDto) => void
 }
 export type AckCallback = (e: number) => void
 
 export interface ClientToServerEvents {
 	joinQueue(joinQueueRequest: JoinQueueRequest, callback?: AckCallback): void
+	makeMove: (move: MoveDto, callback?: AckCallback) => void
 }
 
 export interface InterServerEvents {
