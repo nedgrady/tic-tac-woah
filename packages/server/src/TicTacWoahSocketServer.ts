@@ -7,6 +7,7 @@ export interface ServerToClientEvents {
 	basicEmit: (a: number, b: string, c: Buffer) => void
 	// withAck: (d: string, callback: (e: number) => void) => void
 	gameStart: (gameStart: GameStartDto) => void
+	moveMade: (move: MoveDto) => void
 }
 export type AckCallback = (e: number) => void
 
