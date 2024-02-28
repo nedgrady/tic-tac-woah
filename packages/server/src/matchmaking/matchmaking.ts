@@ -17,9 +17,11 @@ export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddl
 		}
 	})
 	return (socket, next) => {
-		socket.on("makeMove", moveDto => {
-			console.log("Move made.")
+		socket.join("game")
+		socket.on("makeMove", (moveDto, callback) => {
+			socket.to("game").emit("moveMade", moveDto)
 			socket.emit("moveMade", moveDto)
+			callback && callback(0)
 		})
 		next()
 	}

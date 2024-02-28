@@ -62,23 +62,28 @@ describe("it", () => {
 		await testContext.value.clientSocket2.emitWithAck("joinQueue", {})
 		await testContext.value.clientSocket.emitWithAck("joinQueue", {})
 
-		testContext.value.clientSocket.emit("makeMove", fistMove)
+		await vi.waitFor(() => {
+			expect(testContext.value.clientSocket2.events.get("gameStart")).toHaveLength(1)
+			expect(testContext.value.clientSocket.events.get("gameStart")).toHaveLength(1)
+		})
+
+		await testContext.value.clientSocket.emitWithAck("makeMove", fistMove)
 
 		return testContext.value.done
 	})
 
 	it("The move is sent to the first player", async () => {
 		await vi.waitFor(() =>
-			expect(testContext.value.serverSocket.emit).toHaveBeenCalledWith<["moveMade", MoveDto]>(
-				"moveMade",
+			expect(testContext.value.clientSocket.events.get("moveMade")).toContainEqual(
 				expect.objectContaining(fistMove)
 			)
 		)
 	})
-	// it("Game start is sent to the second player", () => {
-	// 	expect(testContext.value.serverSocket2.emit).toHaveBeenCalledWith<["gameStart", GameStartDto]>("gameStart", {
-	// 		id: expect.any(String),
-	// 		players: expect.arrayContaining(twoUsers),
-	// 	})
-	// })
+	it("The move is sent to the second player", async () => {
+		await vi.waitFor(() =>
+			expect(testContext.value.clientSocket2.events.get("moveMade")).toContainEqual(
+				expect.objectContaining(fistMove)
+			)
+		)
+	})
 })
