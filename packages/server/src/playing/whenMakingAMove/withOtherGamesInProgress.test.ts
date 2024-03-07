@@ -1,18 +1,10 @@
-import {
-	TicTacWoahUserHandle,
-	TicTacWoahSocketServer,
-	ClientToServerEvents,
-	TicTacWoahEventMap,
-} from "TicTacWoahSocketServer"
+import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { startAndConnect, startAndConnectCount, startAndConnectCountReal } from "ticTacWoahTest"
+import { startAndConnectCountReal } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
-import { faker } from "@faker-js/faker"
-import { GameStartDto, MoveDto } from "types"
-import { Move } from "domain/Move"
-import { StrongMap } from "utilities/StrongMap"
+import { MoveDto } from "types"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnectCountReal>>
 
