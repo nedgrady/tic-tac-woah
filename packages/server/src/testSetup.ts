@@ -71,4 +71,12 @@ expect.extend({
 			pass,
 		}
 	},
+
+	toContainSingle(received: unknown[], expectedItem: unknown) {
+		const pass = this.equals(received, expect.arrayContaining([expect.objectContaining(expectedItem)]))
+		return {
+			message: () => `Expected  .\n${this.utils.diff(received, [expectedItem])}`,
+			pass,
+		}
+	},
 })

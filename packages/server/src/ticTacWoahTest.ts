@@ -260,12 +260,19 @@ export async function startAndConnectCountReal(
 		})
 	)
 
-	// TODO - make clients assertable.
 	clientSockets.forEach(socket => socket.connect())
 
 	const serverSockets: Map<string, TicTacWoahRemoteServerSocket> = new Map()
 
 	for (const clientSocket of clientSockets) {
+		const clientEvents = new StrongMap<TicTacWoahEventMap>()
+		clientSocket.onAny((eventName, ...args) => {
+			clientEvents.add(eventName, args[0])
+		})
+
+		const clientWithEvents = clientSocket as AssertableTicTacWoahClientSocket
+		clientWithEvents.events = clientEvents
+
 		await vi.waitFor(async () => {
 			const socket = (await serverIo.fetchSockets()).find(socket => socket.id === clientSocket.id)
 			expect(socket).toBeDefined()
@@ -289,7 +296,7 @@ export async function startAndConnectCountReal(
 		app,
 		serverIo,
 		httpServer,
-		clientSockets: clientSockets.sort((a, b) => a.id!.localeCompare(b.id!)),
+		clientSockets: clientSockets.sort((a, b) => a.id!.localeCompare(b.id!)) as AssertableTicTacWoahClientSocket[],
 		serverSockets: [...serverSockets.values()].sort((a, b) => a.id.localeCompare(b.id)),
 	}
 }

@@ -12,6 +12,7 @@ interface CustomMatchers<R = unknown> {
 	toContainActiveUser(activeUser: ActiveUser): R
 	toContainSingleActiveUser(activeUser: ActiveUser): R
 	toOnlyContainActiveUsers(...activeUsers: ActiveUser[]): R
+	toContainSingle<TItem>(activeUser: TItem): R
 }
 
 declare module "vitest" {
