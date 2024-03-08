@@ -23,6 +23,8 @@ export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddl
 	})
 	return (connection, next) => {
 		connection.on("makeMove", (moveDto, callback) => {
+			// TODO - ensure game exists
+			// TODO - ensure player is a participant of the supplied game
 			connection.to(moveDto.gameId).emit("moveMade", moveDto)
 			connection.emit("moveMade", moveDto)
 			callback && callback(0)
