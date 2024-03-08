@@ -30,7 +30,7 @@ describe("it", () => {
 	const queue = new TicTacWoahQueue()
 	const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = [faker.string.uuid(), faker.string.uuid()]
 
-	const fistMove: MoveDto = {
+	const fistMove = {
 		mover: twoUsers[0],
 		placement: {
 			x: faker.number.int(),
@@ -66,7 +66,10 @@ describe("it", () => {
 			expect(testContext.value.clientSocket.events.get("gameStart")).toHaveLength(1)
 		})
 
-		await testContext.value.clientSocket.emitWithAck("makeMove", fistMove)
+		testContext.value.clientSocket.emit("makeMove", {
+			...fistMove,
+			gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
+		})
 
 		return testContext.value.done
 	})
@@ -74,14 +77,20 @@ describe("it", () => {
 	it("The move is sent to the first player", async () => {
 		await vi.waitFor(() =>
 			expect(testContext.value.clientSocket.events.get("moveMade")).toContainEqual(
-				expect.objectContaining(fistMove)
+				expect.objectContaining<MoveDto>({
+					...fistMove,
+					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
+				})
 			)
 		)
 	})
 	it("The move is sent to the second player", async () => {
 		await vi.waitFor(() =>
 			expect(testContext.value.clientSocket2.events.get("moveMade")).toContainEqual(
-				expect.objectContaining(fistMove)
+				expect.objectContaining({
+					...fistMove,
+					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
+				})
 			)
 		)
 	})

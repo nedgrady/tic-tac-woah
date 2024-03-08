@@ -59,7 +59,7 @@ describe("it", () => {
 			// TODO - what middleware to add?
 		}
 
-		testContext.value = await startAndConnectCountReal(4, preConfigure)
+		testContext.value = await startAndConnectCountReal(3, preConfigure)
 
 		await testContext.value.clientSockets[0].emitWithAck("joinQueue", {})
 		await testContext.value.clientSockets[1].emitWithAck("joinQueue", {})
@@ -69,20 +69,13 @@ describe("it", () => {
 			expect(testContext.value.clientSockets[1].events.get("gameStart")).toHaveLength(1)
 		})
 
-		// await testContext.value.clientSockets[2].emitWithAck("joinQueue", {})
-		// await testContext.value.clientSockets[3].emitWithAck("joinQueue", {})
-
-		// await vi.waitFor(() => {
-		// 	expect(testContext.value.clientSockets[2].events.get("gameStart")).toHaveLength(1)
-		// 	expect(testContext.value.clientSockets[3].events.get("gameStart")).toHaveLength(1)
-		// })
-
 		testContext.value.clientSockets[0].emit("makeMove", {
 			mover: threeParticipants[0],
 			placement: {
 				x: 0,
 				y: 0,
 			},
+			gameId: testContext.value.clientSockets[0].events.get("gameStart")[0].id,
 		})
 		await vi.waitFor(() => {
 			expect(testContext.value.clientSockets[0].events.get("moveMade")).toHaveLength(1)
@@ -96,15 +89,4 @@ describe("it", () => {
 		const moves = testContext.value.clientSockets[2].events.get("moveMade")
 		expect(moves).toHaveLength(0)
 	})
-
-	// it.each([2, 3])("Game A player %s only receives one move", async playerIndex => {
-	// 	const moves = testContext.value.clientSockets[playerIndex].events.get("moveMade")
-	// 	expect(moves).toContainSingle<MoveDto>({
-	// 		mover: fourParticipants[2],
-	// 		placement: {
-	// 			x: 9,
-	// 			y: 9,
-	// 		},
-	// 	})
-	// })
 })

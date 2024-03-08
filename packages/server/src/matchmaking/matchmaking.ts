@@ -5,16 +5,14 @@ export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddl
 	queue.onAdded(users => {
 		if (users.length === 2) {
 			const participants = users.map(user => user.uniqueIdentifier)
+
 			const gameId = crypto.randomUUID()
 			users.forEach(user => {
 				user.connections.forEach(connection => {
+					// TODO -
 					connection.join(gameId)
-					connection.on("makeMove", (moveDto, callback) => {
-						connection.to(gameId).emit("moveMade", moveDto)
-						connection.emit("moveMade", moveDto)
-						callback && callback(0)
-					})
-					connection.emit("gameStart", { id: "TODO", players: participants })
+
+					connection.emit("gameStart", { id: gameId, players: participants })
 				})
 			})
 
@@ -23,7 +21,12 @@ export function matchmaking(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddl
 			queue.remove(users[1])
 		}
 	})
-	return (_, next) => {
+	return (connection, next) => {
+		connection.on("makeMove", (moveDto, callback) => {
+			connection.to(moveDto.gameId).emit("moveMade", moveDto)
+			connection.emit("moveMade", moveDto)
+			callback && callback(0)
+		})
 		next()
 	}
 }

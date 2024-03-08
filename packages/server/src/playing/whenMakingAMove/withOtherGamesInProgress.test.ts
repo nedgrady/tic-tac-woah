@@ -76,6 +76,7 @@ describe("it", () => {
 				x: 0,
 				y: 0,
 			},
+			gameId: testContext.value.clientSockets[0].events.get("gameStart")[0].id,
 		})
 
 		testContext.value.clientSockets[2].emit("makeMove", {
@@ -84,40 +85,39 @@ describe("it", () => {
 				x: 9,
 				y: 9,
 			},
+			gameId: testContext.value.clientSockets[2].events.get("gameStart")[0].id,
 		})
-
-		// await vi.waitFor(() => {
-		// 	expect(testContext.value.clientSockets[0].events.get("moveMade")).toHaveLength(1)
-		// 	expect(testContext.value.clientSockets[1].events.get("moveMade")).toHaveLength(1)
-		// 	expect(testContext.value.clientSockets[2].events.get("moveMade")).toHaveLength(1)
-		// 	expect(testContext.value.clientSockets[3].events.get("moveMade")).toHaveLength(1)
-		// })
 
 		return testContext.value.done
 	})
 
 	it.each([0, 1])("Game A player %s only receives the relevant move", async playerIndex => {
+		const events = testContext.value.clientSockets[playerIndex].events
 		await vi.waitFor(() => {
-			const moves = testContext.value.clientSockets[playerIndex].events.get("moveMade")
+			const moves = events.get("moveMade")
 			expect(moves).toContainSingle<MoveDto>({
 				mover: fourParticipants[0],
 				placement: {
 					x: 0,
 					y: 0,
 				},
+				gameId: events.get("gameStart")[0].id,
 			})
 		})
 	})
 
 	it.each([2, 3])("Game A player %s only receives the relevant move", async playerIndex => {
+		const events = testContext.value.clientSockets[playerIndex].events
+
 		await vi.waitFor(() => {
-			const moves = testContext.value.clientSockets[playerIndex].events.get("moveMade")
+			const moves = events.get("moveMade")
 			expect(moves).toContainSingle<MoveDto>({
 				mover: fourParticipants[2],
 				placement: {
 					x: 9,
 					y: 9,
 				},
+				gameId: events.get("gameStart")[0].id,
 			})
 		})
 	})

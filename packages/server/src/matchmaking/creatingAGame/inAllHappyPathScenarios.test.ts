@@ -74,4 +74,11 @@ describe("it", () => {
 			players: expect.arrayContaining(twoUsers),
 		})
 	})
+
+	it("The game id is the same for both players", () => {
+		const gameId1 = testContext.value.clientSocket.events.get("gameStart")[0].id
+		const gameId2 = testContext.value.clientSocket2.events.get("gameStart")[0].id
+
+		expect(gameId1).toEqual(gameId2)
+	})
 })
