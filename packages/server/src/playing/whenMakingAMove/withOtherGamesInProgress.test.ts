@@ -1,10 +1,11 @@
 import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
-import { matchmaking } from "matchmaking/matchmaking"
+import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { startAndConnectCountReal } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MoveDto } from "types"
+import { MatchmakingBroker } from "MatchmakingBroker"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnectCountReal>>
 
@@ -27,6 +28,8 @@ class GetTestContext {
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
+	const matchmakingBroker = new MatchmakingBroker()
+
 	const fourParticipants: [TicTacWoahUserHandle, TicTacWoahUserHandle, TicTacWoahUserHandle, TicTacWoahUserHandle] = [
 		"Game A player 0",
 		"Game A player 1",
@@ -48,7 +51,8 @@ describe("it", () => {
 					)
 				)
 				.use(addConnectionToQueue(queue))
-				.use(matchmaking(queue))
+				.use(matchmaking(queue, matchmakingBroker))
+				.use(startGameOnMatchMade(matchmakingBroker))
 			// TODO - what middleware to add?
 		}
 

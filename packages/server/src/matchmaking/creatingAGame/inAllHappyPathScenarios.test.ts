@@ -1,11 +1,12 @@
 import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
-import { matchmaking } from "matchmaking/matchmaking"
+import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { startAndConnect } from "ticTacWoahTest"
 import { vi, expect, beforeAll, describe, it, test } from "vitest"
 import { faker } from "@faker-js/faker"
 import { GameStartDto } from "types"
+import { MatchmakingBroker } from "MatchmakingBroker"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnect>>
 
@@ -28,6 +29,7 @@ class GetTestContext {
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
+	const matchmakingBroker = new MatchmakingBroker()
 	const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = [faker.string.uuid(), faker.string.uuid()]
 
 	const testContext = new GetTestContext()
@@ -44,7 +46,8 @@ describe("it", () => {
 					)
 				)
 				.use(addConnectionToQueue(queue))
-				.use(matchmaking(queue))
+				.use(matchmaking(queue, matchmakingBroker))
+				.use(startGameOnMatchMade(matchmakingBroker))
 		}
 
 		testContext.value = await startAndConnect(preConfigure)

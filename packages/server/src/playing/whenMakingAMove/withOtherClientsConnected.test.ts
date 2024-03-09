@@ -1,18 +1,10 @@
-import {
-	TicTacWoahUserHandle,
-	TicTacWoahSocketServer,
-	ClientToServerEvents,
-	TicTacWoahEventMap,
-} from "TicTacWoahSocketServer"
+import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
-import { matchmaking } from "matchmaking/matchmaking"
+import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { startAndConnect, startAndConnectCount, startAndConnectCountReal } from "ticTacWoahTest"
+import { startAndConnectCountReal } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
-import { faker } from "@faker-js/faker"
-import { GameStartDto, MoveDto } from "types"
-import { Move } from "domain/Move"
-import { StrongMap } from "utilities/StrongMap"
+import { MatchmakingBroker } from "MatchmakingBroker"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnectCountReal>>
 
@@ -35,6 +27,7 @@ class GetTestContext {
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
+	const matchmakingBroker = new MatchmakingBroker()
 	const threeParticipants: [TicTacWoahUserHandle, TicTacWoahUserHandle, TicTacWoahUserHandle] = [
 		"Game A player 0",
 		"Game A player 1",
@@ -55,7 +48,8 @@ describe("it", () => {
 					)
 				)
 				.use(addConnectionToQueue(queue))
-				.use(matchmaking(queue))
+				.use(matchmaking(queue, matchmakingBroker))
+				.use(startGameOnMatchMade(matchmakingBroker))
 			// TODO - what middleware to add?
 		}
 
