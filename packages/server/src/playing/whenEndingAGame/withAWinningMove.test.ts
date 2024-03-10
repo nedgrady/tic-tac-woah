@@ -7,6 +7,11 @@ import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
 import { MoveDto } from "types"
 import { MatchmakingBroker } from "MatchmakingBroker"
+import { Game } from "domain/Game"
+import { ReturnSingleGameFactory } from "GameFactory"
+import { Participant } from "domain/Participant"
+import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
+import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnect>>
 
@@ -33,7 +38,9 @@ describe("it", () => {
 
 	const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = [faker.string.uuid(), faker.string.uuid()]
 
-	const fistMove = {
+	const alwaysWinningGame = new Game([new Participant()], 10, 10, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(1)])
+
+	const winningMove = {
 		mover: twoUsers[0],
 		placement: {
 			x: faker.number.int(),
@@ -56,7 +63,8 @@ describe("it", () => {
 				)
 				.use(addConnectionToQueue(queue))
 				.use(matchmaking(queue, matchmakingBroker))
-				.use(startGameOnMatchMade(matchmakingBroker))
+				.use(startGameOnMatchMade(matchmakingBroker, new ReturnSingleGameFactory(alwaysWinningGame)))
+
 			// TODO - what middleware to add?
 		}
 
@@ -71,31 +79,18 @@ describe("it", () => {
 		})
 
 		testContext.value.clientSocket.emit("makeMove", {
-			...fistMove,
+			...winningMove,
 			gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
 		})
 
 		return testContext.value.done
 	})
 
-	it("The move is sent to the first player", async () => {
-		await vi.waitFor(() =>
-			expect(testContext.value.clientSocket.events.get("moveMade")).toContainEqual(
-				expect.objectContaining<MoveDto>({
-					...fistMove,
-					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
-				})
-			)
-		)
+	it("Sends the winning move to participant 1", async () => {
+		await vi.waitFor(() => expect(testContext.value.clientSocket.events.get("gameWin")).toHaveLength(1))
 	})
-	it("The move is sent to the second player", async () => {
-		await vi.waitFor(() =>
-			expect(testContext.value.clientSocket2.events.get("moveMade")).toContainEqual(
-				expect.objectContaining({
-					...fistMove,
-					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
-				})
-			)
-		)
+
+	it("Sends the winning move to participant 2", async () => {
+		await vi.waitFor(() => expect(testContext.value.clientSocket2.events.get("gameWin")).toHaveLength(1))
 	})
 })

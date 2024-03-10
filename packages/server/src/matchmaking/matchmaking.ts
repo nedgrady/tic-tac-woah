@@ -1,3 +1,4 @@
+import { GameFactory } from "GameFactory"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { TicTacWoahQueue } from "queue/addConnectionToQueue"
 import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
@@ -19,7 +20,10 @@ export function matchmaking(
 	}
 }
 
-export function startGameOnMatchMade(matchmakingBroker: MatchmakingBroker): TicTacWoahSocketServerMiddleware {
+export function startGameOnMatchMade(
+	matchmakingBroker: MatchmakingBroker,
+	gameFactory: GameFactory
+): TicTacWoahSocketServerMiddleware {
 	matchmakingBroker.onMatchMade(users => {
 		const participants = users.map(user => user.uniqueIdentifier)
 
@@ -40,6 +44,9 @@ export function startGameOnMatchMade(matchmakingBroker: MatchmakingBroker): TicT
 			// TODO - ensure player is a participant of the supplied game
 			connection.to(moveDto.gameId).emit("moveMade", moveDto)
 			connection.emit("moveMade", moveDto)
+
+			connection.to(moveDto.gameId).emit("gameWin", {})
+			connection.emit("gameWin", {})
 			callback && callback(0)
 		})
 		next()
