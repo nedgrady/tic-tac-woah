@@ -7,6 +7,9 @@ import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
 import { MoveDto } from "types"
 import { MatchmakingBroker } from "MatchmakingBroker"
+import { AnythingGoesForeverGameFactory, GameFactory } from "GameFactory"
+import { Game } from "domain/Game"
+import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnect>>
 
@@ -56,7 +59,7 @@ describe("it", () => {
 				)
 				.use(addConnectionToQueue(queue))
 				.use(matchmaking(queue, matchmakingBroker))
-				.use(startGameOnMatchMade(matchmakingBroker))
+				.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
 			// TODO - what middleware to add?
 		}
 
@@ -97,5 +100,13 @@ describe("it", () => {
 				})
 			)
 		)
+	})
+
+	it("First player does not receive a win event", async () => {
+		expect(testContext.value.clientSocket.events.get("gameWin")).toHaveLength(0)
+	})
+
+	it("Second player does not receive a win event", async () => {
+		expect(testContext.value.clientSocket2.events.get("gameWin")).toHaveLength(0)
 	})
 })

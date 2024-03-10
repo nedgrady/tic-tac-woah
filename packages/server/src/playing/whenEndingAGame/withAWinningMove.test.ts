@@ -32,7 +32,7 @@ class GetTestContext {
 	}
 }
 
-describe("it", () => {
+describe.only("it", () => {
 	const queue = new TicTacWoahQueue()
 	const matchmakingBroker = new MatchmakingBroker()
 

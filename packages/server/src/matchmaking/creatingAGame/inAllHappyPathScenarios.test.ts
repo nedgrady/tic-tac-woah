@@ -7,6 +7,7 @@ import { vi, expect, beforeAll, describe, it, test } from "vitest"
 import { faker } from "@faker-js/faker"
 import { GameStartDto } from "types"
 import { MatchmakingBroker } from "MatchmakingBroker"
+import { AnythingGoesForeverGameFactory } from "GameFactory"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnect>>
 
@@ -47,7 +48,7 @@ describe("it", () => {
 				)
 				.use(addConnectionToQueue(queue))
 				.use(matchmaking(queue, matchmakingBroker))
-				.use(startGameOnMatchMade(matchmakingBroker))
+				.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
 		}
 
 		testContext.value = await startAndConnect(preConfigure)

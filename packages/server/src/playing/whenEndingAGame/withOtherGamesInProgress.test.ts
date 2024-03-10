@@ -2,11 +2,15 @@ import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketSe
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { startAndConnectCountReal } from "ticTacWoahTest"
+import { startAndConnect, startAndConnectCount, startAndConnectCountReal } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
-import { MoveDto } from "types"
+import { faker } from "@faker-js/faker"
 import { MatchmakingBroker } from "MatchmakingBroker"
-import { AnythingGoesForeverGameFactory } from "GameFactory"
+import { Game } from "domain/Game"
+import { ReturnSequenceOfGamesFactory, ReturnSingleGameFactory } from "GameFactory"
+import { Participant } from "domain/Participant"
+import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
+import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnectCountReal>>
 
@@ -27,7 +31,7 @@ class GetTestContext {
 	}
 }
 
-describe("it", () => {
+describe.only("it", () => {
 	const queue = new TicTacWoahQueue()
 	const matchmakingBroker = new MatchmakingBroker()
 
@@ -37,6 +41,16 @@ describe("it", () => {
 		"Game B player 0",
 		"Game B player 1",
 	]
+	const alwaysWinningGame = new Game([new Participant()], 10, 10, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(1)])
+	const anythingGoesGame = new Game([], 10, 10, [anyMoveIsAllowed], [])
+
+	const winningMove = {
+		mover: fourParticipants[0],
+		placement: {
+			x: faker.number.int(),
+			y: faker.number.int(),
+		},
+	}
 
 	const testContext = new GetTestContext()
 
@@ -53,7 +67,13 @@ describe("it", () => {
 				)
 				.use(addConnectionToQueue(queue))
 				.use(matchmaking(queue, matchmakingBroker))
-				.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
+				.use(
+					startGameOnMatchMade(
+						matchmakingBroker,
+						new ReturnSequenceOfGamesFactory(alwaysWinningGame, anythingGoesGame)
+					)
+				)
+
 			// TODO - what middleware to add?
 		}
 
@@ -71,59 +91,27 @@ describe("it", () => {
 		await testContext.value.clientSockets[3].emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(testContext.value.clientSockets[2].events.get("gameStart")).toHaveLength(1)
-			expect(testContext.value.clientSockets[3].events.get("gameStart")).toHaveLength(1)
+			expect(testContext.value.clientSockets[0].events.get("gameStart")).toHaveLength(1)
+			expect(testContext.value.clientSockets[1].events.get("gameStart")).toHaveLength(1)
 		})
 
 		testContext.value.clientSockets[0].emit("makeMove", {
-			mover: fourParticipants[0],
-			placement: {
-				x: 0,
-				y: 0,
-			},
+			...winningMove,
 			gameId: testContext.value.clientSockets[0].events.get("gameStart")[0].id,
-		})
-
-		testContext.value.clientSockets[2].emit("makeMove", {
-			mover: fourParticipants[2],
-			placement: {
-				x: 9,
-				y: 9,
-			},
-			gameId: testContext.value.clientSockets[2].events.get("gameStart")[0].id,
 		})
 
 		return testContext.value.done
 	})
 
-	it.each([0, 1])("Game A player %s only receives the relevant move", async playerIndex => {
-		const events = testContext.value.clientSockets[playerIndex].events
-		await vi.waitFor(() => {
-			const moves = events.get("moveMade")
-			expect(moves).toContainSingle<MoveDto>({
-				mover: fourParticipants[0],
-				placement: {
-					x: 0,
-					y: 0,
-				},
-				gameId: events.get("gameStart")[0].id,
-			})
-		})
+	it.each([0, 1])("Sends the winning move to participant %s", async clientIndex => {
+		await vi.waitFor(() =>
+			expect(testContext.value.clientSockets[clientIndex].events.get("gameWin")).toHaveLength(1)
+		)
 	})
 
-	it.each([2, 3])("Game A player %s only receives the relevant move", async playerIndex => {
-		const events = testContext.value.clientSockets[playerIndex].events
-
-		await vi.waitFor(() => {
-			const moves = events.get("moveMade")
-			expect(moves).toContainSingle<MoveDto>({
-				mover: fourParticipants[2],
-				placement: {
-					x: 9,
-					y: 9,
-				},
-				gameId: events.get("gameStart")[0].id,
-			})
-		})
+	it.each([2, 3])("Does not send the winning move to the unrelated participant %s", async clientIndex => {
+		await vi.waitFor(() =>
+			expect(testContext.value.clientSockets[clientIndex].events.get("gameWin")).toHaveLength(0)
+		)
 	})
 })

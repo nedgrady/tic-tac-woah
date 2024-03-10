@@ -21,7 +21,11 @@ import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueu
 import { removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
 import { removeConnectionFromQueue } from "queue/removeConnectionFromQueue"
 import _ from "lodash"
-import { matchmaking } from "matchmaking/matchmaking"
+import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
+import { MatchmakingBroker } from "MatchmakingBroker"
+import { start } from "ticTacWoahTest"
+import { GameFactory } from "GameFactory"
+import { Game } from "domain/Game"
 // import _ from "lodash"
 
 interface ParticipantHandle {
@@ -95,13 +99,21 @@ io.use((socket, next) => {
 // 	next()
 // })
 
+class StandardGameFactory extends GameFactory {
+	createGame(): Game {
+		throw new Error("Method not implemented.")
+	}
+}
+
 const ttQueue = new TicTacWoahQueue()
+const matchmakingBroker = new MatchmakingBroker()
 
 io.use(identifyByTicTacWoahUsername)
 	.use(addConnectionToQueue(ttQueue))
 	.use(removeConnectionFromQueue(ttQueue))
 	.use(removeConnectionFromActiveUser)
-	.use(matchmaking(ttQueue))
+	.use(matchmaking(ttQueue, matchmakingBroker))
+	.use(startGameOnMatchMade(matchmakingBroker, new StandardGameFactory()))
 
 // 	socket.on("join queue", () => {
 // 		const user = activeUsers.get(socket.handshake.auth.token)

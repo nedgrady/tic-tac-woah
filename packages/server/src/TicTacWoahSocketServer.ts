@@ -1,6 +1,7 @@
 import { type Socket as ClientSocket } from "socket.io-client"
 import { GameStartDto, JoinQueueRequest, MoveDto } from "types"
 import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
+import { Game } from "domain/Game"
 
 export interface ServerToClientEvents {
 	noArg: () => void

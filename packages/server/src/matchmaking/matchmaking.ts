@@ -1,3 +1,5 @@
+import { Game } from "domain/Game"
+import { Participant } from "domain/Participant"
 import { GameFactory } from "GameFactory"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { TicTacWoahQueue } from "queue/addConnectionToQueue"
@@ -20,14 +22,45 @@ export function matchmaking(
 	}
 }
 
+// class ActiveGames {
+// 	private _value: Game | null = null
+
+// 	public get value(): Game | null {
+// 		return this._value
+// 	}
+
+// 	public set value(v: Game | null) {
+// 		this._value = v
+// 	}
+// }
+
 export function startGameOnMatchMade(
 	matchmakingBroker: MatchmakingBroker,
 	gameFactory: GameFactory
 ): TicTacWoahSocketServerMiddleware {
+	const activeGames = new Map<string, Game>()
+
 	matchmakingBroker.onMatchMade(users => {
 		const participants = users.map(user => user.uniqueIdentifier)
 
 		const gameId = crypto.randomUUID()
+
+		const newGame = gameFactory.createGame()
+		activeGames.set(gameId, newGame)
+
+		newGame.onMove(() => console.log("Move made"))
+
+		newGame.onWin(() => {
+			console.log("Game won")
+			users.forEach(user => {
+				user.connections.forEach(connection => {
+					connection.emit("gameWin", {})
+				})
+			})
+		})
+
+		newGame.start()
+
 		users.forEach(user => {
 			user.connections.forEach(connection => {
 				connection.join(gameId)
@@ -37,16 +70,16 @@ export function startGameOnMatchMade(
 	})
 
 	return (connection, next) => {
-		console.log("startGameOnMatchMade")
 		connection.on("makeMove", (moveDto, callback) => {
-			console.log("makeMove")
 			// TODO - ensure game exists
 			// TODO - ensure player is a participant of the supplied game
+			activeGames.get(moveDto.gameId)?.submitMove({
+				mover: new Participant(),
+				placement: moveDto.placement,
+			})
 			connection.to(moveDto.gameId).emit("moveMade", moveDto)
 			connection.emit("moveMade", moveDto)
 
-			connection.to(moveDto.gameId).emit("gameWin", {})
-			connection.emit("gameWin", {})
 			callback && callback(0)
 		})
 		next()

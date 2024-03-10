@@ -5,6 +5,7 @@ import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueu
 import { startAndConnectCountReal } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MatchmakingBroker } from "MatchmakingBroker"
+import { AnythingGoesForeverGameFactory } from "GameFactory"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnectCountReal>>
 
@@ -49,7 +50,7 @@ describe("it", () => {
 				)
 				.use(addConnectionToQueue(queue))
 				.use(matchmaking(queue, matchmakingBroker))
-				.use(startGameOnMatchMade(matchmakingBroker))
+				.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
 			// TODO - what middleware to add?
 		}
 

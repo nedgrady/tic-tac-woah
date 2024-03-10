@@ -1,5 +1,4 @@
-import { MatchmakingTickBroker } from "MatchmakingBroker"
-import { ActiveUser, TicTacWoahSocketServerMiddleware, TicTacWoahUserHandle } from "TicTacWoahSocketServer"
+import { ActiveUser, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 import { EventEmitter } from "events"
 
 export type QueueAddedListener = (queueState: readonly ActiveUser[]) => void
@@ -8,9 +7,7 @@ export class TicTacWoahQueue {
 	readonly #queue: ActiveUser[] = []
 	readonly #emitter: EventEmitter = new EventEmitter()
 	objectId: string
-	/**
-	 *
-	 */
+
 	constructor() {
 		this.objectId = crypto.randomUUID()
 	}
@@ -24,9 +21,6 @@ export class TicTacWoahQueue {
 			return
 		this.#queue.push(newUser)
 		this.#emitter.emit("Added", [...this.#queue])
-		console.log(
-			`Added user ${newUser.uniqueIdentifier} Queue state: ${this.#queue.map(u => u.uniqueIdentifier).join(", ")}`
-		)
 	}
 
 	onAdded(listener: QueueAddedListener) {
@@ -38,9 +32,6 @@ export class TicTacWoahQueue {
 		const index = this.#queue.findIndex(u => u.uniqueIdentifier === id)
 		if (index === -1) return
 		this.#queue.splice(index, 1)
-		console.log(
-			`Removed user ${user.uniqueIdentifier} Queue state: ${this.#queue.map(u => u.uniqueIdentifier).join(", ")}`
-		)
 	}
 
 	get users(): readonly ActiveUser[] {
