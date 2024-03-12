@@ -4,6 +4,7 @@ import { GameFactory } from "GameFactory"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { TicTacWoahQueue } from "queue/addConnectionToQueue"
 import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
+import { GameWinDto } from "types"
 
 export function matchmaking(
 	queue: TicTacWoahQueue,
@@ -50,11 +51,20 @@ export function startGameOnMatchMade(
 
 		newGame.onMove(() => console.log("Move made"))
 
-		newGame.onWin(() => {
+		newGame.onWin(winningMoves => {
 			console.log("Game won")
+			const gameWinDto: GameWinDto = {
+				winningMoves: [
+					{
+						gameId,
+						mover: participants[1],
+						placement: winningMoves[0].placement,
+					},
+				],
+			}
 			users.forEach(user => {
 				user.connections.forEach(connection => {
-					connection.emit("gameWin", {})
+					connection.emit("gameWin", gameWinDto)
 				})
 			})
 		})
