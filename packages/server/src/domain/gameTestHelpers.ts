@@ -1,5 +1,7 @@
+import { faker } from "@faker-js/faker"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
+import { Game } from "./Game"
 
 export type PlacementSpecification = (Participant | Empty)[][]
 export type Empty = ""
@@ -21,10 +23,10 @@ export function createMoves(placementDefinitions: PlacementSpecification): reado
 	return moves
 }
 
-export function makeMoves(placementDefinitions: PlacementSpecification) {
-	for (const move of createMoves(placementDefinitions)) move.mover.makeMove(move.placement)
+export function makeMoves(game: Game, placementDefinitions: PlacementSpecification) {
+	for (const suppliedMove of createMoves(placementDefinitions)) game.submitMove(suppliedMove)
 }
 
 export function createParticipants(count: number): readonly Participant[] {
-	return Array.from({ length: count }).map(() => new Participant())
+	return Array.from({ length: count }).map(() => faker.string.alphanumeric(8))
 }

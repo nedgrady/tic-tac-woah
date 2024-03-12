@@ -1,17 +1,4 @@
-import Coordinates from "./Coordinates"
-import { Game } from "./Game"
+import { TicTacWoahUserHandle } from "TicTacWoahSocketServer"
 
-export class Participant {
-	game: Game | null
-
-	constructor() {
-		this.game = null
-	}
-
-	makeMove(coordinates: Coordinates) {
-		this.game?.submitMove({
-			mover: this,
-			placement: coordinates,
-		})
-	}
-}
+// TODO - remove?
+export type Participant = TicTacWoahUserHandle

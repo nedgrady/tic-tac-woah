@@ -11,7 +11,7 @@ import { Game } from "domain/Game"
 import { ReturnSingleGameFactory } from "GameFactory"
 import { Participant } from "domain/Participant"
 import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
-import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
+import { alwaysWinWithMoves, gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnect>>
 
@@ -38,15 +38,24 @@ describe.only("it", () => {
 
 	const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = [faker.string.uuid(), faker.string.uuid()]
 
-	const alwaysWinningGame = new Game([""], 10, 10, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(1)])
-
-	const winningMove = {
-		mover: twoUsers[0],
-		placement: {
-			x: faker.number.int(),
-			y: faker.number.int(),
+	const winningMoves = [
+		{
+			mover: twoUsers[1],
+			placement: {
+				x: faker.number.int(),
+				y: faker.number.int(),
+			},
 		},
-	}
+		{
+			mover: twoUsers[1],
+			placement: {
+				x: faker.number.int(),
+				y: faker.number.int(),
+			},
+		},
+	]
+
+	const alwaysWinningGame = new Game([""], 10, 10, [anyMoveIsAllowed], [alwaysWinWithMoves(winningMoves)])
 
 	const testContext = new GetTestContext()
 
@@ -79,7 +88,7 @@ describe.only("it", () => {
 		})
 
 		testContext.value.clientSocket.emit("makeMove", {
-			...winningMove,
+			...winningMoves[0],
 			gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
 		})
 
@@ -97,13 +106,11 @@ describe.only("it", () => {
 	it("Sends the correct move information to participant 1", async () => {
 		const gameWin = testContext.value.clientSocket.events.get("gameWin")[0]
 		const expectedGameWin: GameWinDto = {
-			winningMoves: [
-				{
-					mover: winningMove.mover,
-					placement: winningMove.placement,
-					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
-				},
-			],
+			winningMoves: winningMoves.map(move => ({
+				gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
+				mover: move.mover,
+				placement: move.placement,
+			})),
 		}
 		expect(gameWin).toMatchObject(expectedGameWin)
 	})
@@ -111,14 +118,13 @@ describe.only("it", () => {
 	it("Sends the correct move information to participant 2", async () => {
 		const gameWin = testContext.value.clientSocket2.events.get("gameWin")[0]
 		const expectedGameWin: GameWinDto = {
-			winningMoves: [
-				{
-					mover: winningMove.mover,
-					placement: winningMove.placement,
-					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
-				},
-			],
+			winningMoves: winningMoves.map(move => ({
+				gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
+				mover: move.mover,
+				placement: move.placement,
+			})),
 		}
+		expect(gameWin).toMatchObject(expectedGameWin)
 		expect(gameWin).toMatchObject(expectedGameWin)
 	})
 })

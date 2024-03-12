@@ -41,7 +41,7 @@ describe.only("it", () => {
 		"Game B player 0",
 		"Game B player 1",
 	]
-	const alwaysWinningGame = new Game([new Participant()], 10, 10, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(1)])
+	const alwaysWinningGame = new Game([""], 10, 10, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(1)])
 	const anythingGoesGame = new Game([], 10, 10, [anyMoveIsAllowed], [])
 
 	const winningMove = {

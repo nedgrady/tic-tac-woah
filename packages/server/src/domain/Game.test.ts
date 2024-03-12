@@ -21,7 +21,7 @@ function gameWithParticipants({
 	rules = [anyMoveValid],
 	winConditions = [],
 }: Partial<GameTestDefinition> = {}) {
-	const participants = Array.from({ length: participantCount }, () => new Participant())
+	const participants = Array.from({ length: participantCount }, () => faker.string.alphanumeric(8))
 
 	return {
 		game: new Game(participants, gridSize, consecutiveTarget, rules, winConditions),
@@ -44,7 +44,7 @@ it("Participant one making a move is captured", () => {
 		rules: [anyMoveValid],
 	})
 
-	p1.makeMove({ x: 0, y: 0 })
+	game.submitMove({ placement: { x: 0, y: 0 }, mover: p1 })
 
 	const expectedMove = { placement: { x: 0, y: 0 }, mover: p1 }
 	expect(game.moves()[0]).toEqual<Move>(expectedMove)
@@ -58,12 +58,12 @@ it("Participant two making a move is captured", () => {
 		rules: [anyMoveValid],
 	})
 
-	makeMoves([
+	makeMoves(game, [
 		[p1, ""],
 		["", ""],
 	])
 
-	p2.makeMove({ x: 1, y: 1 })
+	game.submitMove({ placement: { x: 1, y: 1 }, mover: p2 })
 
 	const expectedMove = { placement: { x: 1, y: 1 }, mover: p2 }
 	expect(game.moves()[1]).toEqual<Move>(expectedMove)
@@ -77,13 +77,13 @@ it("Participant three making a move is captured", () => {
 		rules: [anyMoveValid],
 	})
 
-	makeMoves([
+	makeMoves(game, [
 		[p1, "", ""],
 		["", p2, ""],
 		["", "", ""],
 	])
 
-	p3.makeMove({ x: 2, y: 2 })
+	game.submitMove({ placement: { x: 2, y: 2 }, mover: p3 })
 
 	const expectedMove = { placement: { x: 2, y: 2 }, mover: p3 }
 	expect(game.moves()[2]).toEqual<Move>(expectedMove)
@@ -94,11 +94,11 @@ it("Game can handle a very high board size", () => {
 
 	const {
 		game,
-		participants: [participantOne],
+		participants: [p1],
 	} = gameWithParticipants({ boardSize: highBoardSize, rules: [anyMoveValid] })
 
-	const moveWithHighCoordinates = { placement: { x: highBoardSize - 1, y: 0 }, mover: participantOne }
-	participantOne.makeMove(moveWithHighCoordinates.placement)
+	const moveWithHighCoordinates = { placement: { x: highBoardSize - 1, y: 0 }, mover: p1 }
+	game.submitMove({ placement: moveWithHighCoordinates.placement, mover: p1 })
 
 	expect(game.moves()[0]).toEqual<Move>(moveWithHighCoordinates)
 })
@@ -108,11 +108,11 @@ it("Game can handle a very high board size 2", () => {
 
 	const {
 		game,
-		participants: [participantOne],
+		participants: [p1],
 	} = gameWithParticipants({ boardSize: highBoardSize, rules: [anyMoveValid] })
 
-	const moveWithHighCoordinates = { placement: { x: 0, y: highBoardSize - 1 }, mover: participantOne }
-	participantOne.makeMove(moveWithHighCoordinates.placement)
+	const moveWithHighCoordinates = { placement: { x: 0, y: highBoardSize - 1 }, mover: p1 }
+	game.submitMove({ placement: moveWithHighCoordinates.placement, mover: p1 })
 
 	expect(game.moves()[0]).toEqual<Move>(moveWithHighCoordinates)
 })
@@ -130,14 +130,14 @@ it("Emits a GameStart event", () => {
 it("Emits move made events", () => {
 	const {
 		game,
-		participants: [participantOne],
+		participants: [p1],
 	} = gameWithParticipants()
 
 	const onMoveListener = vitest.fn<[Move], void>()
 	game.onMove(onMoveListener)
-	participantOne.makeMove({ x: 0, y: 0 })
+	game.submitMove({ placement: { x: 0, y: 0 }, mover: p1 })
 
-	expect(onMoveListener).toHaveBeenCalledWith({ placement: { x: 0, y: 0 }, mover: participantOne })
+	expect(onMoveListener).toHaveBeenCalledWith({ placement: { x: 0, y: 0 }, mover: p1 })
 })
 
 describe("Making a move that violates a rule in all scenarios", () => {
@@ -150,7 +150,7 @@ describe("Making a move that violates a rule in all scenarios", () => {
 			rules: [noMoveValid],
 		})
 
-		p2.makeMove({ x: 0, y: 0 })
+		game.submitMove({ placement: { x: 0, y: 0 }, mover: p2 })
 
 		expect(game.moves()).toHaveLength(0)
 	})
@@ -174,7 +174,7 @@ describe("Winning a game in all scenarios", () => {
 		const mockWinListener = vitest.fn<ArgumentsType<GameWonListener>, ReturnType<GameWonListener>>()
 		game.onWin(mockWinListener)
 
-		p1.makeMove({ x: 0, y: 0 })
+		game.submitMove({ placement: { x: 0, y: 0 }, mover: p1 })
 
 		expect(mockWinListener).toHaveBeenCalledOnce()
 	})
@@ -196,7 +196,7 @@ describe("Winning a game in all scenarios", () => {
 			y: faker.number.int({ min: 0 }),
 		}
 
-		p1.makeMove(winningPlacement)
+		game.submitMove({ placement: winningPlacement, mover: p1 })
 
 		expect(mockWinListener).toHaveBeenCalledWith([{ placement: winningPlacement, mover: p1 }])
 	})

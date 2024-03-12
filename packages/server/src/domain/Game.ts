@@ -71,11 +71,6 @@ export class Game {
 		rules: readonly GameRuleFunction[],
 		winConditions: readonly GameWinCondition[]
 	) {
-		participants.forEach((participant, index) => {
-			participant.game = this
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			;(participant as any).idx = index
-		})
 		this.#participants = participants
 		this.#boardSize = boardSize
 		this.#consecutiveTarget = consecutiveTarget

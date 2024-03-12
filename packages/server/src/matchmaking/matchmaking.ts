@@ -84,7 +84,7 @@ export function startGameOnMatchMade(
 			// TODO - ensure game exists
 			// TODO - ensure player is a participant of the supplied game
 			activeGames.get(moveDto.gameId)?.submitMove({
-				mover: new Participant(),
+				mover: "",
 				placement: moveDto.placement,
 			})
 			connection.to(moveDto.gameId).emit("moveMade", moveDto)
