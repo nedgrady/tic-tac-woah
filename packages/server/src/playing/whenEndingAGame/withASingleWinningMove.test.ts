@@ -5,14 +5,13 @@ import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueu
 import { startAndConnect } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
-import { GameWinDto, MoveDto } from "types"
+import { GameWinDto } from "types"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { Game } from "domain/Game"
 import { ReturnSingleGameFactory } from "GameFactory"
 import { Participant } from "domain/Participant"
 import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
-import { Move } from "domain/Move"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnect>>
 
@@ -93,6 +92,20 @@ describe.only("it", () => {
 
 	it("Sends the winning move to participant 2", async () => {
 		await vi.waitFor(() => expect(testContext.value.clientSocket2.events.get("gameWin")).toHaveLength(1))
+	})
+
+	it("Sends the correct move information to participant 1", async () => {
+		const gameWin = testContext.value.clientSocket.events.get("gameWin")[0]
+		const expectedGameWin: GameWinDto = {
+			winningMoves: [
+				{
+					mover: winningMove.mover,
+					placement: winningMove.placement,
+					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
+				},
+			],
+		}
+		expect(gameWin).toMatchObject(expectedGameWin)
 	})
 
 	it("Sends the correct move information to participant 1", async () => {
