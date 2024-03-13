@@ -9,7 +9,6 @@ import {
 import { GameWin, winByConsecutiveDiagonalPlacements } from "./winConditions"
 import { horizontalWinTestCases, diagonalWinTestCases, verticalWinTestCases } from "./winningGameTestCases"
 import { Move } from "domain/Move"
-import { Participant } from "domain/Participant"
 import { createParticipants, createMoves } from "domain/gameTestHelpers"
 import { faker } from "@faker-js/faker"
 
