@@ -1,6 +1,9 @@
+import { ReturnSingleGameFactory } from "GameFactory"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { TicTacWoahUserHandle, TicTacWoahSocketServer, TicTacWoahRemoteServerSocket } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
+import { Game } from "domain/Game"
+import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { startAndConnect } from "ticTacWoahTest"
@@ -26,7 +29,12 @@ describe("it", () => {
 				)
 				.use(addConnectionToQueue(queue))
 				.use(matchmaking(queue, matchmakingBroker))
-				.use(startGameOnMatchMade(matchmakingBroker))
+				.use(
+					startGameOnMatchMade(
+						matchmakingBroker,
+						new ReturnSingleGameFactory(new Game([], 10, 10, [anyMoveIsAllowed], []))
+					)
+				)
 		})
 
 		await clientSocket.emitWithAck("joinQueue", {})

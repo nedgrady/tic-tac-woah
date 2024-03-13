@@ -11,11 +11,12 @@ import { horizontalWinTestCases, diagonalWinTestCases, verticalWinTestCases } fr
 import { Move } from "domain/Move"
 import { Participant } from "domain/Participant"
 import { createParticipants, createMoves } from "domain/gameTestHelpers"
+import { faker } from "@faker-js/faker"
 
 const [p1, p2] = createParticipants(2)
 
 const anyLastMove: Move = {
-	mover: new Participant(),
+	mover: faker.string.alphanumeric(8),
 	placement: { x: 0, y: 0 },
 }
 

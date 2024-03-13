@@ -1,10 +1,9 @@
 import { Game } from "domain/Game"
-import { Participant } from "domain/Participant"
 import { GameFactory } from "GameFactory"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { TicTacWoahQueue } from "queue/addConnectionToQueue"
 import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
-import { GameWinDto } from "types"
+import { GameWinDto, MoveDto } from "types"
 
 export function matchmaking(
 	queue: TicTacWoahQueue,
@@ -49,19 +48,17 @@ export function startGameOnMatchMade(
 		const newGame = gameFactory.createGame()
 		activeGames.set(gameId, newGame)
 
-		newGame.onMove(() => console.log("Move made"))
-
 		newGame.onWin(winningMoves => {
-			console.log("Game won")
+			const winningMoveDtos: MoveDto[] = winningMoves.map(winningMove => ({
+				mover: winningMove.mover,
+				placement: winningMove.placement,
+				gameId,
+			}))
+
 			const gameWinDto: GameWinDto = {
-				winningMoves: [
-					{
-						gameId,
-						mover: participants[1],
-						placement: winningMoves[0].placement,
-					},
-				],
+				winningMoves: winningMoveDtos,
 			}
+
 			users.forEach(user => {
 				user.connections.forEach(connection => {
 					connection.emit("gameWin", gameWinDto)
