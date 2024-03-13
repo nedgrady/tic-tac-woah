@@ -17,7 +17,6 @@ const [p1, p2] = createParticipants(2)
 
 const anyLastMove: Move = {
 	mover: faker.string.alphanumeric(8),
-	mover: "",
 	placement: { x: 0, y: 0 },
 }
 
@@ -86,7 +85,7 @@ test.each(allTheWinTestCases)(
 	}
 )
 
-test.only.each(allTheWinTestCases)(
+test.each(allTheWinTestCases)(
 	"Checking the rule '$gameWinConditionUnderTest' with the last move '($winningMove.placement.x, $winningMove.placement.y)' returns the correct moves (test case %#)",
 	({ board, consecutiveTarget, winningMove, expectedWinningMoves, gameWinConditionUnderTest, participants }) => {
 		const result = gameWinConditionUnderTest(
