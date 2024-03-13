@@ -22,18 +22,6 @@ export function matchmaking(
 	}
 }
 
-// class ActiveGames {
-// 	private _value: Game | null = null
-
-// 	public get value(): Game | null {
-// 		return this._value
-// 	}
-
-// 	public set value(v: Game | null) {
-// 		this._value = v
-// 	}
-// }
-
 export function startGameOnMatchMade(
 	matchmakingBroker: MatchmakingBroker,
 	gameFactory: GameFactory
@@ -81,7 +69,7 @@ export function startGameOnMatchMade(
 			// TODO - ensure game exists
 			// TODO - ensure player is a participant of the supplied game
 			activeGames.get(moveDto.gameId)?.submitMove({
-				mover: "",
+				mover: connection.data.activeUser.uniqueIdentifier,
 				placement: moveDto.placement,
 			})
 			connection.to(moveDto.gameId).emit("moveMade", moveDto)
