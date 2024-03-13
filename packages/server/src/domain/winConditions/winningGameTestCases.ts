@@ -328,7 +328,7 @@ export const horizontalWinTestCases: GameWinTestCase[] = [
 		consecutiveTarget: 3,
 		winningMove: { mover: p1, placement: { x: 3, y: 3 } },
 		expectedWinningMoves: [
-			{ mover: p1, placement: { x: 2, y: 3 } },
+			{ mover: p1, placement: { x: 1, y: 3 } },
 			{ mover: p1, placement: { x: 2, y: 3 } },
 			{ mover: p1, placement: { x: 3, y: 3 } },
 		],
