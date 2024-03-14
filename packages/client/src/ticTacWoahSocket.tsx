@@ -3,9 +3,10 @@ import { useEffectOnce } from "react-use"
 import { io } from "socket.io-client"
 import { PropsWithChildren } from "react"
 import { useTicTacWoahAuth } from "./auth/UsernameMustBePresent"
+import { TicTacWoahClientSocket } from "types"
 
 const webSocketUrl = `${import.meta.env.VITE_WEBSOCKET_URL}:${import.meta.env.VITE_WEBSOCKET_PORT}`
-const socket = io(webSocketUrl, {
+const socket: TicTacWoahClientSocket = io(webSocketUrl, {
 	autoConnect: false,
 	query: {
 		thing: "thing",

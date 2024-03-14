@@ -73,18 +73,19 @@ export function Game() {
 
 	const dispatch = useAppDispatch()
 
+	// TODO - useElementSize deprecated
 	const [elementSizeRef, { width, height }] = useElementSize()
-	const limitingDimensionInPixels = Math.min(width, height)
+	const limitingDimensionInPixels = Math.min(width ?? 0, height ?? 0)
 
 	const socket = useTicTacWoahSocket()
 
 	useEffectOnce(() => {
-		socket.on("move", args => {
+		socket.on("moveMade", args => {
 			const move = MoveDtoSchema.parse(args)
 			dispatch(newMove(move))
 		})
 
-		socket.on("game win", args => {
+		socket.on("gameWin", args => {
 			const gameWinObj = GameWinSchema.parse(args)
 			dispatch(gameWin(gameWinObj))
 		})
