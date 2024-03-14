@@ -1,8 +1,9 @@
 import { Game } from "domain/Game"
+import { Participant } from "domain/Participant"
 import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
 
 export abstract class GameFactory {
-	abstract createGame(): Game
+	abstract createGame(participants: Participant[]): Game
 }
 
 export class ReturnSingleGameFactory extends GameFactory {
@@ -13,7 +14,7 @@ export class ReturnSingleGameFactory extends GameFactory {
 		this.game = game
 	}
 
-	createGame(): Game {
+	createGame(_: Participant[]): Game {
 		return this.game
 	}
 }
@@ -27,7 +28,7 @@ export class ReturnSequenceOfGamesFactory extends GameFactory {
 		this.games = games
 	}
 
-	createGame(): Game {
+	createGame(_: Participant[]): Game {
 		if (this.currentIndex > this.games.length) throw new Error("No more games to return")
 		const game = this.games[this.currentIndex++]
 		return game
@@ -35,7 +36,7 @@ export class ReturnSequenceOfGamesFactory extends GameFactory {
 }
 
 export class AnythingGoesForeverGameFactory extends GameFactory {
-	createGame(): Game {
+	createGame(_: Participant[]): Game {
 		return new Game([], 10, 10, [anyMoveIsAllowed], [])
 	}
 }

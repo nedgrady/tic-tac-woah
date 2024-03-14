@@ -26,6 +26,8 @@ import { MatchmakingBroker } from "MatchmakingBroker"
 import { start } from "ticTacWoahTest"
 import { GameFactory } from "GameFactory"
 import { Game } from "domain/Game"
+import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
+import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
 // import _ from "lodash"
 
 interface ParticipantHandle {
@@ -100,8 +102,8 @@ io.use((socket, next) => {
 // })
 
 class StandardGameFactory extends GameFactory {
-	createGame(): Game {
-		throw new Error("Method not implemented.")
+	createGame(participants: Participant[]): Game {
+		return new Game(participants, 20, 5, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(3)])
 	}
 }
 
