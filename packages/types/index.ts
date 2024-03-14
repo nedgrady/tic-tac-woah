@@ -1,4 +1,5 @@
 import z from "zod"
+import { type Socket as ClientSocket } from "socket.io-client"
 
 export const JoinQueueRequestSchema = z.object({})
 
@@ -33,3 +34,21 @@ export const GameWinSchema = z.object({
 })
 
 export type GameWinDto = z.infer<typeof GameWinSchema>
+
+type AckCallback = (e: number) => void
+
+export interface ClientToServerEvents {
+	joinQueue(joinQueueRequest: JoinQueueRequest, callback?: AckCallback): void
+	makeMove: (move: MoveDto, callback?: AckCallback) => void
+}
+
+export interface ServerToClientEvents {
+	noArg: () => void
+	basicEmit: (a: number, b: string, c: Buffer) => void
+	// withAck: (d: string, callback: (e: number) => void) => void
+	gameStart: (gameStart: GameStartDto) => void
+	moveMade: (move: MoveDto) => void
+	gameWin: (gameWinDto: unknown) => void
+}
+
+export type TicTacWoahClientSocket = ClientSocket<ServerToClientEvents, ClientToServerEvents>

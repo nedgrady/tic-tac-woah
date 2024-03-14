@@ -33,7 +33,7 @@ export function startGameOnMatchMade(
 
 		const gameId = crypto.randomUUID()
 
-		const newGame = gameFactory.createGame()
+		const newGame = gameFactory.createGame(participants)
 		activeGames.set(gameId, newGame)
 
 		newGame.onWin(winningMoves => {

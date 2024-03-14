@@ -17,6 +17,7 @@
 	},
 	"homepage": "https://github.com/nedgrady/tic-tac-woah#readme",
 	"dependencies": {
+		"socket.io-client": "^4.7.4",
 		"zod": "^3.21.4"
 	}
 }

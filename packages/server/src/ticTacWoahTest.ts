@@ -1,22 +1,12 @@
 import express from "express"
 import http, { createServer } from "http"
-import vitest, { describe, expect, test, vi } from "vitest"
-import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
-import { Socket as ClientSocket } from "socket.io-client"
+import vitest, { expect, test, vi } from "vitest"
 import { io as clientIo } from "socket.io-client"
-import {
-	ClientToServerEvents,
-	ServerToClientEvents,
-	TicTacWoahClientSocket,
-	TicTacWoahEventMap,
-	TicTacWoahRemoteServerSocket,
-	TicTacWoahServerSocket,
-	TicTacWoahSocketServer,
-	TicTacWoahSocketServerMiddleware,
-} from "TicTacWoahSocketServer"
+import { Server as SocketIoServer } from "socket.io"
+import { TicTacWoahEventMap, TicTacWoahRemoteServerSocket, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { instrument } from "@socket.io/admin-ui"
 import { StrongMap } from "utilities/StrongMap"
-import { extend } from "lodash"
+import { TicTacWoahClientSocket } from "types"
 
 type GrowToSize<TItem, TNumber extends number, A extends TItem[]> = A["length"] extends TNumber
 	? A
