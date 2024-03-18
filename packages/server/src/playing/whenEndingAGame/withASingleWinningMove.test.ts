@@ -64,8 +64,6 @@ describe("it", () => {
 				.use(addConnectionToQueue(queue))
 				.use(matchmaking(queue, matchmakingBroker))
 				.use(startGameOnMatchMade(matchmakingBroker, new ReturnSingleGameFactory(alwaysWinningGame)))
-
-			// TODO - what middleware to add?
 		}
 
 		testContext.value = await startAndConnect(preConfigure)

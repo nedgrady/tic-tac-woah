@@ -73,8 +73,6 @@ describe("it", () => {
 						new ReturnSequenceOfGamesFactory(alwaysWinningGame, anythingGoesGame)
 					)
 				)
-
-			// TODO - what middleware to add?
 		}
 
 		testContext.value = await startAndConnectCountReal(4, preConfigure)

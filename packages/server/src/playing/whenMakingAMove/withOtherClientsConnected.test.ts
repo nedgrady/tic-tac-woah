@@ -51,7 +51,6 @@ describe("it", () => {
 				.use(addConnectionToQueue(queue))
 				.use(matchmaking(queue, matchmakingBroker))
 				.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
-			// TODO - what middleware to add?
 		}
 
 		testContext.value = await startAndConnectCountReal(3, preConfigure)
