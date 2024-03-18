@@ -9,9 +9,8 @@ import { GameWinDto } from "types"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { Game } from "domain/Game"
 import { ReturnSingleGameFactory } from "GameFactory"
-import { Participant } from "domain/Participant"
 import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
-import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
+import { alwaysWinWithMoves } from "domain/winConditions/winConditions"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnect>>
 
@@ -38,8 +37,6 @@ describe("it", () => {
 
 	const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = [faker.string.uuid(), faker.string.uuid()]
 
-	const alwaysWinningGame = new Game([""], 10, 10, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(1)])
-
 	const winningMove = {
 		mover: twoUsers[0],
 		placement: {
@@ -47,6 +44,8 @@ describe("it", () => {
 			y: faker.number.int(),
 		},
 	}
+
+	const alwaysWinningGame = new Game([""], 10, 10, [anyMoveIsAllowed], [alwaysWinWithMoves([winningMove])])
 
 	const testContext = new GetTestContext()
 
