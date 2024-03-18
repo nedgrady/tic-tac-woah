@@ -1,4 +1,4 @@
-import { CoordinatesDto, MoveDto } from "types"
+import { CoordinatesDto, CompletedMoveDto } from "types"
 import { Coordinate } from "./redux/gameSlice"
 import { useTicTacWoahSocket } from "./ticTacWoahSocket"
 
@@ -10,7 +10,7 @@ export function useMakeMove(gameId: string) {
 			...coordinates,
 		}
 
-		const moveDto: MoveDto = {
+		const moveDto: CompletedMoveDto = {
 			placement: coordinatesDto,
 			gameId,
 			// TODO - the server can work this out from the socket connection

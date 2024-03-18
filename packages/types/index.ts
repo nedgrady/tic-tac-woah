@@ -16,12 +16,12 @@ export const CoordinatesDtoSchema = z.object({
 })
 export type CoordinatesDto = z.infer<typeof CoordinatesDtoSchema>
 
-export const MoveDtoSchema = z.object({
+export const CompletedMoveDtoSchema = z.object({
 	placement: CoordinatesDtoSchema,
 	mover: z.string(),
 	gameId: z.string(),
 })
-export type MoveDto = z.infer<typeof MoveDtoSchema>
+export type CompletedMoveDto = z.infer<typeof CompletedMoveDtoSchema>
 
 export const GameStartDtoSchema = z.object({
 	id: z.string(),
@@ -30,7 +30,7 @@ export const GameStartDtoSchema = z.object({
 export type GameStartDto = z.infer<typeof GameStartDtoSchema>
 
 export const GameWinSchema = z.object({
-	winningMoves: MoveDtoSchema.array(),
+	winningMoves: CompletedMoveDtoSchema.array(),
 })
 
 export type GameWinDto = z.infer<typeof GameWinSchema>
@@ -39,7 +39,7 @@ type AckCallback = (e: number) => void
 
 export interface ClientToServerEvents {
 	joinQueue(joinQueueRequest: JoinQueueRequest, callback?: AckCallback): void
-	makeMove: (move: MoveDto, callback?: AckCallback) => void
+	makeMove: (move: CompletedMoveDto, callback?: AckCallback) => void
 }
 
 export interface ServerToClientEvents {
@@ -47,7 +47,7 @@ export interface ServerToClientEvents {
 	basicEmit: (a: number, b: string, c: Buffer) => void
 	// withAck: (d: string, callback: (e: number) => void) => void
 	gameStart: (gameStart: GameStartDto) => void
-	moveMade: (move: MoveDto) => void
+	moveMade: (move: CompletedMoveDto) => void
 	gameWin: (gameWinDto: unknown) => void
 }
 

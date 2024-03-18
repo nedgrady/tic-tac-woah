@@ -5,7 +5,7 @@ import { useElementSize } from "usehooks-ts"
 import Board from "../Board"
 import { useMakeMove } from "../useMakeMove"
 import { useTicTacWoahSocket } from "../ticTacWoahSocket"
-import { GameWinSchema, MoveDtoSchema } from "types"
+import { GameWinSchema, CompletedMoveDtoSchema } from "types"
 import { useEffectOnce } from "react-use"
 import { Dialog, DialogContent, DialogTitle } from "@mui/material"
 
@@ -82,7 +82,7 @@ export function Game() {
 	useEffectOnce(() => {
 		socket.on("moveMade", args => {
 			console.log("moveMade", args)
-			const move = MoveDtoSchema.parse(args)
+			const move = CompletedMoveDtoSchema.parse(args)
 			dispatch(newMove(move))
 		})
 

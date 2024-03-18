@@ -3,7 +3,7 @@ import { GameFactory } from "GameFactory"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { TicTacWoahQueue } from "queue/addConnectionToQueue"
 import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
-import { GameWinDto, MoveDto } from "types"
+import { GameWinDto, CompletedMoveDto } from "types"
 
 export function matchmaking(
 	queue: TicTacWoahQueue,
@@ -37,7 +37,7 @@ export function startGameOnMatchMade(
 		activeGames.set(gameId, newGame)
 
 		newGame.onWin(winningMoves => {
-			const winningMoveDtos: MoveDto[] = winningMoves.map(winningMove => ({
+			const winningMoveDtos: CompletedMoveDto[] = winningMoves.map(winningMove => ({
 				mover: winningMove.mover,
 				placement: winningMove.placement,
 				gameId,

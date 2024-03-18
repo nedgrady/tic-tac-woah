@@ -4,7 +4,7 @@ import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { startAndConnectCountReal } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
-import { MoveDto } from "types"
+import { CompletedMoveDto } from "types"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { AnythingGoesForeverGameFactory } from "GameFactory"
 
@@ -99,7 +99,7 @@ describe("it", () => {
 		const events = testContext.value.clientSockets[playerIndex].events
 		await vi.waitFor(() => {
 			const moves = events.get("moveMade")
-			expect(moves).toContainSingle<MoveDto>({
+			expect(moves).toContainSingle<CompletedMoveDto>({
 				mover: fourParticipants[0],
 				placement: {
 					x: 0,
@@ -115,7 +115,7 @@ describe("it", () => {
 
 		await vi.waitFor(() => {
 			const moves = events.get("moveMade")
-			expect(moves).toContainSingle<MoveDto>({
+			expect(moves).toContainSingle<CompletedMoveDto>({
 				mover: fourParticipants[2],
 				placement: {
 					x: 9,

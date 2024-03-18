@@ -5,7 +5,7 @@ import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueu
 import { startAndConnect } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
-import { MoveDto } from "types"
+import { CompletedMoveDto } from "types"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { AnythingGoesForeverGameFactory, GameFactory } from "GameFactory"
 import { Game } from "domain/Game"
@@ -83,7 +83,7 @@ describe("it", () => {
 	it("The move is sent to the first player", async () => {
 		await vi.waitFor(() =>
 			expect(testContext.value.clientSocket.events.get("moveMade")).toContainEqual(
-				expect.objectContaining<MoveDto>({
+				expect.objectContaining<CompletedMoveDto>({
 					...fistMove,
 					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
 				})
