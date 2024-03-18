@@ -48,6 +48,7 @@ function useGameDisplay(): { board: readonly (BoardMoveDisplay | EmptyBoardMoveD
 	const boardState = useAppSelector(selectBoardState)
 
 	const playerTokens = new Map<string, Token>(game.players.map((player, index) => [player, tokens[index]]))
+	console.log(playerTokens)
 
 	// TODO - how to remove the undefined from the type?
 	const board: readonly (BoardMoveDisplay | EmptyBoardMoveDisplay)[][] = boardState.map(row =>
@@ -69,7 +70,6 @@ function useGameDisplay(): { board: readonly (BoardMoveDisplay | EmptyBoardMoveD
 
 export function Game() {
 	const { board } = useGameDisplay()
-	const makeMove = useMakeMove()
 
 	const dispatch = useAppDispatch()
 
@@ -81,6 +81,7 @@ export function Game() {
 
 	useEffectOnce(() => {
 		socket.on("moveMade", args => {
+			console.log("moveMade", args)
 			const move = MoveDtoSchema.parse(args)
 			dispatch(newMove(move))
 		})
@@ -98,6 +99,8 @@ export function Game() {
 
 	const winningMoves = useAppSelector(selectWinningMoves)
 	const game = useAppSelector(state => state.gameReducer.game)
+
+	const makeMove = useMakeMove(game.id)
 
 	const playerTokens = new Map<string, Token>(game.players.map((player, index) => [player, tokens[index]]))
 	const winningToken = playerTokens.get(winningMoves[0]?.mover)

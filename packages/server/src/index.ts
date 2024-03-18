@@ -11,19 +11,17 @@ import { QueueResponse } from "types"
 import { Participant } from "domain/Participant"
 import {
 	ActiveUser,
-	TicTacWoahServerSocket,
 	TicTacWoahSocketServer,
 	TicTacWoahSocketServerMiddleware,
 	TicTacWoahUserHandle,
 } from "TicTacWoahSocketServer"
-import { identifyAllSocketsAsTheSameUser, identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
+import { identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
 import { removeConnectionFromQueue } from "queue/removeConnectionFromQueue"
 import _ from "lodash"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { MatchmakingBroker } from "MatchmakingBroker"
-import { start } from "ticTacWoahTest"
 import { GameFactory } from "GameFactory"
 import { Game } from "domain/Game"
 import { anyMoveIsAllowed } from "domain/gameRules/gameRules"

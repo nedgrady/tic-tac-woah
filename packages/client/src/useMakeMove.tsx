@@ -1,8 +1,8 @@
-import { CoordinatesDto } from "types"
+import { CoordinatesDto, MoveDto } from "types"
 import { Coordinate } from "./redux/gameSlice"
 import { useTicTacWoahSocket } from "./ticTacWoahSocket"
 
-export function useMakeMove() {
+export function useMakeMove(gameId: string) {
 	const socket = useTicTacWoahSocket()
 
 	return (coordinates: Coordinate) => {
@@ -10,6 +10,14 @@ export function useMakeMove() {
 			...coordinates,
 		}
 
-		socket.emit("move", JSON.stringify(coordinatesDto))
+		const moveDto: MoveDto = {
+			placement: coordinatesDto,
+			gameId,
+			// TODO - the server can work this out from the socket connection
+			// so probably need two DTOs
+			mover: "",
+		}
+
+		socket.emit("makeMove", moveDto)
 	}
 }
