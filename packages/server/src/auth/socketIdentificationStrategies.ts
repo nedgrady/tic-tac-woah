@@ -55,6 +55,16 @@ export const identifySocketsInSequence: (
 	return identifySocketsInSequence
 }
 
+export const identiftSocketsByWebSocketId: TicTacWoahSocketServerMiddleware = (socket, next) => {
+	const activeUser: ActiveUser = {
+		connections: new Set(),
+		uniqueIdentifier: socket.id,
+	}
+	activeUser.connections.add(socket)
+	socket.data.activeUser = activeUser
+	next()
+}
+
 export const removeConnectionFromActiveUser: TicTacWoahSocketServerMiddleware = (socket, next) => {
 	socket.on("disconnect", () => {
 		socket.data.activeUser.connections.delete(socket)

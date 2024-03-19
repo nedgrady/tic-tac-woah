@@ -64,7 +64,6 @@ describe("it", () => {
 		})
 
 		testContext.value.clientSockets[0].emit("makeMove", {
-			mover: threeParticipants[0],
 			placement: {
 				x: 0,
 				y: 0,

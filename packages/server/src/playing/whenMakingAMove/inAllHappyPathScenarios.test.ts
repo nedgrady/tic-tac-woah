@@ -1,5 +1,9 @@
 import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
+import {
+	identiftSocketsByWebSocketId,
+	identifyByTicTacWoahUsername,
+	identifySocketsInSequence,
+} from "auth/socketIdentificationStrategies"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { startAndConnect } from "ticTacWoahTest"
@@ -33,11 +37,7 @@ class GetTestContext {
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
 	const matchmakingBroker = new MatchmakingBroker()
-
-	const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = [faker.string.uuid(), faker.string.uuid()]
-
 	const fistMove = {
-		mover: twoUsers[0],
 		placement: {
 			x: faker.number.int(),
 			y: faker.number.int(),
@@ -49,14 +49,7 @@ describe("it", () => {
 	beforeAll(async () => {
 		const preConfigure = (server: TicTacWoahSocketServer) => {
 			server
-				.use(
-					identifySocketsInSequence(
-						twoUsers.map(handle => ({
-							connections: new Set(),
-							uniqueIdentifier: handle,
-						}))
-					)
-				)
+				.use(identiftSocketsByWebSocketId)
 				.use(addConnectionToQueue(queue))
 				.use(matchmaking(queue, matchmakingBroker))
 				.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
@@ -85,6 +78,7 @@ describe("it", () => {
 			expect(testContext.value.clientSocket.events.get("moveMade")).toContainEqual(
 				expect.objectContaining<CompletedMoveDto>({
 					...fistMove,
+					mover: testContext.value.clientSocket.id,
 					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
 				})
 			)
@@ -93,8 +87,9 @@ describe("it", () => {
 	it("The move is sent to the second player", async () => {
 		await vi.waitFor(() =>
 			expect(testContext.value.clientSocket2.events.get("moveMade")).toContainEqual(
-				expect.objectContaining({
+				expect.objectContaining<CompletedMoveDto>({
 					...fistMove,
+					mover: testContext.value.clientSocket.id,
 					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
 				})
 			)

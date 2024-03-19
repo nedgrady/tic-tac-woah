@@ -27,6 +27,7 @@ export const GameStartDtoSchema = z.object({
 	id: z.string(),
 	players: z.array(z.string()),
 })
+
 export type GameStartDto = z.infer<typeof GameStartDtoSchema>
 
 export const GameWinSchema = z.object({
@@ -35,11 +36,17 @@ export const GameWinSchema = z.object({
 
 export type GameWinDto = z.infer<typeof GameWinSchema>
 
+export const PendingMoveDtoSchema = z.object({
+	placement: CoordinatesDtoSchema,
+	gameId: z.string(),
+})
+export type PendingMoveDto = z.infer<typeof PendingMoveDtoSchema>
+
 type AckCallback = (e: number) => void
 
 export interface ClientToServerEvents {
 	joinQueue(joinQueueRequest: JoinQueueRequest, callback?: AckCallback): void
-	makeMove: (move: CompletedMoveDto, callback?: AckCallback) => void
+	makeMove: (move: PendingMoveDto, callback?: AckCallback) => void
 }
 
 export interface ServerToClientEvents {

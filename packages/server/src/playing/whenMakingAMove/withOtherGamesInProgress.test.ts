@@ -1,5 +1,5 @@
 import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
+import { identiftSocketsByWebSocketId, identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { startAndConnectCountReal } from "ticTacWoahTest"
@@ -30,27 +30,12 @@ class GetTestContext {
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
 	const matchmakingBroker = new MatchmakingBroker()
-
-	const fourParticipants: [TicTacWoahUserHandle, TicTacWoahUserHandle, TicTacWoahUserHandle, TicTacWoahUserHandle] = [
-		"Game A player 0",
-		"Game A player 1",
-		"Game B player 0",
-		"Game B player 1",
-	]
-
 	const testContext = new GetTestContext()
 
 	beforeAll(async () => {
 		const preConfigure = (server: TicTacWoahSocketServer) => {
 			server
-				.use(
-					identifySocketsInSequence(
-						fourParticipants.map(handle => ({
-							connections: new Set(),
-							uniqueIdentifier: handle,
-						}))
-					)
-				)
+				.use(identiftSocketsByWebSocketId)
 				.use(addConnectionToQueue(queue))
 				.use(matchmaking(queue, matchmakingBroker))
 				.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
@@ -75,7 +60,6 @@ describe("it", () => {
 		})
 
 		testContext.value.clientSockets[0].emit("makeMove", {
-			mover: fourParticipants[0],
 			placement: {
 				x: 0,
 				y: 0,
@@ -84,7 +68,6 @@ describe("it", () => {
 		})
 
 		testContext.value.clientSockets[2].emit("makeMove", {
-			mover: fourParticipants[2],
 			placement: {
 				x: 9,
 				y: 9,
@@ -100,7 +83,7 @@ describe("it", () => {
 		await vi.waitFor(() => {
 			const moves = events.get("moveMade")
 			expect(moves).toContainSingle<CompletedMoveDto>({
-				mover: fourParticipants[0],
+				mover: testContext.value.clientSockets[0].id,
 				placement: {
 					x: 0,
 					y: 0,
@@ -116,7 +99,7 @@ describe("it", () => {
 		await vi.waitFor(() => {
 			const moves = events.get("moveMade")
 			expect(moves).toContainSingle<CompletedMoveDto>({
-				mover: fourParticipants[2],
+				mover: testContext.value.clientSockets[2].id,
 				placement: {
 					x: 9,
 					y: 9,

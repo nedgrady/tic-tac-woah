@@ -66,15 +66,20 @@ export function startGameOnMatchMade(
 
 	return (connection, next) => {
 		connection.on("makeMove", (moveDto, callback) => {
-			console.log("makeMove", moveDto, connection.data.activeUser.uniqueIdentifier)
+			console.log("makeMove", moveDto, connection.data.activeUser.uniqueIdentifier, connection.id)
 			// TODO - ensure game exists
 			// TODO - ensure player is a participant of the supplied game
 			activeGames.get(moveDto.gameId)?.submitMove({
 				mover: connection.data.activeUser.uniqueIdentifier,
 				placement: moveDto.placement,
 			})
-			connection.to(moveDto.gameId).emit("moveMade", moveDto)
-			connection.emit("moveMade", moveDto)
+			const completedMoveDto: CompletedMoveDto = {
+				mover: connection.data.activeUser.uniqueIdentifier,
+				placement: moveDto.placement,
+				gameId: moveDto.gameId,
+			}
+			connection.to(moveDto.gameId).emit("moveMade", completedMoveDto)
+			connection.emit("moveMade", completedMoveDto)
 
 			callback && callback(0)
 		})

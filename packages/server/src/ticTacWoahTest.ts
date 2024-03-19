@@ -19,6 +19,7 @@ export type AssertableTicTacWoahRemoteServerSocket = Omit<TicTacWoahRemoteServer
 }
 
 type AssertableTicTacWoahClientSocket = TicTacWoahClientSocket & {
+	id: string
 	events: StrongMap<TicTacWoahEventMap>
 }
 
