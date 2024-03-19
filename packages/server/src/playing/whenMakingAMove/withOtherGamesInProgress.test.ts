@@ -1,5 +1,5 @@
 import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identiftSocketsByWebSocketId, identifySocketsInSequence } from "auth/socketIdentificationStrategies"
+import { identifySocketsByWebSocketId, identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { startAndConnectCountReal } from "ticTacWoahTest"
@@ -35,7 +35,7 @@ describe("it", () => {
 	beforeAll(async () => {
 		const preConfigure = (server: TicTacWoahSocketServer) => {
 			server
-				.use(identiftSocketsByWebSocketId)
+				.use(identifySocketsByWebSocketId)
 				.use(addConnectionToQueue(queue))
 				.use(matchmaking(queue, matchmakingBroker))
 				.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))

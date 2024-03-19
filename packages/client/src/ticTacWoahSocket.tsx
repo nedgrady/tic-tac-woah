@@ -16,6 +16,12 @@ const socket: TicTacWoahClientSocket = io(webSocketUrl, {
 const SocketContext = createContext(socket)
 
 export function useTicTacWoahSocket() {
+	return useContext(SocketContext)
+}
+
+export function SocketProvider({ children }: PropsWithChildren) {
+	socket.on("connect", () => console.log("Connected to TicTacWoah server!"))
+	socket.on("disconnect", () => console.log("Disconnected"))
 	const auth = useTicTacWoahAuth()
 
 	useEffectOnce(() => {
@@ -26,16 +32,10 @@ export function useTicTacWoahSocket() {
 
 		socket.connect()
 
-		// return () => {
-		// 	socket.disconnect()
-		// }
+		return () => {
+			socket.disconnect()
+		}
 	})
-	return useContext(SocketContext)
-}
-
-export function SocketProvider({ children }: PropsWithChildren) {
-	socket.on("connect", () => console.log("Connected to TicTacWoah server!"))
-	socket.on("disconnect", () => console.log("Disconnected"))
 
 	useEffectOnce(() => {
 		return () => {

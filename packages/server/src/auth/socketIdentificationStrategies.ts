@@ -55,7 +55,7 @@ export const identifySocketsInSequence: (
 	return identifySocketsInSequence
 }
 
-export const identiftSocketsByWebSocketId: TicTacWoahSocketServerMiddleware = (socket, next) => {
+export const identifySocketsByWebSocketId: TicTacWoahSocketServerMiddleware = (socket, next) => {
 	const activeUser: ActiveUser = {
 		connections: new Set(),
 		uniqueIdentifier: socket.id,

@@ -34,6 +34,7 @@ function Queue() {
 
 		socket.on("gameStart", args => {
 			const gameStart = GameStartDtoSchema.parse(args)
+			console.log("gameStart", gameStart)
 			dispatch(startGame(gameStart))
 			navigate({
 				to: `/game/$gameId`,
@@ -44,9 +45,10 @@ function Queue() {
 		const joinQueueRequest: JoinQueueRequest = {}
 		socket.emit("joinQueue", joinQueueRequest)
 
-		// return () => {
-		// 	socket.off()
-		// }
+		return () => {
+			socket.emit("leaveQueue")
+			socket.off()
+		}
 	})
 
 	const { queue } = useQueue()

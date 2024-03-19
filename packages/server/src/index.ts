@@ -15,7 +15,7 @@ import {
 	TicTacWoahSocketServerMiddleware,
 	TicTacWoahUserHandle,
 } from "TicTacWoahSocketServer"
-import { identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
+import { identifySocketsByWebSocketId, identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
 import { removeConnectionFromQueue } from "queue/removeConnectionFromQueue"
@@ -75,6 +75,9 @@ io.use((socket, next) => {
 	socket.on("error", error => {
 		console.log("==== socket.io connect error", error)
 	})
+	socket.on("disconnect", () => {
+		console.log("==== socket.io disconnect", socket.id)
+	})
 	next()
 })
 
@@ -98,18 +101,27 @@ io.use((socket, next) => {
 // 	user.connections.add(socket)
 // 	next()
 // })
+const activeGames: Game[] = []
 
 class StandardGameFactory extends GameFactory {
 	createGame(participants: Participant[]): Game {
-		return new Game(participants, 20, 5, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(3)])
+		const newGame = new Game(participants, 20, 5, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(3)])
+		activeGames.push(newGame)
+		return newGame
 	}
 }
 
 const ttQueue = new TicTacWoahQueue()
 const matchmakingBroker = new MatchmakingBroker()
 
-io.use(identifyByTicTacWoahUsername)
+io.use(identifySocketsByWebSocketId)
 	.use(addConnectionToQueue(ttQueue))
+	.use((socket, next) => {
+		socket.on("leaveQueue", () => {
+			ttQueue.remove(socket.data.activeUser)
+		})
+		next()
+	})
 	.use(removeConnectionFromQueue(ttQueue))
 	.use(removeConnectionFromActiveUser)
 	.use(matchmaking(ttQueue, matchmakingBroker))
@@ -228,6 +240,13 @@ if (process.env.NODE_ENV === "production") {
 
 app.get("/version", (_, response) => {
 	response.send(process.env.RENDER_GIT_COMMIT)
+})
+
+app.get("/games", async (_, response) => {
+	const games = activeGames.map(game => ({
+		participants: game.participants,
+	}))
+	response.json(games)
 })
 
 app.get("/queue", async (_, response) => {

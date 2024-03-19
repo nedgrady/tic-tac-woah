@@ -64,6 +64,11 @@ export class Game {
 		return this.#movesReal
 	}
 
+	// readonly property
+	get participants(): readonly Participant[] {
+		return this.#participants
+	}
+
 	constructor(
 		participants: readonly Participant[],
 		boardSize: number = 20,

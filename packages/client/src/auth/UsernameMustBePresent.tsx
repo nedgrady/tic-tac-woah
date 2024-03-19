@@ -22,35 +22,35 @@ export function UserMustBeAuthenticated({ children }: React.PropsWithChildren) {
 	const [auth, setAuth] = useInitiateTicTacWoahAuth()
 	const [username, setUsername] = useState<string>("")
 
-	if (!auth) {
-		return (
-			<Dialog open={true}>
-				<DialogContent>
-					<Stack spacing={2}>
-						<FormControl component={Grid} padding={4}>
-							<TextField
-								required
-								value={username}
-								onChange={event => {
-									setUsername(event.target.value)
-								}}
-								label="Username"
-								variant="filled"
-							/>
-						</FormControl>
+	// if (!auth) {
+	// 	return (
+	// 		<Dialog open={true}>
+	// 			<DialogContent>
+	// 				<Stack spacing={2}>
+	// 					<FormControl component={Grid} padding={4}>
+	// 						<TextField
+	// 							required
+	// 							value={username}
+	// 							onChange={event => {
+	// 								setUsername(event.target.value)
+	// 							}}
+	// 							label="Username"
+	// 							variant="filled"
+	// 						/>
+	// 					</FormControl>
 
-						<Grid container spacing={1} flexDirection="row-reverse">
-							<Grid xs={6}>
-								<Button onClick={() => setAuth(username)} variant="outlined">
-									Submit
-								</Button>
-							</Grid>
-						</Grid>
-					</Stack>
-				</DialogContent>
-			</Dialog>
-		)
-	}
+	// 					<Grid container spacing={1} flexDirection="row-reverse">
+	// 						<Grid xs={6}>
+	// 							<Button onClick={() => setAuth(username)} variant="outlined">
+	// 								Submit
+	// 							</Button>
+	// 						</Grid>
+	// 					</Grid>
+	// 				</Stack>
+	// 			</DialogContent>
+	// 		</Dialog>
+	// 	)
+	// }
 
 	return <>{children}</>
 }

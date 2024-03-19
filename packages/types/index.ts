@@ -46,6 +46,7 @@ type AckCallback = (e: number) => void
 
 export interface ClientToServerEvents {
 	joinQueue(joinQueueRequest: JoinQueueRequest, callback?: AckCallback): void
+	leaveQueue: (callback?: AckCallback) => void
 	makeMove: (move: PendingMoveDto, callback?: AckCallback) => void
 }
 
