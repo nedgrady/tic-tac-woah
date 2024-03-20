@@ -187,56 +187,6 @@ export async function start(preConfigure?: (server: TicTacWoahSocketServer) => v
 export async function startAndConnectCount(
 	connectedClientCount: number,
 	preConfigure?: (server: TicTacWoahSocketServer) => void
-) {
-	const { app, httpServer, io: serverIo } = createTicTacWoahServer()
-
-	preConfigure?.(serverIo)
-
-	await new Promise<void>(done => httpServer.listen(done))
-
-	const port = (httpServer.address() as { port: number }).port
-	const clientSockets: TicTacWoahClientSocket[] = Array.from({ length: connectedClientCount }, () =>
-		clientIo(`http://localhost:${port}`, {
-			autoConnect: false,
-		})
-	)
-
-	clientSockets.forEach(socket => socket.connect())
-
-	const serverSockets: Map<string, TicTacWoahRemoteServerSocket> = new Map()
-
-	for (const clientSocket of clientSockets) {
-		await vi.waitFor(async () => {
-			const socket = (await serverIo.fetchSockets()).find(socket => socket.id === clientSocket.id)
-			expect(socket).toBeDefined()
-
-			serverSockets.set(socket!.id, socket!)
-		})
-	}
-
-	serverSockets.forEach(socket => vi.spyOn(socket, "emit"))
-
-	return {
-		done: async () => {
-			clientSockets.forEach(socket => socket.close())
-			serverIo.close()
-			return new Promise<void>(done =>
-				httpServer.close(() => {
-					done()
-				})
-			)
-		},
-		app,
-		serverIo,
-		httpServer,
-		clientSockets: clientSockets.sort((a, b) => a.id!.localeCompare(b.id!)),
-		serverSockets: [...serverSockets.values()].sort((a, b) => a.id.localeCompare(b.id)),
-	}
-}
-
-export async function startAndConnectCountReal(
-	connectedClientCount: number,
-	preConfigure?: (server: TicTacWoahSocketServer) => void
 ): Promise<TicTacWoahConnectedTestContextCount> {
 	const { app, httpServer, io: serverIo } = createTicTacWoahServer()
 

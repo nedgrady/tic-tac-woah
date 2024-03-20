@@ -2,26 +2,26 @@ import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketSe
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { startAndConnectCountReal } from "ticTacWoahTest"
+import { startAndConnectCount } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { AnythingGoesForeverGameFactory } from "GameFactory"
 
-const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnectCountReal>>
+const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnectCount>>
 
 class GetTestContext {
-	private _value: Awaited<ReturnType<typeof startAndConnectCountReal>>
+	private _value: Awaited<ReturnType<typeof startAndConnectCount>>
 
 	constructor() {
 		this._value = uninitializedContext
 	}
 
-	public get value(): Awaited<ReturnType<typeof startAndConnectCountReal>> {
+	public get value(): Awaited<ReturnType<typeof startAndConnectCount>> {
 		if (this._value === uninitializedContext) throw new Error("Test context not initialized")
 
 		return this._value
 	}
-	public set value(v: Awaited<ReturnType<typeof startAndConnectCountReal>>) {
+	public set value(v: Awaited<ReturnType<typeof startAndConnectCount>>) {
 		this._value = v
 	}
 }
@@ -53,7 +53,7 @@ describe("it", () => {
 				.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
 		}
 
-		testContext.value = await startAndConnectCountReal(3, preConfigure)
+		testContext.value = await startAndConnectCount(3, preConfigure)
 
 		await testContext.value.clientSockets[0].emitWithAck("joinQueue", {})
 		await testContext.value.clientSockets[1].emitWithAck("joinQueue", {})

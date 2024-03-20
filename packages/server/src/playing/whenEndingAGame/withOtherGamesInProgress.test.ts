@@ -2,31 +2,30 @@ import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketSe
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { startAndConnect, startAndConnectCount, startAndConnectCountReal } from "ticTacWoahTest"
+import { startAndConnectCount } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { Game } from "domain/Game"
-import { ReturnSequenceOfGamesFactory, ReturnSingleGameFactory } from "GameFactory"
-import { Participant } from "domain/Participant"
+import { ReturnSequenceOfGamesFactory } from "GameFactory"
 import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
 
-const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnectCountReal>>
+const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnectCount>>
 
 class GetTestContext {
-	private _value: Awaited<ReturnType<typeof startAndConnectCountReal>>
+	private _value: Awaited<ReturnType<typeof startAndConnectCount>>
 
 	constructor() {
 		this._value = uninitializedContext
 	}
 
-	public get value(): Awaited<ReturnType<typeof startAndConnectCountReal>> {
+	public get value(): Awaited<ReturnType<typeof startAndConnectCount>> {
 		if (this._value === uninitializedContext) throw new Error("Test context not initialized")
 
 		return this._value
 	}
-	public set value(v: Awaited<ReturnType<typeof startAndConnectCountReal>>) {
+	public set value(v: Awaited<ReturnType<typeof startAndConnectCount>>) {
 		this._value = v
 	}
 }
@@ -75,7 +74,7 @@ describe("it", () => {
 				)
 		}
 
-		testContext.value = await startAndConnectCountReal(4, preConfigure)
+		testContext.value = await startAndConnectCount(4, preConfigure)
 
 		await testContext.value.clientSockets[0].emitWithAck("joinQueue", {})
 		await testContext.value.clientSockets[1].emitWithAck("joinQueue", {})
