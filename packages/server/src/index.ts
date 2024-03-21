@@ -18,7 +18,7 @@ import {
 import { identifySocketsByWebSocketId, identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
-import { removeConnectionFromQueue } from "queue/removeConnectionFromQueue"
+import { removeConnectionFromQueueOnDisconnect } from "queue/removeConnectionFromQueueOnDisconnect"
 import _ from "lodash"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { MatchmakingBroker } from "MatchmakingBroker"
@@ -26,6 +26,7 @@ import { GameFactory } from "GameFactory"
 import { Game } from "domain/Game"
 import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
+import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
 // import _ from "lodash"
 
 interface ParticipantHandle {
@@ -116,13 +117,8 @@ const matchmakingBroker = new MatchmakingBroker()
 
 io.use(identifySocketsByWebSocketId)
 	.use(addConnectionToQueue(ttQueue))
-	.use((socket, next) => {
-		socket.on("leaveQueue", () => {
-			ttQueue.remove(socket.data.activeUser)
-		})
-		next()
-	})
-	.use(removeConnectionFromQueue(ttQueue))
+	.use(removeConnectionFromQueueWhenRequested(ttQueue))
+	.use(removeConnectionFromQueueOnDisconnect(ttQueue))
 	.use(removeConnectionFromActiveUser)
 	.use(matchmaking(ttQueue, matchmakingBroker))
 	.use(startGameOnMatchMade(matchmakingBroker, new StandardGameFactory()))

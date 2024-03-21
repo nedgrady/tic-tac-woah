@@ -1,7 +1,7 @@
 import { TicTacWoahQueue } from "./addConnectionToQueue"
 import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 
-export function removeConnectionFromQueue(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
+export function removeConnectionFromQueueOnDisconnect(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	return (socket, next) => {
 		socket.on("disconnect", () => {
 			if (socket.data.activeUser.connections.size === 1) {

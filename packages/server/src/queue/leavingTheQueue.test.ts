@@ -4,7 +4,7 @@ import { vi, expect } from "vitest"
 import { TicTacWoahQueue, addConnectionToQueue } from "./addConnectionToQueue"
 import { ActiveUser } from "TicTacWoahSocketServer"
 import { removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
-import { removeConnectionFromQueue } from "./removeConnectionFromQueue"
+import { removeConnectionFromQueueOnDisconnect as removeConnectionFromQueueOnDisconnect } from "./removeConnectionFromQueueOnDisconnect"
 import { faker } from "@faker-js/faker"
 
 ticTacWoahTest("One player leaves the queue", async ({ setup: { startAndConnectCount } }) => {
@@ -17,7 +17,7 @@ ticTacWoahTest("One player leaves the queue", async ({ setup: { startAndConnectC
 	queue.add(queueLeaver)
 
 	const startCtx = await startAndConnectCount(1, server =>
-		server.use(identifyAllSocketsAsTheSameUser(queueLeaver)).use(removeConnectionFromQueue(queue))
+		server.use(identifyAllSocketsAsTheSameUser(queueLeaver)).use(removeConnectionFromQueueOnDisconnect(queue))
 	)
 
 	startCtx.clientSockets[0].disconnect()
@@ -43,7 +43,7 @@ ticTacWoahTest(
 		queue.add(queueLeaver)
 
 		const startCtx = await startAndConnectCount(1, server =>
-			server.use(identifyAllSocketsAsTheSameUser(queueLeaver)).use(removeConnectionFromQueue(queue))
+			server.use(identifyAllSocketsAsTheSameUser(queueLeaver)).use(removeConnectionFromQueueOnDisconnect(queue))
 		)
 
 		startCtx.clientSockets[0].disconnect()
@@ -67,7 +67,7 @@ ticTacWoahTest(
 			server
 				.use(identifyAllSocketsAsTheSameUser(remainsInQueue))
 				.use(addConnectionToQueue(queue))
-				.use(removeConnectionFromQueue(queue))
+				.use(removeConnectionFromQueueOnDisconnect(queue))
 				.use(removeConnectionFromActiveUser)
 		)
 
