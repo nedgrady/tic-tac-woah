@@ -186,7 +186,7 @@ export async function start(preConfigure?: (server: TicTacWoahSocketServer) => v
 
 export async function startAndConnectCount(
 	connectedClientCount: number,
-	preConfigure?: (server: TicTacWoahSocketServer) => void
+	preConfigure: (server: TicTacWoahSocketServer) => void
 ): Promise<TicTacWoahConnectedTestContextCount> {
 	const { app, httpServer, io: serverIo } = createTicTacWoahServer()
 
@@ -239,6 +239,40 @@ export async function startAndConnectCount(
 		httpServer,
 		clientSockets: clientSockets.sort((a, b) => a.id!.localeCompare(b.id!)) as AssertableTicTacWoahClientSocket[],
 		serverSockets: [...serverSockets.values()].sort((a, b) => a.id.localeCompare(b.id)),
+	}
+}
+
+export class StartAndConnectLifetime {
+	private _value: Awaited<ReturnType<typeof startAndConnectCount>> | null
+
+	constructor(private preConfigure: (server: TicTacWoahSocketServer) => void, private count: number = 2) {
+		this._value = null
+	}
+
+	private get value(): Awaited<ReturnType<typeof startAndConnectCount>> {
+		if (this._value === null) throw new Error("Test context not initialized")
+
+		return this._value
+	}
+
+	async start() {
+		this._value = await startAndConnectCount(this.count, this.preConfigure)
+	}
+
+	public get done() {
+		return this.value.done
+	}
+
+	public get clientSockets() {
+		return this.value.clientSockets
+	}
+
+	public get clientSocket() {
+		return this.value.clientSockets[0]
+	}
+
+	public get clientSocket2() {
+		return this.value.clientSockets[1]
 	}
 }
 
