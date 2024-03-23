@@ -1,15 +1,8 @@
-import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identifyAllSocketsAsTheSameUser, identifySocketsInSequence } from "auth/socketIdentificationStrategies"
-import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
+import { TicTacWoahSocketServer } from "TicTacWoahSocketServer"
+import { identifyAllSocketsAsTheSameUser } from "auth/socketIdentificationStrategies"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { startAndConnect, startAndConnectCount } from "ticTacWoahTest"
+import { startAndConnect } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
-import { faker } from "@faker-js/faker"
-import { MatchmakingBroker } from "MatchmakingBroker"
-import { Game } from "domain/Game"
-import { ReturnSequenceOfGamesFactory } from "GameFactory"
-import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
-import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
 import { removeConnectionFromQueueWhenRequested } from "../removeConnectionFromQueueWhenRequested"
 
 const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnect>>
@@ -31,29 +24,62 @@ class GetTestContext {
 	}
 }
 
+class StartAndConnectLifetime {
+	private _value: Awaited<ReturnType<typeof startAndConnect>>
+	private _args: Parameters<typeof startAndConnect>
+
+	constructor(...args: Parameters<typeof startAndConnect>) {
+		this._value = uninitializedContext
+		this._args = args
+	}
+
+	public get value(): Awaited<ReturnType<typeof startAndConnect>> {
+		if (this._value === uninitializedContext) throw new Error("Test context not initialized")
+
+		return this._value
+	}
+	public set value(v: Awaited<ReturnType<typeof startAndConnect>>) {
+		this._value = v
+	}
+
+	async start() {
+		this._value = await startAndConnect(...this._args)
+	}
+
+	public get done() {
+		return this._value.done()
+	}
+
+	public get clientSocket() {
+		return this._value.clientSocket
+	}
+}
+
 describe("it", () => {
-	const testContext = new GetTestContext()
 	const queue = new TicTacWoahQueue()
 
+	const preConfigure = (server: TicTacWoahSocketServer) => {
+		server
+			.use(identifyAllSocketsAsTheSameUser())
+			.use(removeConnectionFromQueueWhenRequested(queue))
+			.use(addConnectionToQueue(queue))
+	}
+
+	const testLifetime = new StartAndConnectLifetime(preConfigure)
+
 	beforeAll(async () => {
-		const preConfigure = (server: TicTacWoahSocketServer) => {
-			server
-				.use(identifyAllSocketsAsTheSameUser())
-				.use(removeConnectionFromQueueWhenRequested(queue))
-				.use(addConnectionToQueue(queue))
-		}
+		await testLifetime.start()
 
-		testContext.value = await startAndConnect(preConfigure)
-
-		await testContext.value.clientSocket.emitWithAck("joinQueue", {})
+		await testLifetime.clientSocket.emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
 			expect(queue.users).toHaveLength(1)
 		})
 
-		testContext.value.clientSocket.emit("leaveQueue")
+		// Why does using normal emit not work here??
+		await testLifetime.clientSocket.emitWithAck("leaveQueue")
 
-		return testContext.value.done
+		return testLifetime.done
 	})
 
 	it("removes the user from the queue", async () => {
