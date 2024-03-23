@@ -27,63 +27,92 @@ class GetTestContext {
 	}
 }
 
+class StartAndConnectCountLifetime {
+	private _value: Awaited<ReturnType<typeof startAndConnectCount>>
+	private _args: Parameters<typeof startAndConnectCount>
+
+	constructor(...args: Parameters<typeof startAndConnectCount>) {
+		this._value = uninitializedContext
+		this._args = args
+	}
+
+	private get value(): Awaited<ReturnType<typeof startAndConnectCount>> {
+		if (this._value === uninitializedContext) throw new Error("Test context not initialized")
+
+		return this._value
+	}
+
+	async start() {
+		this._value = await startAndConnectCount(...this._args)
+	}
+
+	public get done() {
+		return this.value.done
+	}
+
+	public get clientSockets() {
+		return this.value.clientSockets
+	}
+}
+
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
 	const matchmakingBroker = new MatchmakingBroker()
-	const testContext = new GetTestContext()
+
+	const preConfigure = (server: TicTacWoahSocketServer) => {
+		server
+			.use(identifySocketsByWebSocketId)
+			.use(addConnectionToQueue(queue))
+			.use(matchmaking(queue, matchmakingBroker))
+			.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
+	}
+
+	const testContext = new StartAndConnectCountLifetime(4, preConfigure)
 
 	beforeAll(async () => {
-		const preConfigure = (server: TicTacWoahSocketServer) => {
-			server
-				.use(identifySocketsByWebSocketId)
-				.use(addConnectionToQueue(queue))
-				.use(matchmaking(queue, matchmakingBroker))
-				.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
-		}
+		await testContext.start()
 
-		testContext.value = await startAndConnectCount(4, preConfigure)
-
-		await testContext.value.clientSockets[0].emitWithAck("joinQueue", {})
-		await testContext.value.clientSockets[1].emitWithAck("joinQueue", {})
+		await testContext.clientSockets[0].emitWithAck("joinQueue", {})
+		await testContext.clientSockets[1].emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(testContext.value.clientSockets[0].events.get("gameStart")).toHaveLength(1)
-			expect(testContext.value.clientSockets[1].events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSockets[0].events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSockets[1].events.get("gameStart")).toHaveLength(1)
 		})
 
-		await testContext.value.clientSockets[2].emitWithAck("joinQueue", {})
-		await testContext.value.clientSockets[3].emitWithAck("joinQueue", {})
+		await testContext.clientSockets[2].emitWithAck("joinQueue", {})
+		await testContext.clientSockets[3].emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(testContext.value.clientSockets[2].events.get("gameStart")).toHaveLength(1)
-			expect(testContext.value.clientSockets[3].events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSockets[2].events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSockets[3].events.get("gameStart")).toHaveLength(1)
 		})
 
-		testContext.value.clientSockets[0].emit("makeMove", {
+		testContext.clientSockets[0].emit("makeMove", {
 			placement: {
 				x: 0,
 				y: 0,
 			},
-			gameId: testContext.value.clientSockets[0].events.get("gameStart")[0].id,
+			gameId: testContext.clientSockets[0].events.get("gameStart")[0].id,
 		})
 
-		testContext.value.clientSockets[2].emit("makeMove", {
+		testContext.clientSockets[2].emit("makeMove", {
 			placement: {
 				x: 9,
 				y: 9,
 			},
-			gameId: testContext.value.clientSockets[2].events.get("gameStart")[0].id,
+			gameId: testContext.clientSockets[2].events.get("gameStart")[0].id,
 		})
 
-		return testContext.value.done
+		return testContext.done
 	})
 
 	it.each([0, 1])("Game A player %s only receives the relevant move", async playerIndex => {
-		const events = testContext.value.clientSockets[playerIndex].events
+		const events = testContext.clientSockets[playerIndex].events
 		await vi.waitFor(() => {
 			const moves = events.get("moveMade")
 			expect(moves).toContainSingle<CompletedMoveDto>({
-				mover: testContext.value.clientSockets[0].id,
+				mover: testContext.clientSockets[0].id,
 				placement: {
 					x: 0,
 					y: 0,
@@ -94,12 +123,12 @@ describe("it", () => {
 	})
 
 	it.each([2, 3])("Game A player %s only receives the relevant move", async playerIndex => {
-		const events = testContext.value.clientSockets[playerIndex].events
+		const events = testContext.clientSockets[playerIndex].events
 
 		await vi.waitFor(() => {
 			const moves = events.get("moveMade")
 			expect(moves).toContainSingle<CompletedMoveDto>({
-				mover: testContext.value.clientSockets[2].id,
+				mover: testContext.clientSockets[2].id,
 				placement: {
 					x: 9,
 					y: 9,

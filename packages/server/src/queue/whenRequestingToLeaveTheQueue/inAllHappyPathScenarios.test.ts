@@ -47,7 +47,7 @@ class StartAndConnectLifetime {
 	}
 
 	public get done() {
-		return this._value.done()
+		return this._value.done
 	}
 
 	public get clientSocket() {
@@ -76,8 +76,7 @@ describe("it", () => {
 			expect(queue.users).toHaveLength(1)
 		})
 
-		// Why does using normal emit not work here??
-		await testLifetime.clientSocket.emitWithAck("leaveQueue")
+		testLifetime.clientSocket.emit("leaveQueue")
 
 		return testLifetime.done
 	})
