@@ -7,7 +7,8 @@ import { useMakeMove } from "../useMakeMove"
 import { useTicTacWoahSocket } from "../ticTacWoahSocket"
 import { GameWinSchema, CompletedMoveDtoSchema, GameDrawDtoScehma } from "types"
 import { useEffectOnce } from "react-use"
-import { Dialog, DialogContent, DialogTitle } from "@mui/material"
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material"
+import { useNavigate } from "@tanstack/react-router"
 
 const FlexyGameContainer = styled.div`
 	@media all and (orientation: portrait) {
@@ -106,6 +107,8 @@ export function Game() {
 
 	const makeMove = useMakeMove(game.id)
 
+	const navigate = useNavigate()
+
 	const playerTokens = new Map<string, Token>(game.players.map((player, index) => [player, tokens[index]]))
 	const winningToken = playerTokens.get(winningMoves[0]?.mover)
 	return (
@@ -113,10 +116,16 @@ export function Game() {
 			<Dialog open={winningMoves.length > 0}>
 				<DialogTitle>{winningMoves[0]?.mover} Wins</DialogTitle>
 				<DialogContent>With the dubiously discovered token {winningToken}</DialogContent>
+				<Button onClick={() => navigate({ to: "/queue" })}>Play Again</Button>
+				<Button onClick={() => navigate({ to: "/" })}>Home</Button>
 			</Dialog>
 			<Dialog open={game.draws.length > 0}>
 				<DialogTitle>Draw</DialogTitle>
 				<DialogContent>Game drawn!</DialogContent>
+				<DialogActions>
+					<Button onClick={() => navigate({ to: "/queue" })}>Play Again</Button>
+					<Button onClick={() => navigate({ to: "/" })}>Home</Button>
+				</DialogActions>
 			</Dialog>
 			<FlexyGameContainer ref={elementSizeRef}>
 				<Board
