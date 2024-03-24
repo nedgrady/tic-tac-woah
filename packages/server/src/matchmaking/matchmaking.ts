@@ -3,7 +3,7 @@ import { GameFactory } from "GameFactory"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { TicTacWoahQueue } from "queue/addConnectionToQueue"
 import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
-import { GameWinDto, CompletedMoveDto } from "types"
+import { GameWinDto, CompletedMoveDto, GameDrawDto } from "types"
 
 export function matchmaking(
 	queue: TicTacWoahQueue,
@@ -43,6 +43,7 @@ export function startGameOnMatchMade(
 				gameId,
 			}))
 
+			// TODO - add a top level gameId
 			const gameWinDto: GameWinDto = {
 				winningMoves: winningMoveDtos,
 			}
@@ -50,6 +51,17 @@ export function startGameOnMatchMade(
 			users.forEach(user => {
 				user.connections.forEach(connection => {
 					connection.emit("gameWin", gameWinDto)
+				})
+			})
+		})
+
+		newGame.onDraw(() => {
+			const gameDrawDto: GameDrawDto = {
+				gameId,
+			}
+			users.forEach(user => {
+				user.connections.forEach(connection => {
+					connection.emit("gameDraw", gameDrawDto)
 				})
 			})
 		})

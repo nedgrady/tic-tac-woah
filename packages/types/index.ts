@@ -42,6 +42,12 @@ export const PendingMoveDtoSchema = z.object({
 })
 export type PendingMoveDto = z.infer<typeof PendingMoveDtoSchema>
 
+export const GameDrawDtoScehma = z.object({
+	gameId: z.string(),
+})
+
+export type GameDrawDto = z.infer<typeof GameDrawDtoScehma>
+
 type AckCallback = (e: number) => void
 
 export interface ClientToServerEvents {
@@ -56,7 +62,8 @@ export interface ServerToClientEvents {
 	// withAck: (d: string, callback: (e: number) => void) => void
 	gameStart: (gameStart: GameStartDto) => void
 	moveMade: (move: CompletedMoveDto) => void
-	gameWin: (gameWinDto: unknown) => void
+	gameWin: (gameWinDto: GameWinDto) => void
+	gameDraw: (gameDrawDto: GameDrawDto) => void
 }
 
 export type TicTacWoahClientSocket = ClientSocket<ServerToClientEvents, ClientToServerEvents>

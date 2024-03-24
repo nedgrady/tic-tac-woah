@@ -8,3 +8,7 @@ export const gameIsDrawnWhenBoardIsFull: GameDrawCondition = (latestMove, gameSt
 
 	return { result: "continues" }
 }
+
+export const gameIsAlwaysDrawn: GameDrawCondition = () => {
+	return { result: "draw" }
+}

@@ -4,8 +4,9 @@ import { Move } from "./Move"
 import { faker } from "@faker-js/faker"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction } from "./gameRules/gameRules"
-import { GameWinCondition } from "./winConditions/winConditions"
+import { GameDrawCondition, GameWinCondition } from "./winConditions/winConditions"
 import { makeMoves } from "./gameTestHelpers"
+import { gameIsAlwaysDrawn } from "./drawConditions/drawConditions"
 
 type GameTestDefinition = GameConfiguration & {
 	participantCount?: number
@@ -209,17 +210,13 @@ describe("Winning a game where a draw looks applicable", () => {
 		winningMoves: [latestMove],
 	})
 
-	const firstMoveIsADraw: GameDrawCondition = latestMove => ({
-		result: "draw",
-	})
-
 	it("Only fires the win", () => {
 		const {
 			game,
 			participants: [p1],
 		} = gameWithParticipants({
 			winConditions: [firstMoveIsAWin],
-			drawConditions: [firstMoveIsADraw],
+			drawConditions: [gameIsAlwaysDrawn],
 			rules: [anyMoveValid],
 		})
 

@@ -32,7 +32,7 @@ it("When the board is full, the game is a draw", () => {
 	expect(result).toBe("draw")
 })
 
-it("When the board is full, the game is a draw", () => {
+it("When the board is full, the game is a draw 2", () => {
 	const finalMove: Move = {
 		mover: "p1",
 		placement: { x: 0, y: 0 },
