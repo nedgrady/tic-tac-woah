@@ -26,7 +26,7 @@ describe("it", () => {
 		},
 	}
 
-	const alwaysWinningGame = new Game([""], 10, 10, [anyMoveIsAllowed], [alwaysWinWithMoves([winningMove])])
+	const alwaysWinningGame = new Game([""], 10, 10, [anyMoveIsAllowed], [alwaysWinWithMoves([winningMove])], [])
 
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
