@@ -20,6 +20,7 @@ type EmptyGame = {
 	readonly moves: []
 	readonly players: []
 	readonly winningMoves: []
+	readonly draws: []
 }
 
 type PopulatedGame = {
@@ -27,6 +28,7 @@ type PopulatedGame = {
 	readonly players: string[]
 	readonly moves: Move[]
 	readonly winningMoves: Move[]
+	readonly draws: "draw"[]
 }
 
 const initialState: GameState = {
@@ -35,11 +37,16 @@ const initialState: GameState = {
 		moves: [],
 		players: [],
 		winningMoves: [],
+		draws: [],
 	},
 }
 
 export interface GameWin {
 	winningMoves: Move[]
+}
+
+export interface GameDraw {
+	gameId: string
 }
 
 export const gameSlice = createSlice({
@@ -54,6 +61,7 @@ export const gameSlice = createSlice({
 				players: action.payload.players,
 				moves: [],
 				winningMoves: [],
+				draws: [],
 			}
 		},
 		newMove: (state, action: PayloadAction<Move>) => {
@@ -62,10 +70,13 @@ export const gameSlice = createSlice({
 		gameWin: (state, action: PayloadAction<GameWin>) => {
 			state.game.winningMoves = action.payload.winningMoves
 		},
+		gameDraw: (state, action: PayloadAction<GameDraw>) => {
+			state.game.draws = [...state.game.draws, "draw"]
+		},
 	},
 })
 
-export const { startGame, newMove, gameWin } = gameSlice.actions
+export const { startGame, newMove, gameWin, gameDraw } = gameSlice.actions
 
 interface BoardMove {
 	placement: Coordinate

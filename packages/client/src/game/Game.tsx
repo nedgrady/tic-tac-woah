@@ -1,11 +1,11 @@
-import { Coordinate, newMove, selectBoardState, gameWin, selectWinningMoves } from "../redux/gameSlice"
+import { Coordinate, newMove, selectBoardState, gameWin, selectWinningMoves, gameDraw } from "../redux/gameSlice"
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import styled from "styled-components"
 import { useElementSize } from "usehooks-ts"
 import Board from "../Board"
 import { useMakeMove } from "../useMakeMove"
 import { useTicTacWoahSocket } from "../ticTacWoahSocket"
-import { GameWinSchema, CompletedMoveDtoSchema } from "types"
+import { GameWinSchema, CompletedMoveDtoSchema, GameDrawDtoScehma } from "types"
 import { useEffectOnce } from "react-use"
 import { Dialog, DialogContent, DialogTitle } from "@mui/material"
 
@@ -48,7 +48,6 @@ function useGameDisplay(): { board: readonly (BoardMoveDisplay | EmptyBoardMoveD
 	const boardState = useAppSelector(selectBoardState)
 
 	const playerTokens = new Map<string, Token>(game.players.map((player, index) => [player, tokens[index]]))
-	console.log(playerTokens)
 
 	// TODO - how to remove the undefined from the type?
 	const board: readonly (BoardMoveDisplay | EmptyBoardMoveDisplay)[][] = boardState.map(row =>
@@ -81,7 +80,6 @@ export function Game() {
 
 	useEffectOnce(() => {
 		socket.on("moveMade", args => {
-			console.log("moveMade", args)
 			const move = CompletedMoveDtoSchema.parse(args)
 			dispatch(newMove(move))
 		})
@@ -91,10 +89,16 @@ export function Game() {
 			dispatch(gameWin(gameWinObj))
 		})
 
-		// // TODO - how to remove this duplication?
-		// return () => {
-		// 	socket.off()
-		// }
+		socket.on("gameDraw", args => {
+			const gameDrawDto = GameDrawDtoScehma.parse(args)
+			console.log("gameDraw")
+			dispatch(gameDraw(gameDrawDto))
+		})
+
+		// TODO - how to remove this duplication?
+		return () => {
+			socket.off()
+		}
 	})
 
 	const winningMoves = useAppSelector(selectWinningMoves)
@@ -109,6 +113,10 @@ export function Game() {
 			<Dialog open={winningMoves.length > 0}>
 				<DialogTitle>{winningMoves[0]?.mover} Wins</DialogTitle>
 				<DialogContent>With the dubiously discovered token {winningToken}</DialogContent>
+			</Dialog>
+			<Dialog open={game.draws.length > 0}>
+				<DialogTitle>Draw</DialogTitle>
+				<DialogContent>Game drawn!</DialogContent>
 			</Dialog>
 			<FlexyGameContainer ref={elementSizeRef}>
 				<Board

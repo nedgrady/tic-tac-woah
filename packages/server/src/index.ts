@@ -27,7 +27,7 @@ import { Game } from "domain/Game"
 import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
 import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
-import { gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
+import { gameIsAlwaysDrawn, gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
 // import _ from "lodash"
 
 interface ParticipantHandle {
@@ -113,7 +113,7 @@ class StandardGameFactory extends GameFactory {
 			5,
 			[anyMoveIsAllowed],
 			[gameIsWonOnMoveNumber(3)],
-			[gameIsDrawnWhenBoardIsFull]
+			[gameIsAlwaysDrawn]
 		)
 		activeGames.push(newGame)
 		return newGame

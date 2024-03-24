@@ -33,15 +33,16 @@ export function SocketProvider({ children }: PropsWithChildren) {
 		socket.connect()
 
 		return () => {
+			socket.off()
 			socket.disconnect()
 		}
 	})
 
-	useEffectOnce(() => {
-		return () => {
-			socket.disconnect()
-		}
-	})
+	// useEffectOnce(() => {
+	// 	return () => {
+	// 		socket.disconnect()
+	// 	}
+	// })
 
 	return <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
 }
