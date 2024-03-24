@@ -3,9 +3,10 @@ import { Participant } from "./Participant"
 import { EventEmitter } from "events"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction, GameState } from "./gameRules/gameRules"
-import { GameWinCondition } from "./winConditions/winConditions"
+import { GameDrawCondition, GameWinCondition } from "./winConditions/winConditions"
 
 export type GameWonListener = (winningMoves: readonly Move[]) => void
+export type GameDrawListener = () => void
 
 export class Game {
 	readonly #consecutiveTarget: number
@@ -18,6 +19,10 @@ export class Game {
 
 	onWin(listener: GameWonListener) {
 		this.#emitter.on("Winning Move", listener)
+	}
+
+	onDraw(listener: GameDrawListener) {
+		this.#emitter.on("Draw", listener)
 	}
 
 	onMove(listener: (move: Move) => void) {
@@ -58,6 +63,14 @@ export class Game {
 				return
 			}
 		}
+
+		for (const endCondition of this.endConditions) {
+			const thing = endCondition(newMove, gameState, gameConfiguration)
+			if (thing.result === "draw") {
+				this.#emitter.emit("Draw")
+				return
+			}
+		}
 	}
 
 	moves(): readonly Move[] {
@@ -74,7 +87,8 @@ export class Game {
 		boardSize: number = 20,
 		consecutiveTarget: number = 9999,
 		rules: readonly GameRuleFunction[],
-		winConditions: readonly GameWinCondition[]
+		winConditions: readonly GameWinCondition[],
+		private endConditions: readonly GameDrawCondition[]
 	) {
 		this.#participants = participants
 		this.#boardSize = boardSize

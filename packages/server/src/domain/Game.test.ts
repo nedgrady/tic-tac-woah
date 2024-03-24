@@ -1,7 +1,6 @@
 import { expect, it, vitest, describe, ArgumentsType } from "vitest"
-import { Game, GameWonListener } from "./Game"
+import { Game, GameDrawListener, GameWonListener } from "./Game"
 import { Move } from "./Move"
-import { Participant } from "./Participant"
 import { faker } from "@faker-js/faker"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction } from "./gameRules/gameRules"
@@ -12,6 +11,7 @@ type GameTestDefinition = GameConfiguration & {
 	participantCount?: number
 	rules: readonly GameRuleFunction[]
 	winConditions: readonly GameWinCondition[]
+	drawConditions: readonly GameDrawCondition[]
 }
 
 function gameWithParticipants({
@@ -20,11 +20,12 @@ function gameWithParticipants({
 	participantCount = 3,
 	rules = [anyMoveValid],
 	winConditions = [],
+	drawConditions: endConditions = [],
 }: Partial<GameTestDefinition> = {}) {
 	const participants = Array.from({ length: participantCount }, () => faker.string.alphanumeric(8))
 
 	return {
-		game: new Game(participants, gridSize, consecutiveTarget, rules, winConditions),
+		game: new Game(participants, gridSize, consecutiveTarget, rules, winConditions, endConditions),
 		participants: participants,
 	}
 }
@@ -199,5 +200,94 @@ describe("Winning a game in all scenarios", () => {
 		game.submitMove({ placement: winningPlacement, mover: p1 })
 
 		expect(mockWinListener).toHaveBeenCalledWith([{ placement: winningPlacement, mover: p1 }])
+	})
+})
+
+describe("Winning a game where a draw looks applicable", () => {
+	const firstMoveIsAWin: GameWinCondition = latestMove => ({
+		result: "win",
+		winningMoves: [latestMove],
+	})
+
+	const firstMoveIsADraw: GameDrawCondition = latestMove => ({
+		result: "draw",
+	})
+
+	it("Only fires the win", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			winConditions: [firstMoveIsAWin],
+			drawConditions: [firstMoveIsADraw],
+			rules: [anyMoveValid],
+		})
+
+		const mockWinListener = vitest.fn<ArgumentsType<GameWonListener>, ReturnType<GameWonListener>>()
+		game.onWin(mockWinListener)
+
+		const mockDrawListener = vitest.fn<ArgumentsType<GameDrawListener>, ReturnType<GameDrawListener>>()
+		game.onDraw(mockDrawListener)
+
+		game.submitMove({ placement: { x: 0, y: 0 }, mover: p1 })
+
+		expect(mockWinListener).toHaveBeenCalledOnce()
+		expect(mockDrawListener).not.toHaveBeenCalled()
+	})
+})
+
+describe("Ending a game in all scenarios", () => {
+	const firstMoveEndsGame: GameDrawCondition = () => ({
+		result: "draw",
+	})
+
+	it("Invokes the end listener", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			rules: [anyMoveValid],
+			drawConditions: [firstMoveEndsGame],
+		})
+
+		const mockDrawListener = vitest.fn<ArgumentsType<GameDrawListener>, ReturnType<GameDrawListener>>()
+		game.onDraw(mockDrawListener)
+
+		const terminalPlacement = {
+			x: 0,
+			y: 0,
+		}
+
+		game.submitMove({ placement: terminalPlacement, mover: p1 })
+
+		expect(mockDrawListener).toHaveBeenCalled()
+	})
+})
+
+describe("Non-terminal moves in all scenarios", () => {
+	const gameNeverEnds: GameDrawCondition = () => ({
+		result: "continues",
+	})
+
+	it("Does not invoke the draw listener", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			rules: [anyMoveValid],
+			drawConditions: [gameNeverEnds],
+		})
+
+		const mockDrawListener = vitest.fn<ArgumentsType<GameDrawListener>, ReturnType<GameDrawListener>>()
+		game.onDraw(mockDrawListener)
+
+		const terminalPlacement = {
+			x: 0,
+			y: 0,
+		}
+
+		game.submitMove({ placement: terminalPlacement, mover: p1 })
+
+		expect(mockDrawListener).not.toHaveBeenCalled()
 	})
 })

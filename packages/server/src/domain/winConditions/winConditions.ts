@@ -16,6 +16,18 @@ export interface GameWin {
 	readonly winningMoves: readonly Move[]
 }
 
+export type GameDrawCondition = (
+	latestMove: Move,
+	gameState: GameState,
+	gameConfiguration: GameConfiguration
+) => GameDrawConditionResult
+
+export type GameDrawConditionResult = GameDraw | GameContinues
+
+export interface GameDraw {
+	readonly result: "draw"
+}
+
 export interface GameContinues {
 	readonly result: "continues"
 }
