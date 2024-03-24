@@ -27,6 +27,7 @@ import { Game } from "domain/Game"
 import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
 import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
+import { gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
 // import _ from "lodash"
 
 interface ParticipantHandle {
@@ -106,7 +107,14 @@ const activeGames: Game[] = []
 
 class StandardGameFactory extends GameFactory {
 	createGame(participants: Participant[]): Game {
-		const newGame = new Game(participants, 20, 5, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(3)])
+		const newGame = new Game(
+			participants,
+			20,
+			5,
+			[anyMoveIsAllowed],
+			[gameIsWonOnMoveNumber(3)],
+			[gameIsDrawnWhenBoardIsFull]
+		)
 		activeGames.push(newGame)
 		return newGame
 	}

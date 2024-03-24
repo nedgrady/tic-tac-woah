@@ -37,6 +37,6 @@ export class ReturnSequenceOfGamesFactory extends GameFactory {
 
 export class AnythingGoesForeverGameFactory extends GameFactory {
 	createGame(_: Participant[]): Game {
-		return new Game([], 10, 10, [anyMoveIsAllowed], [])
+		return new Game([], 10, 10, [anyMoveIsAllowed], [], [])
 	}
 }
