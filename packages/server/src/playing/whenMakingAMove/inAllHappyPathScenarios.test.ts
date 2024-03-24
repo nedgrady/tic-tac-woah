@@ -1,38 +1,13 @@
-import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import {
-	identifySocketsByWebSocketId,
-	identifyByTicTacWoahUsername,
-	identifySocketsInSequence,
-} from "auth/socketIdentificationStrategies"
+import { TicTacWoahSocketServer } from "TicTacWoahSocketServer"
+import { identifySocketsByWebSocketId } from "auth/socketIdentificationStrategies"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { startAndConnect } from "ticTacWoahTest"
+import { StartAndConnectLifetime } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
 import { CompletedMoveDto } from "types"
 import { MatchmakingBroker } from "MatchmakingBroker"
-import { AnythingGoesForeverGameFactory, GameFactory } from "GameFactory"
-import { Game } from "domain/Game"
-import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
-
-const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnect>>
-
-class GetTestContext {
-	private _value: Awaited<ReturnType<typeof startAndConnect>>
-
-	constructor() {
-		this._value = uninitializedContext
-	}
-
-	public get value(): Awaited<ReturnType<typeof startAndConnect>> {
-		if (this._value === uninitializedContext) throw new Error("Test context not initialized")
-
-		return this._value
-	}
-	public set value(v: Awaited<ReturnType<typeof startAndConnect>>) {
-		this._value = v
-	}
-}
+import { AnythingGoesForeverGameFactory } from "GameFactory"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -43,64 +18,63 @@ describe("it", () => {
 			y: faker.number.int(),
 		},
 	}
+	const preConfigure = (server: TicTacWoahSocketServer) => {
+		server
+			.use(identifySocketsByWebSocketId)
+			.use(addConnectionToQueue(queue))
+			.use(matchmaking(queue, matchmakingBroker))
+			.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
+	}
 
-	const testContext = new GetTestContext()
+	const testContext = new StartAndConnectLifetime(preConfigure)
 
 	beforeAll(async () => {
-		const preConfigure = (server: TicTacWoahSocketServer) => {
-			server
-				.use(identifySocketsByWebSocketId)
-				.use(addConnectionToQueue(queue))
-				.use(matchmaking(queue, matchmakingBroker))
-				.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
-		}
+		await testContext.start()
 
-		testContext.value = await startAndConnect(preConfigure)
-
-		await testContext.value.clientSocket2.emitWithAck("joinQueue", {})
-		await testContext.value.clientSocket.emitWithAck("joinQueue", {})
+		await testContext.clientSocket2.emitWithAck("joinQueue", {})
+		await testContext.clientSocket.emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(testContext.value.clientSocket2.events.get("gameStart")).toHaveLength(1)
-			expect(testContext.value.clientSocket.events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSocket2.events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSocket.events.get("gameStart")).toHaveLength(1)
 		})
 
-		testContext.value.clientSocket.emit("makeMove", {
+		testContext.clientSocket.emit("makeMove", {
 			...fistMove,
-			gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
+			gameId: testContext.clientSocket.events.get("gameStart")[0].id,
 		})
 
-		return testContext.value.done
+		return testContext.done
 	})
 
 	it("The move is sent to the first player", async () => {
 		await vi.waitFor(() =>
-			expect(testContext.value.clientSocket.events.get("moveMade")).toContainEqual(
+			expect(testContext.clientSocket.events.get("moveMade")).toContainEqual(
 				expect.objectContaining<CompletedMoveDto>({
 					...fistMove,
-					mover: testContext.value.clientSocket.id,
-					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
+					mover: testContext.clientSocket.id,
+					gameId: testContext.clientSocket.events.get("gameStart")[0].id,
 				})
 			)
 		)
 	})
 	it("The move is sent to the second player", async () => {
 		await vi.waitFor(() =>
-			expect(testContext.value.clientSocket2.events.get("moveMade")).toContainEqual(
+			expect(testContext.clientSocket2.events.get("moveMade")).toContainEqual(
 				expect.objectContaining<CompletedMoveDto>({
 					...fistMove,
-					mover: testContext.value.clientSocket.id,
-					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
+					mover: testContext.clientSocket.id,
+					gameId: testContext.clientSocket.events.get("gameStart")[0].id,
 				})
 			)
 		)
 	})
 
 	it("First player does not receive a win event", async () => {
-		expect(testContext.value.clientSocket.events.get("gameWin")).toHaveLength(0)
+		expect(testContext.clientSocket.events.get("gameWin")).toHaveLength(0)
 	})
 
 	it("Second player does not receive a win event", async () => {
-		expect(testContext.value.clientSocket2.events.get("gameWin")).toHaveLength(0)
+		expect(testContext.clientSocket2.events.get("gameWin")).toHaveLength(0)
 	})
 })

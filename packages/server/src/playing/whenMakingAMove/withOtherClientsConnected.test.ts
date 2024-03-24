@@ -2,29 +2,10 @@ import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketSe
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { startAndConnectCount } from "ticTacWoahTest"
+import { StartAndConnectLifetime } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { AnythingGoesForeverGameFactory } from "GameFactory"
-
-const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnectCount>>
-
-class GetTestContext {
-	private _value: Awaited<ReturnType<typeof startAndConnectCount>>
-
-	constructor() {
-		this._value = uninitializedContext
-	}
-
-	public get value(): Awaited<ReturnType<typeof startAndConnectCount>> {
-		if (this._value === uninitializedContext) throw new Error("Test context not initialized")
-
-		return this._value
-	}
-	public set value(v: Awaited<ReturnType<typeof startAndConnectCount>>) {
-		this._value = v
-	}
-}
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -34,52 +15,51 @@ describe("it", () => {
 		"Game A player 1",
 		"Remains in queue",
 	]
+	const preConfigure = (server: TicTacWoahSocketServer) => {
+		server
+			.use(
+				identifySocketsInSequence(
+					threeParticipants.map(handle => ({
+						connections: new Set(),
+						uniqueIdentifier: handle,
+					}))
+				)
+			)
+			.use(addConnectionToQueue(queue))
+			.use(matchmaking(queue, matchmakingBroker))
+			.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
+	}
 
-	const testContext = new GetTestContext()
+	const testContext = new StartAndConnectLifetime(preConfigure, 3)
 
 	beforeAll(async () => {
-		const preConfigure = (server: TicTacWoahSocketServer) => {
-			server
-				.use(
-					identifySocketsInSequence(
-						threeParticipants.map(handle => ({
-							connections: new Set(),
-							uniqueIdentifier: handle,
-						}))
-					)
-				)
-				.use(addConnectionToQueue(queue))
-				.use(matchmaking(queue, matchmakingBroker))
-				.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
-		}
+		await testContext.start()
 
-		testContext.value = await startAndConnectCount(3, preConfigure)
-
-		await testContext.value.clientSockets[0].emitWithAck("joinQueue", {})
-		await testContext.value.clientSockets[1].emitWithAck("joinQueue", {})
+		await testContext.clientSockets[0].emitWithAck("joinQueue", {})
+		await testContext.clientSockets[1].emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(testContext.value.clientSockets[0].events.get("gameStart")).toHaveLength(1)
-			expect(testContext.value.clientSockets[1].events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSockets[0].events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSockets[1].events.get("gameStart")).toHaveLength(1)
 		})
 
-		testContext.value.clientSockets[0].emit("makeMove", {
+		testContext.clientSockets[0].emit("makeMove", {
 			placement: {
 				x: 0,
 				y: 0,
 			},
-			gameId: testContext.value.clientSockets[0].events.get("gameStart")[0].id,
+			gameId: testContext.clientSockets[0].events.get("gameStart")[0].id,
 		})
 		await vi.waitFor(() => {
-			expect(testContext.value.clientSockets[0].events.get("moveMade")).toHaveLength(1)
-			expect(testContext.value.clientSockets[1].events.get("moveMade")).toHaveLength(1)
+			expect(testContext.clientSockets[0].events.get("moveMade")).toHaveLength(1)
+			expect(testContext.clientSockets[1].events.get("moveMade")).toHaveLength(1)
 		})
 
-		return testContext.value.done
+		return testContext.done
 	})
 
 	it("Player remaining in queue does not receive unrelated moves", () => {
-		const moves = testContext.value.clientSockets[2].events.get("moveMade")
+		const moves = testContext.clientSockets[2].events.get("moveMade")
 		expect(moves).toHaveLength(0)
 	})
 })

@@ -2,7 +2,7 @@ import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketSe
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { startAndConnect } from "ticTacWoahTest"
+import { StartAndConnectLifetime, startAndConnect } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
 import { GameWinDto } from "types"
@@ -11,25 +11,6 @@ import { Game } from "domain/Game"
 import { ReturnSingleGameFactory } from "GameFactory"
 import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
 import { alwaysWinWithMoves } from "domain/winConditions/winConditions"
-
-const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnect>>
-
-class GetTestContext {
-	private _value: Awaited<ReturnType<typeof startAndConnect>>
-
-	constructor() {
-		this._value = uninitializedContext
-	}
-
-	public get value(): Awaited<ReturnType<typeof startAndConnect>> {
-		if (this._value === uninitializedContext) throw new Error("Test context not initialized")
-
-		return this._value
-	}
-	public set value(v: Awaited<ReturnType<typeof startAndConnect>>) {
-		this._value = v
-	}
-}
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -47,58 +28,58 @@ describe("it", () => {
 
 	const alwaysWinningGame = new Game([""], 10, 10, [anyMoveIsAllowed], [alwaysWinWithMoves([winningMove])])
 
-	const testContext = new GetTestContext()
+	const preConfigure = (server: TicTacWoahSocketServer) => {
+		server
+			.use(
+				identifySocketsInSequence(
+					twoUsers.map(handle => ({
+						connections: new Set(),
+						uniqueIdentifier: handle,
+					}))
+				)
+			)
+			.use(addConnectionToQueue(queue))
+			.use(matchmaking(queue, matchmakingBroker))
+			.use(startGameOnMatchMade(matchmakingBroker, new ReturnSingleGameFactory(alwaysWinningGame)))
+	}
+
+	const testContext = new StartAndConnectLifetime(preConfigure)
 
 	beforeAll(async () => {
-		const preConfigure = (server: TicTacWoahSocketServer) => {
-			server
-				.use(
-					identifySocketsInSequence(
-						twoUsers.map(handle => ({
-							connections: new Set(),
-							uniqueIdentifier: handle,
-						}))
-					)
-				)
-				.use(addConnectionToQueue(queue))
-				.use(matchmaking(queue, matchmakingBroker))
-				.use(startGameOnMatchMade(matchmakingBroker, new ReturnSingleGameFactory(alwaysWinningGame)))
-		}
+		await testContext.start()
 
-		testContext.value = await startAndConnect(preConfigure)
-
-		await testContext.value.clientSocket2.emitWithAck("joinQueue", {})
-		await testContext.value.clientSocket.emitWithAck("joinQueue", {})
+		await testContext.clientSocket2.emitWithAck("joinQueue", {})
+		await testContext.clientSocket.emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(testContext.value.clientSocket2.events.get("gameStart")).toHaveLength(1)
-			expect(testContext.value.clientSocket.events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSocket2.events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSocket.events.get("gameStart")).toHaveLength(1)
 		})
 
-		testContext.value.clientSocket.emit("makeMove", {
+		testContext.clientSocket.emit("makeMove", {
 			...winningMove,
-			gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
+			gameId: testContext.clientSocket.events.get("gameStart")[0].id,
 		})
 
-		return testContext.value.done
+		return testContext.done
 	})
 
 	it("Sends the winning move to participant 1", async () => {
-		await vi.waitFor(() => expect(testContext.value.clientSocket.events.get("gameWin")).toHaveLength(1))
+		await vi.waitFor(() => expect(testContext.clientSocket.events.get("gameWin")).toHaveLength(1))
 	})
 
 	it("Sends the winning move to participant 2", async () => {
-		await vi.waitFor(() => expect(testContext.value.clientSocket2.events.get("gameWin")).toHaveLength(1))
+		await vi.waitFor(() => expect(testContext.clientSocket2.events.get("gameWin")).toHaveLength(1))
 	})
 
 	it("Sends the correct move information to participant 1", async () => {
-		const gameWin = testContext.value.clientSocket.events.get("gameWin")[0]
+		const gameWin = testContext.clientSocket.events.get("gameWin")[0]
 		const expectedGameWin: GameWinDto = {
 			winningMoves: [
 				{
 					mover: winningMove.mover,
 					placement: winningMove.placement,
-					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
+					gameId: testContext.clientSocket.events.get("gameStart")[0].id,
 				},
 			],
 		}
@@ -106,13 +87,13 @@ describe("it", () => {
 	})
 
 	it("Sends the correct move information to participant 2", async () => {
-		const gameWin = testContext.value.clientSocket2.events.get("gameWin")[0]
+		const gameWin = testContext.clientSocket2.events.get("gameWin")[0]
 		const expectedGameWin: GameWinDto = {
 			winningMoves: [
 				{
 					mover: winningMove.mover,
 					placement: winningMove.placement,
-					gameId: testContext.value.clientSocket.events.get("gameStart")[0].id,
+					gameId: testContext.clientSocket.events.get("gameStart")[0].id,
 				},
 			],
 		}

@@ -2,58 +2,11 @@ import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketSe
 import { identifySocketsByWebSocketId, identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { startAndConnectCount } from "ticTacWoahTest"
+import { StartAndConnectLifetime, startAndConnectCount } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { CompletedMoveDto } from "types"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { AnythingGoesForeverGameFactory } from "GameFactory"
-
-const uninitializedContext = {} as Awaited<ReturnType<typeof startAndConnectCount>>
-
-class GetTestContext {
-	private _value: Awaited<ReturnType<typeof startAndConnectCount>>
-
-	constructor() {
-		this._value = uninitializedContext
-	}
-
-	public get value(): Awaited<ReturnType<typeof startAndConnectCount>> {
-		if (this._value === uninitializedContext) throw new Error("Test context not initialized")
-
-		return this._value
-	}
-	public set value(v: Awaited<ReturnType<typeof startAndConnectCount>>) {
-		this._value = v
-	}
-}
-
-class StartAndConnectCountLifetime {
-	private _value: Awaited<ReturnType<typeof startAndConnectCount>>
-	private _args: Parameters<typeof startAndConnectCount>
-
-	constructor(...args: Parameters<typeof startAndConnectCount>) {
-		this._value = uninitializedContext
-		this._args = args
-	}
-
-	private get value(): Awaited<ReturnType<typeof startAndConnectCount>> {
-		if (this._value === uninitializedContext) throw new Error("Test context not initialized")
-
-		return this._value
-	}
-
-	async start() {
-		this._value = await startAndConnectCount(...this._args)
-	}
-
-	public get done() {
-		return this.value.done
-	}
-
-	public get clientSockets() {
-		return this.value.clientSockets
-	}
-}
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -67,7 +20,7 @@ describe("it", () => {
 			.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
 	}
 
-	const testContext = new StartAndConnectCountLifetime(4, preConfigure)
+	const testContext = new StartAndConnectLifetime(preConfigure, 4)
 
 	beforeAll(async () => {
 		await testContext.start()
