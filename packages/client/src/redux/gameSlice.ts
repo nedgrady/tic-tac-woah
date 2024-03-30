@@ -78,7 +78,7 @@ export const gameSlice = createSlice({
 
 export const { startGame, newMove, gameWin, gameDraw } = gameSlice.actions
 
-interface BoardMove {
+export interface BoardMove {
 	placement: Coordinate
 	mover: string
 	isWinningMove: boolean
