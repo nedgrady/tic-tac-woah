@@ -1,8 +1,8 @@
 import { expect } from "vitest"
 import * as matchers from "jest-extended"
-import { ActiveUser } from "TicTacWoahSocketServer"
-import { Socket } from "socket.io-client"
-import { th } from "@faker-js/faker"
+import { ActiveUser, TicTacWoahEventMap, TicTacWoahEventName } from "TicTacWoahSocketServer"
+import { AssertableTicTacWoahClientSocket } from "ticTacWoahTest"
+
 expect.extend(matchers)
 
 type ActiveUserEqualityContract = Pick<ActiveUser, "uniqueIdentifier"> & { connectionIds: string[] }
@@ -77,6 +77,33 @@ expect.extend({
 		return {
 			message: () => `Expected  .\n${this.utils.diff(received, [expectedItem])}`,
 			pass,
+		}
+	},
+	toHaveReceivedPayload(
+		received: AssertableTicTacWoahClientSocket,
+		event: TicTacWoahEventName,
+		payload: TicTacWoahEventMap[TicTacWoahEventName]
+	) {
+		const eventsOfExpectedType = received.events.get(event)
+		const pass = this.equals(eventsOfExpectedType, expect.arrayContaining([payload]))
+		return {
+			message: () =>
+				`Expected client '${received.id}' ${
+					this.isNot ? "not " : " "
+				} to have received a '${event}' payload matching \n${this.utils.printExpected(
+					payload
+				)}\n but received \n${this.utils.printReceived(eventsOfExpectedType)}`,
+			pass,
+		}
+	},
+	toHaveReceivedEvent(received: AssertableTicTacWoahClientSocket, expectedEvent: TicTacWoahEventName) {
+		const eventsOfExpectedType = received.events.get(expectedEvent)
+		return {
+			message: () =>
+				`Expected client '${received.id}' with events ${this.utils.printReceived(eventsOfExpectedType)} to ${
+					this.isNot ? "not " : " "
+				}have received a '${expectedEvent}' event`,
+			pass: eventsOfExpectedType !== undefined && eventsOfExpectedType.length > 0,
 		}
 	},
 })

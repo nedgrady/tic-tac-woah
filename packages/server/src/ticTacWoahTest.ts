@@ -18,7 +18,7 @@ export type AssertableTicTacWoahRemoteServerSocket = Omit<TicTacWoahRemoteServer
 	emit: vitest.MockedFunction<TicTacWoahRemoteServerSocket["emit"]>
 }
 
-type AssertableTicTacWoahClientSocket = TicTacWoahClientSocket & {
+export type AssertableTicTacWoahClientSocket = TicTacWoahClientSocket & {
 	id: string
 	events: StrongMap<TicTacWoahEventMap>
 }
