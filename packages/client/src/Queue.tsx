@@ -9,6 +9,7 @@ import { useQueue } from "./lobby/useQueue"
 import { Suspense } from "react"
 import { queueRoot } from "./Routes"
 import { UserMustBeAuthenticated, useTicTacWoahAuth } from "./auth/UsernameMustBePresent"
+import { Button } from "@mui/material"
 
 function ProtectedQueue() {
 	return (
@@ -57,7 +58,8 @@ function Queue() {
 		<>
 			{socketState == "connected" ? (
 				<Suspense fallback={<>Loading Queue...</>}>
-					<>Currently {queue?.depth} people waiting</>
+					<p>Currently {queue?.depth} people waiting</p>
+					<Button onClick={() => socket.emit("playVsAi")}>Play vs AI</Button>
 				</Suspense>
 			) : (
 				<p>Attempting to connect to the tic tac WOAH! server.</p>

@@ -18,6 +18,19 @@ export function startGameOnMatchMade(
 		const newGame = gameFactory.createGame(participants)
 		activeGames.set(gameId, newGame)
 
+		newGame.onMove(newMove => {
+			const completedMoveDto: CompletedMoveDto = {
+				mover: newMove.mover,
+				placement: newMove.placement,
+				gameId: gameId,
+			}
+			users.forEach(user => {
+				user.connections.forEach(connection => {
+					connection.emit("moveMade", completedMoveDto)
+				})
+			})
+		})
+
 		newGame.onWin(winningMoves => {
 			const winningMoveDtos: CompletedMoveDto[] = winningMoves.map(winningMove => ({
 				mover: winningMove.mover,
@@ -66,13 +79,6 @@ export function startGameOnMatchMade(
 				mover: connection.data.activeUser.uniqueIdentifier,
 				placement: moveDto.placement,
 			})
-			const completedMoveDto: CompletedMoveDto = {
-				mover: connection.data.activeUser.uniqueIdentifier,
-				placement: moveDto.placement,
-				gameId: moveDto.gameId,
-			}
-			connection.to(moveDto.gameId).emit("moveMade", completedMoveDto)
-			connection.emit("moveMade", completedMoveDto)
 
 			callback && callback(0)
 		})

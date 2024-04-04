@@ -26,7 +26,7 @@ export function SocketProvider({ children }: PropsWithChildren) {
 
 	useEffectOnce(() => {
 		socket.auth = {
-			token: auth,
+			token: "NED",
 			type: "tic-tac-woah-username",
 		}
 

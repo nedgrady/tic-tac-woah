@@ -6,7 +6,7 @@ import { Server } from "socket.io"
 import path from "path"
 
 import { instrument } from "@socket.io/admin-ui"
-import { QueueResponse } from "types"
+import { CompletedMoveDto, GameDrawDto, GameWinDto, QueueResponse } from "types"
 // import applicationInsights from "./logging/applicationInsights"
 import { Participant } from "domain/Participant"
 import {
@@ -29,6 +29,8 @@ import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
 import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
 import { gameIsAlwaysDrawn, gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
+import { Move } from "domain/Move"
+import Coordinates from "domain/Coordinates"
 // import _ from "lodash"
 
 interface ParticipantHandle {
@@ -124,13 +126,113 @@ class StandardGameFactory extends GameFactory {
 const ttQueue = new TicTacWoahQueue()
 const matchmakingBroker = new MatchmakingBroker()
 
-io.use(identifySocketsByWebSocketId)
+io.use(identifyByTicTacWoahUsername)
 	.use(addConnectionToQueue(ttQueue))
 	.use(removeConnectionFromQueueWhenRequested(ttQueue))
 	.use(removeConnectionFromQueueOnDisconnect(ttQueue))
 	.use(removeConnectionFromActiveUser)
 	.use(matchmaking(ttQueue, matchmakingBroker))
 	.use(startGameOnMatchMade(matchmakingBroker, new StandardGameFactory()))
+
+io.use((socket, next) => {
+	let gameVsAi: Game | null = null
+	socket.on("makeMove", (moveDto, callback) => {
+		if (!gameVsAi) {
+			callback && callback(0)
+			return
+		}
+
+		gameVsAi.submitMove({
+			mover: socket.data.activeUser.uniqueIdentifier,
+			placement: moveDto.placement,
+		})
+
+		callback && callback(0)
+	})
+
+	socket.on("playVsAi", callback => {
+		const userId = socket.data.activeUser.uniqueIdentifier
+		const user = socket.data.activeUser
+		const gameId = crypto.randomUUID()
+		const participants = [userId, "AI"]
+		let moveIndex = 0
+
+		gameVsAi = new Game(participants, 20, 5, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(20)], [])
+
+		gameVsAi.onMove(newMove => {
+			const completedMoveDto: CompletedMoveDto = {
+				mover: newMove.mover,
+				placement: newMove.placement,
+				gameId: gameId,
+			}
+			user.connections.forEach(connection => {
+				connection.emit("moveMade", completedMoveDto)
+			})
+		})
+
+		gameVsAi.onMove(newMove => {
+			if (newMove.mover === "AI") return
+
+			// create all possible placement pairings from 0,0 to 20,20
+			const allPossiblePlacements: Coordinates[] = _.range(0, 20).flatMap(x =>
+				_.range(0, 20).map(y => ({ x, y }))
+			)
+
+			const availablePlacements = allPossiblePlacements.filter(
+				placement => !gameVsAi!.moves().some(move => _.isEqual(move.placement, placement))
+			)
+
+			const randomPlacement = availablePlacements[Math.floor(Math.random() * availablePlacements.length)]
+
+			const aiMove: Move = {
+				mover: "AI",
+				placement: randomPlacement,
+			}
+
+			moveIndex++
+
+			gameVsAi!.submitMove(aiMove)
+		})
+
+		gameVsAi.onWin(winningMoves => {
+			const winningMoveDtos: CompletedMoveDto[] = winningMoves.map(winningMove => ({
+				mover: winningMove.mover,
+				placement: winningMove.placement,
+				gameId,
+			}))
+
+			// TODO - add a top level gameId
+			const gameWinDto: GameWinDto = {
+				winningMoves: winningMoveDtos,
+			}
+
+			user.connections.forEach(connection => {
+				connection.emit("gameWin", gameWinDto)
+			})
+		})
+
+		gameVsAi.onDraw(() => {
+			const gameDrawDto: GameDrawDto = {
+				gameId,
+			}
+
+			user.connections.forEach(connection => {
+				connection.emit("gameDraw", gameDrawDto)
+			})
+		})
+
+		gameVsAi.start()
+
+		user.connections.forEach(connection => {
+			connection.join(gameId)
+			connection.emit("gameStart", { id: gameId, players: participants })
+		})
+
+		callback && callback(0)
+	})
+
+	next()
+})
 
 // 	socket.on("join queue", () => {
 // 		const user = activeUsers.get(socket.handshake.auth.token)
