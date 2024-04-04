@@ -29,16 +29,16 @@ describe("it", () => {
 		await testContext.clientSockets[1].emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(testContext.clientSockets[0].events.get("gameStart")).toHaveLength(1)
-			expect(testContext.clientSockets[1].events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSockets[0]).toHaveReceivedEvent("gameStart")
+			expect(testContext.clientSockets[1]).toHaveReceivedEvent("gameStart")
 		})
 
 		await testContext.clientSockets[2].emitWithAck("joinQueue", {})
 		await testContext.clientSockets[3].emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(testContext.clientSockets[2].events.get("gameStart")).toHaveLength(1)
-			expect(testContext.clientSockets[3].events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSockets[2]).toHaveReceivedEvent("gameStart")
+			expect(testContext.clientSockets[3]).toHaveReceivedEvent("gameStart")
 		})
 
 		testContext.clientSockets[0].emit("makeMove", {
