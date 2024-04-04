@@ -61,32 +61,27 @@ describe("it", () => {
 	})
 
 	it.each([0, 1])("Game A player %s only receives the relevant move", async playerIndex => {
-		const events = testContext.clientSockets[playerIndex].events
 		await vi.waitFor(() => {
-			const moves = events.get("moveMade")
-			expect(moves).toContainSingle<CompletedMoveDto>({
+			expect(testContext.clientSockets[playerIndex]).toHaveReceivedPayload("moveMade", {
 				mover: testContext.clientSockets[0].id,
 				placement: {
 					x: 0,
 					y: 0,
 				},
-				gameId: events.get("gameStart")[0].id,
+				gameId: testContext.clientSockets[playerIndex].events.get("gameStart")[0].id,
 			})
 		})
 	})
 
 	it.each([2, 3])("Game A player %s only receives the relevant move", async playerIndex => {
-		const events = testContext.clientSockets[playerIndex].events
-
 		await vi.waitFor(() => {
-			const moves = events.get("moveMade")
-			expect(moves).toContainSingle<CompletedMoveDto>({
+			expect(testContext.clientSockets[playerIndex]).toHaveReceivedPayload("moveMade", {
 				mover: testContext.clientSockets[2].id,
 				placement: {
 					x: 9,
 					y: 9,
 				},
-				gameId: events.get("gameStart")[0].id,
+				gameId: testContext.clientSockets[playerIndex].events.get("gameStart")[0].id,
 			})
 		})
 	})

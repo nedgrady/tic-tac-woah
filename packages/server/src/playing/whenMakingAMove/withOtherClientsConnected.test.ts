@@ -39,8 +39,8 @@ describe("it", () => {
 		await testContext.clientSockets[1].emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(testContext.clientSockets[0]).toHaveReceivedEvent("gameWin")
-			expect(testContext.clientSockets[1]).toHaveReceivedEvent("gameWin")
+			expect(testContext.clientSockets[1]).toHaveReceivedEvent("gameStart")
+			expect(testContext.clientSockets[0]).toHaveReceivedEvent("gameStart")
 		})
 
 		testContext.clientSockets[0].emit("makeMove", {
@@ -51,8 +51,8 @@ describe("it", () => {
 			gameId: testContext.clientSockets[0].events.get("gameStart")[0].id,
 		})
 		await vi.waitFor(() => {
-			expect(testContext.clientSockets[0].events.get("moveMade")).toHaveLength(1)
-			expect(testContext.clientSockets[1].events.get("moveMade")).toHaveLength(1)
+			expect(testContext.clientSockets[1]).toHaveReceivedEvent("moveMade")
+			expect(testContext.clientSockets[0]).toHaveReceivedEvent("moveMade")
 		})
 
 		return testContext.done
