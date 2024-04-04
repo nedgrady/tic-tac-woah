@@ -35,8 +35,8 @@ describe("it", () => {
 		await testContext.clientSocket.emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(testContext.clientSocket2.events.get("gameStart")).toHaveLength(1)
-			expect(testContext.clientSocket.events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSocket).toHaveReceivedEvent("gameStart")
+			expect(testContext.clientSocket2).toHaveReceivedEvent("gameStart")
 		})
 
 		testContext.clientSocket.emit("makeMove", {
@@ -49,32 +49,28 @@ describe("it", () => {
 
 	it("The move is sent to the first player", async () => {
 		await vi.waitFor(() =>
-			expect(testContext.clientSocket.events.get("moveMade")).toContainEqual(
-				expect.objectContaining<CompletedMoveDto>({
-					...fistMove,
-					mover: testContext.clientSocket.id,
-					gameId: testContext.clientSocket.events.get("gameStart")[0].id,
-				})
-			)
+			expect(testContext.clientSocket).toHaveReceivedPayload("moveMade", {
+				...fistMove,
+				mover: testContext.clientSocket.id,
+				gameId: testContext.clientSocket.events.get("gameStart")[0].id,
+			})
 		)
 	})
 	it("The move is sent to the second player", async () => {
 		await vi.waitFor(() =>
-			expect(testContext.clientSocket2.events.get("moveMade")).toContainEqual(
-				expect.objectContaining<CompletedMoveDto>({
-					...fistMove,
-					mover: testContext.clientSocket.id,
-					gameId: testContext.clientSocket.events.get("gameStart")[0].id,
-				})
-			)
+			expect(testContext.clientSocket2).toHaveReceivedPayload("moveMade", {
+				...fistMove,
+				mover: testContext.clientSocket.id,
+				gameId: testContext.clientSocket.events.get("gameStart")[0].id,
+			})
 		)
 	})
 
 	it("First player does not receive a win event", async () => {
-		expect(testContext.clientSocket.events.get("gameWin")).toHaveLength(0)
+		expect(testContext.clientSocket).not.toHaveReceivedEvent("gameWin")
 	})
 
 	it("Second player does not receive a win event", async () => {
-		expect(testContext.clientSocket2.events.get("gameWin")).toHaveLength(0)
+		expect(testContext.clientSocket2).not.toHaveReceivedEvent("gameWin")
 	})
 })
