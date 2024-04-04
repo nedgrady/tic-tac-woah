@@ -6,7 +6,7 @@ import { Game } from "domain/Game"
 import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
 import { matchmaking, startGameOnMatchMade } from "matchmaking/matchmaking"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { startAndConnect } from "ticTacWoahTest"
+import { StartAndConnectLifetime, startAndConnect } from "ticTacWoahTest"
 import { vi, expect, beforeAll, describe, it } from "vitest"
 
 describe("it", () => {
@@ -14,40 +14,40 @@ describe("it", () => {
 	const matchmakingBroker = new MatchmakingBroker()
 
 	const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = ["User 1", "User 2"]
-	let socketInQueue: TicTacWoahRemoteServerSocket
+
+	const preConfigure = (server: TicTacWoahSocketServer) => {
+		server
+			.use(
+				identifySocketsInSequence(
+					twoUsers.map(handle => ({
+						connections: new Set(),
+						uniqueIdentifier: handle,
+					}))
+				)
+			)
+			.use(addConnectionToQueue(queue))
+			.use(matchmaking(queue, matchmakingBroker))
+			.use(
+				startGameOnMatchMade(
+					matchmakingBroker,
+					new ReturnSingleGameFactory(new Game([], 10, 10, [anyMoveIsAllowed], [], []))
+				)
+			)
+	}
+
+	const testContext = new StartAndConnectLifetime(preConfigure)
 
 	beforeAll(async () => {
-		const { serverSocket, clientSocket, done } = await startAndConnect((server: TicTacWoahSocketServer) => {
-			server
-				.use(
-					identifySocketsInSequence(
-						twoUsers.map(handle => ({
-							connections: new Set(),
-							uniqueIdentifier: handle,
-						}))
-					)
-				)
-				.use(addConnectionToQueue(queue))
-				.use(matchmaking(queue, matchmakingBroker))
-				.use(
-					startGameOnMatchMade(
-						matchmakingBroker,
-						new ReturnSingleGameFactory(new Game([], 10, 10, [anyMoveIsAllowed], []))
-					)
-				)
-		})
-
-		await clientSocket.emitWithAck("joinQueue", {})
+		await testContext.start()
+		await testContext.clientSocket.emitWithAck("joinQueue", {})
 		await vi.waitFor(() => {
 			expect(queue.users).toHaveLength(1)
 		})
 
-		socketInQueue = serverSocket
-
-		return done
+		return testContext.done
 	})
 
 	it("does not create a game", () => {
-		expect(socketInQueue.emit).not.toHaveBeenCalled()
+		expect(testContext.clientSocket).not.toHaveReceivedEvent("gameStart")
 	})
 })

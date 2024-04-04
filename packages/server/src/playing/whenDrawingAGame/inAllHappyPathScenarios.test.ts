@@ -53,8 +53,8 @@ describe("it", () => {
 		await testContext.clientSocket.emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(testContext.clientSocket2.events.get("gameStart")).toHaveLength(1)
-			expect(testContext.clientSocket.events.get("gameStart")).toHaveLength(1)
+			expect(testContext.clientSocket).toHaveReceivedEvent("gameStart")
+			expect(testContext.clientSocket2).toHaveReceivedEvent("gameStart")
 		})
 
 		testContext.clientSocket.emit("makeMove", {
@@ -66,27 +66,25 @@ describe("it", () => {
 	})
 
 	it("Sends the winning move to participant 1", async () => {
-		await vi.waitFor(() => expect(testContext.clientSocket.events.get("gameDraw")).toHaveLength(1))
+		await vi.waitFor(() => expect(testContext.clientSocket).toHaveReceivedEvent("gameDraw"))
 	})
 
 	it("Sends the winning move to participant 2", async () => {
-		await vi.waitFor(() => expect(testContext.clientSocket2.events.get("gameDraw")).toHaveLength(1))
+		await vi.waitFor(() => expect(testContext.clientSocket2).toHaveReceivedEvent("gameDraw"))
 	})
 
 	it("Sends the correct move information to participant 1", async () => {
-		const receivedGameDraw = testContext.clientSocket.events.get("gameDraw")[0]
 		const expectedGameDraw: GameDrawDto = {
 			gameId: testContext.clientSocket.events.get("gameStart")[0].id,
 		}
-		expect(receivedGameDraw).toMatchObject(expectedGameDraw)
+		expect(testContext.clientSocket).toHaveReceivedPayload("gameDraw", expectedGameDraw)
 	})
 
 	it("Sends the correct move information to participant 2", async () => {
-		const receivedGameDraw = testContext.clientSocket2.events.get("gameDraw")[0]
 		const expectedGameDraw: GameDrawDto = {
 			gameId: testContext.clientSocket2.events.get("gameStart")[0].id,
 		}
-		expect(receivedGameDraw).toMatchObject(expectedGameDraw)
+		expect(testContext.clientSocket2).toHaveReceivedPayload("gameDraw", expectedGameDraw)
 	})
 
 	it("Both gameDraws have the same gameId", async () => {

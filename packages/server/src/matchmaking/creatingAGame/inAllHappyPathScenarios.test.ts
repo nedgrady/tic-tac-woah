@@ -47,16 +47,14 @@ describe("it", () => {
 	})
 
 	it("Game start is sent to the first player", () => {
-		const moves = testContext.clientSocket.events.get("gameStart")
-		expect(moves).toContainEqual<GameStartDto>({
+		expect(testContext.clientSocket).toHaveReceivedPayload("gameStart", {
 			id: expect.any(String),
 			players: expect.arrayContaining(twoUsers),
 		})
 	})
 
 	it("Game start is sent to the second player", () => {
-		const moves = testContext.clientSocket2.events.get("gameStart")
-		expect(moves).toContainEqual<GameStartDto>({
+		expect(testContext.clientSocket2).toHaveReceivedPayload("gameStart", {
 			id: expect.any(String),
 			players: expect.arrayContaining(twoUsers),
 		})
