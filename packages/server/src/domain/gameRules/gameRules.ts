@@ -57,3 +57,18 @@ export const standardRules: readonly GameRuleFunction[] = [
 ]
 
 export const anyMoveIsAllowed: GameRuleFunction = () => true
+export const noMoveIsAllowed: GameRuleFunction = () => false
+
+export type DecideWhoMayMoveNext = (gameState: GameState) => Participant[]
+
+export const anyoneMayMoveNext: DecideWhoMayMoveNext = (gameState: GameState) => [...gameState.participants]
+
+export const specificPlayerMayMoveNext =
+	(player: Participant): DecideWhoMayMoveNext =>
+	() =>
+		[player]
+
+export const specificPlayersMayMoveNext =
+	(...players: Participant[]): DecideWhoMayMoveNext =>
+	() =>
+		players

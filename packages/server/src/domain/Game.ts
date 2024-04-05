@@ -25,15 +25,21 @@ export class Game {
 		this.#emitter.on("Draw", listener)
 	}
 
-	onMove(listener: (move: Move) => void) {
+	onMoveCompleted(listener: (move: Move) => void) {
 		this.#emitter.on("Move", listener)
 	}
+
 	onStart(listener: () => void) {
 		this.#emitter.on("Start", listener)
 	}
 
+	onParticipantMayMove(p1: string, arg1: () => void) {
+		this.#emitter.on("Participant May Move", arg1)
+	}
+
 	start() {
 		this.#emitter.emit("Start")
+		this.#emitter.emit("Participant May Move")
 	}
 
 	submitMove(newMove: Move) {
@@ -71,6 +77,8 @@ export class Game {
 				return
 			}
 		}
+
+		this.#emitter.emit("Participant May Move")
 	}
 
 	moves(): readonly Move[] {
@@ -88,7 +96,8 @@ export class Game {
 		consecutiveTarget: number = 9999,
 		rules: readonly GameRuleFunction[],
 		winConditions: readonly GameWinCondition[],
-		private endConditions: readonly GameDrawCondition[]
+		private readonly endConditions: readonly GameDrawCondition[],
+		private readonly decideWhoMayMoveNext: (gameState: GameState) => Participant[]
 	) {
 		this.#participants = participants
 		this.#boardSize = boardSize

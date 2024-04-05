@@ -114,7 +114,8 @@ class StandardGameFactory extends GameFactory {
 			5,
 			[anyMoveIsAllowed],
 			[gameIsWonOnMoveNumber(3)],
-			[gameIsAlwaysDrawn]
+			[gameIsAlwaysDrawn],
+			() => []
 		)
 		activeGames.push(newGame)
 		return newGame

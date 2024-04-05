@@ -214,3 +214,8 @@ export const alwaysWinWithMoves: (moves: Move[]) => GameWinCondition = (moves: M
 		winningMoves: moves,
 	}
 }
+
+export const firstMoveIsAWin: GameWinCondition = latestMove => ({
+	result: "win",
+	winningMoves: [latestMove],
+})
