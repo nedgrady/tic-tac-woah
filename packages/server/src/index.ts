@@ -155,7 +155,6 @@ io.use((socket, next) => {
 		const user = socket.data.activeUser
 		const gameId = crypto.randomUUID()
 		const participants = [userId, "AI"]
-		let moveIndex = 0
 
 		gameVsAi = new Game(participants, 20, 5, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(20)], [])
 
@@ -188,8 +187,6 @@ io.use((socket, next) => {
 				mover: "AI",
 				placement: randomPlacement,
 			}
-
-			moveIndex++
 
 			gameVsAi!.submitMove(aiMove)
 		})
