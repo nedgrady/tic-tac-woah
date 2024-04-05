@@ -7,11 +7,11 @@ export function matchmaking(
 	matchmakingBroker: MatchmakingBroker
 ): TicTacWoahSocketServerMiddleware {
 	queue.onAdded(users => {
-		if (users.length === 2) {
+		if (users.length === 1) {
 			queue.remove(users[0])
-			queue.remove(users[1])
+			// queue.remove(users[1])
 
-			matchmakingBroker.notifyMatchMade(users)
+			matchmakingBroker.notifyMatchMade(users, 2)
 		}
 	})
 	return (_, next) => {

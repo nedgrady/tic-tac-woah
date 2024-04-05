@@ -25,7 +25,7 @@ import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { GameFactory } from "GameFactory"
 import { Game } from "domain/Game"
-import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
+import { anyMoveIsAllowed, moveMustBeMadeByTheCorrectPlayer } from "domain/gameRules/gameRules"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
 import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
 import { gameIsAlwaysDrawn, gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
@@ -156,7 +156,7 @@ io.use((socket, next) => {
 		const gameId = crypto.randomUUID()
 		const participants = [userId, "AI"]
 
-		gameVsAi = new Game(participants, 20, 5, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(20)], [])
+		gameVsAi = new Game(participants, 20, 5, [moveMustBeMadeByTheCorrectPlayer], [gameIsWonOnMoveNumber(20)], [])
 
 		gameVsAi.onMove(newMove => {
 			const completedMoveDto: CompletedMoveDto = {

@@ -1,5 +1,8 @@
+import Coordinates from "domain/Coordinates"
 import { Game } from "domain/Game"
+import { Move } from "domain/Move"
 import { GameFactory } from "GameFactory"
+import _ from "lodash"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 import { GameWinDto, CompletedMoveDto, GameDrawDto } from "types"
@@ -10,8 +13,9 @@ export function startGameOnMatchMade(
 ): TicTacWoahSocketServerMiddleware {
 	const activeGames = new Map<string, Game>()
 
-	matchmakingBroker.onMatchMade(users => {
-		const participants = users.map(user => user.uniqueIdentifier)
+	matchmakingBroker.onMatchMade((users, aiParticipantCount) => {
+		const aiParticiapnts = Array(aiParticipantCount).fill("AI-" + crypto.randomUUID())
+		const participants = [...users.map(user => user.uniqueIdentifier), ...aiParticiapnts]
 
 		const gameId = crypto.randomUUID()
 
@@ -28,6 +32,28 @@ export function startGameOnMatchMade(
 				user.connections.forEach(connection => {
 					connection.emit("moveMade", completedMoveDto)
 				})
+			})
+		})
+
+		newGame.onMove(move => {
+			if (move.mover.startsWith("AI-")) return
+			// create all possible placement pairings from 0,0 to 20,20
+			const allPossiblePlacements: Coordinates[] = _.range(0, 20).flatMap(x =>
+				_.range(0, 20).map(y => ({ x, y }))
+			)
+
+			const availablePlacements = allPossiblePlacements.filter(
+				placement => !newGame.moves().some(move => _.isEqual(move.placement, placement))
+			)
+
+			const randomPlacement = availablePlacements[Math.floor(Math.random() * availablePlacements.length)]
+
+			aiParticiapnts.forEach(aiParticipant => {
+				const aiMove: Move = {
+					mover: aiParticipant,
+					placement: randomPlacement,
+				}
+				newGame.submitMove(aiMove)
 			})
 		})
 
