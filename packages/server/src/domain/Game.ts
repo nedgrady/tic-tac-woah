@@ -17,6 +17,8 @@ export class Game {
 	readonly #rules: readonly GameRuleFunction[]
 	readonly #winConditions: readonly GameWinCondition[]
 
+	readonly #onParticipantMayMoveEmitters = new Map<string, EventEmitter>()
+
 	onWin(listener: GameWonListener) {
 		this.#emitter.on("Winning Move", listener)
 	}
@@ -33,13 +35,26 @@ export class Game {
 		this.#emitter.on("Start", listener)
 	}
 
-	onParticipantMayMove(p1: string, arg1: () => void) {
-		this.#emitter.on("Participant May Move", arg1)
+	onParticipantMayMove(participant: Participant, arg1: () => void) {
+		const emitter = new EventEmitter()
+		emitter.on("Participant May Move", arg1)
+		this.#onParticipantMayMoveEmitters.set(participant, emitter)
+	}
+
+	private fireAvailableMovers() {
+		const nextAvailableMovers = this.decideWhoMayMoveNext({
+			moves: [],
+			participants: this.#participants,
+		})
+
+		nextAvailableMovers.forEach(mover => {
+			this.#onParticipantMayMoveEmitters.get(mover)?.emit("Participant May Move")
+		})
 	}
 
 	start() {
 		this.#emitter.emit("Start")
-		this.#emitter.emit("Participant May Move")
+		this.fireAvailableMovers()
 	}
 
 	submitMove(newMove: Move) {
@@ -78,7 +93,7 @@ export class Game {
 			}
 		}
 
-		this.#emitter.emit("Participant May Move")
+		this.fireAvailableMovers()
 	}
 
 	moves(): readonly Move[] {

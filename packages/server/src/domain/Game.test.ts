@@ -1,4 +1,4 @@
-import { expect, it, vitest, describe, ArgumentsType } from "vitest"
+import { expect, it, vitest, describe, ArgumentsType, vi } from "vitest"
 import { Game, GameDrawListener, GameWonListener } from "./Game"
 import { Move } from "./Move"
 import { faker } from "@faker-js/faker"
@@ -14,26 +14,25 @@ import {
 import { GameDrawCondition, GameWinCondition, firstMoveIsAWin } from "./winConditions/winConditions"
 import { makeMoves } from "./gameTestHelpers"
 import { gameIsAlwaysDrawn } from "./drawConditions/drawConditions"
+import { Participant } from "./Participant"
 
 type GameTestDefinition = GameConfiguration & {
-	participantCount?: number
+	participants?: Participant[]
 	rules: readonly GameRuleFunction[]
 	winConditions: readonly GameWinCondition[]
 	drawConditions: readonly GameDrawCondition[]
-	decideWhoCanMoveNext: DecideWhoMayMoveNext
+	decideWhoMayMoveNext: DecideWhoMayMoveNext
 }
 
 function gameWithParticipants({
 	boardSize: gridSize = 20,
 	consecutiveTarget = 4,
-	participantCount = 3,
+	participants = Array.from({ length: 3 }, () => faker.string.alphanumeric(8)),
 	rules = [anyMoveValid],
 	winConditions = [],
 	drawConditions = [],
-	decideWhoCanMoveNext = anyoneMayMoveNext,
+	decideWhoMayMoveNext: decideWhoCanMoveNext = anyoneMayMoveNext,
 }: Partial<GameTestDefinition> = {}) {
-	const participants = Array.from({ length: participantCount }, () => faker.string.alphanumeric(8))
-
 	return {
 		game: new Game(
 			participants,
@@ -308,7 +307,7 @@ describe("Subscribing to available move", () => {
 			participants: [p1],
 		} = gameWithParticipants({
 			rules: [anyMoveValid],
-			decideWhoCanMoveNext: anyoneMayMoveNext,
+			decideWhoMayMoveNext: anyoneMayMoveNext,
 		})
 
 		const mockParticipantMayMoveListener = vitest.fn()
@@ -326,7 +325,7 @@ describe("Subscribing to available move", () => {
 			participants: [p1],
 		} = gameWithParticipants({
 			rules: [anyMoveValid],
-			decideWhoCanMoveNext: anyoneMayMoveNext,
+			decideWhoMayMoveNext: anyoneMayMoveNext,
 		})
 
 		const mockParticipantMayMoveListener = vitest.fn()
@@ -342,7 +341,7 @@ describe("Subscribing to available move", () => {
 			participants: [p1],
 		} = gameWithParticipants({
 			rules: [anyMoveValid],
-			decideWhoCanMoveNext: anyoneMayMoveNext,
+			decideWhoMayMoveNext: anyoneMayMoveNext,
 		})
 
 		const mockParticipantMayMoveListener = vitest.fn()
@@ -362,7 +361,7 @@ describe("Subscribing to available move", () => {
 			participants: [p1],
 		} = gameWithParticipants({
 			rules: [noMoveIsAllowed],
-			decideWhoCanMoveNext: anyoneMayMoveNext,
+			decideWhoMayMoveNext: anyoneMayMoveNext,
 		})
 
 		const mockParticipantMayMoveListener = vitest.fn()
@@ -381,7 +380,7 @@ describe("Subscribing to available move", () => {
 			game,
 			participants: [p1],
 		} = gameWithParticipants({
-			decideWhoCanMoveNext: anyoneMayMoveNext,
+			decideWhoMayMoveNext: anyoneMayMoveNext,
 			winConditions: [firstMoveIsAWin],
 		})
 
@@ -401,7 +400,7 @@ describe("Subscribing to available move", () => {
 			game,
 			participants: [p1],
 		} = gameWithParticipants({
-			decideWhoCanMoveNext: anyoneMayMoveNext,
+			decideWhoMayMoveNext: anyoneMayMoveNext,
 			drawConditions: [gameIsAlwaysDrawn],
 		})
 
@@ -416,23 +415,43 @@ describe("Subscribing to available move", () => {
 		expect(mockParticipantMayMoveListener).not.toHaveBeenCalled()
 	})
 
-	// it("Respects the whoCanMoveNext", () => {
-	// 	const {
-	// 		game,
-	// 		participants: [p1],
-	// 	} = gameWithParticipants({
-	// 		decideWhoCanMoveNext: sequenceOfPlayersMayMoveNext(p1, p2),
-	// 		drawConditions: [gameIsAlwaysDrawn],
-	// 	})
+	it("Respects the whoMayMoveNext", () => {
+		const { game } = gameWithParticipants({
+			decideWhoMayMoveNext: sequenceOfPlayersMayMoveNext("p1", "p2", "p3"),
+		})
 
-	// 	const mockParticipantMayMoveListener = vitest.fn()
+		const listenerForParticipant = {
+			p1: vitest.fn(),
+			p2: vitest.fn(),
+			p3: vitest.fn(),
+		}
 
-	// 	game.onParticipantMayMove(p1, mockParticipantMayMoveListener)
+		Object.entries(listenerForParticipant).forEach(([participant, listener]) => {
+			game.onParticipantMayMove(participant, listener)
+		})
 
-	// 	game.start()
-	// 	mockParticipantMayMoveListener.mockClear()
-	// 	game.submitMove({ placement: { x: 0, y: 0 }, mover: p1 })
+		game.start()
+		expect(listenerForParticipant["p1"]).toHaveBeenCalled()
+		expect(listenerForParticipant["p2"]).not.toHaveBeenCalled()
+		expect(listenerForParticipant["p3"]).not.toHaveBeenCalled()
 
-	// 	expect(mockParticipantMayMoveListener).not.toHaveBeenCalled()
-	// })
+		Object.entries(listenerForParticipant).forEach(([_, listener]) => {
+			listener.mockClear()
+		})
+
+		game.submitMove({ placement: { x: 0, y: 0 }, mover: "p1" })
+		expect(listenerForParticipant["p1"]).not.toHaveBeenCalled()
+		expect(listenerForParticipant["p3"]).not.toHaveBeenCalled()
+		expect(listenerForParticipant["p2"]).toHaveBeenCalled()
+
+		Object.entries(listenerForParticipant).forEach(([_, listener]) => {
+			listener.mockClear()
+		})
+
+		game.submitMove({ placement: { x: 1, y: 1 }, mover: "p2" })
+
+		expect(listenerForParticipant["p3"]).toHaveBeenCalled()
+		expect(listenerForParticipant["p1"]).not.toHaveBeenCalled()
+		expect(listenerForParticipant["p2"]).not.toHaveBeenCalled()
+	})
 })

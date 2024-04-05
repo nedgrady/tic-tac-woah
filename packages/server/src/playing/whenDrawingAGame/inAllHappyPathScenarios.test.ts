@@ -9,7 +9,7 @@ import { faker } from "@faker-js/faker"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { Game } from "domain/Game"
 import { ReturnSingleGameFactory } from "GameFactory"
-import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
+import { anyMoveIsAllowed, anyoneMayMoveNext } from "domain/gameRules/gameRules"
 import { gameIsAlwaysDrawn } from "domain/drawConditions/drawConditions"
 import { GameDrawDto } from "types"
 import { isObject } from "lodash"
@@ -28,7 +28,7 @@ describe("it", () => {
 		},
 	}
 
-	const alwaysDrawingGame = new Game([""], 10, 10, [anyMoveIsAllowed], [], [gameIsAlwaysDrawn])
+	const alwaysDrawingGame = new Game([""], 10, 10, [anyMoveIsAllowed], [], [gameIsAlwaysDrawn], anyoneMayMoveNext)
 
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
