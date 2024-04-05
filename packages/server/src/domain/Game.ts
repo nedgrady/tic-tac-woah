@@ -43,7 +43,7 @@ export class Game {
 
 	private fireAvailableMovers() {
 		const nextAvailableMovers = this.decideWhoMayMoveNext({
-			moves: [],
+			moves: this.#movesReal,
 			participants: this.#participants,
 		})
 

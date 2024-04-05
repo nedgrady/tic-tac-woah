@@ -3,7 +3,7 @@ import { Game, GameDrawListener, GameWonListener } from "./Game"
 import { Move } from "./Move"
 import { faker } from "@faker-js/faker"
 import _ from "lodash"
-import { GameConfiguration, GameRuleFunction, noMoveIsAllowed } from "./gameRules/gameRules"
+import { GameConfiguration, GameRuleFunction, GameState, noMoveIsAllowed } from "./gameRules/gameRules"
 import { sequenceOfPlayersMayMoveNext } from "./moveOrderRules/support/sequenceOfPlayersMayMoveNext"
 import { anyParticipantMayMoveNext } from "./moveOrderRules/support/anyParticipantMayMoveNext"
 import { DecideWhoMayMoveNext } from "./moveOrderRules/moveOrderRules"
@@ -449,5 +449,24 @@ describe("Subscribing to available move", () => {
 		expect(listenerForParticipant["p3"]).toHaveBeenCalled()
 		expect(listenerForParticipant["p1"]).not.toHaveBeenCalled()
 		expect(listenerForParticipant["p2"]).not.toHaveBeenCalled()
+	})
+
+	it("Supplies the correct moves", () => {
+		const p1 = faker.string.uuid()
+		const mockMoveOrderRule = vitest.fn(() => [p1])
+		const { game } = gameWithParticipants({
+			rules: [anyMoveValid],
+			decideWhoMayMoveNext: mockMoveOrderRule,
+			participants: [p1],
+		})
+		const firstMove: Move = { placement: { x: faker.number.int(), y: faker.number.int() }, mover: p1 }
+
+		game.start()
+		game.submitMove(firstMove)
+
+		expect(mockMoveOrderRule).toHaveBeenCalledWith<Parameters<DecideWhoMayMoveNext>>({
+			moves: [firstMove],
+			participants: [p1],
+		})
 	})
 })
