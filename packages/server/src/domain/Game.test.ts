@@ -3,14 +3,10 @@ import { Game, GameDrawListener, GameWonListener } from "./Game"
 import { Move } from "./Move"
 import { faker } from "@faker-js/faker"
 import _ from "lodash"
-import {
-	GameConfiguration,
-	GameRuleFunction,
-	DecideWhoMayMoveNext,
-	anyoneMayMoveNext,
-	noMoveIsAllowed,
-	sequenceOfPlayersMayMoveNext,
-} from "./gameRules/gameRules"
+import { GameConfiguration, GameRuleFunction, noMoveIsAllowed } from "./gameRules/gameRules"
+import { sequenceOfPlayersMayMoveNext } from "./moveOrderRules/support/sequenceOfPlayersMayMoveNext"
+import { anyParticipantMayMoveNext } from "./moveOrderRules/support/anyParticipantMayMoveNext"
+import { DecideWhoMayMoveNext } from "./moveOrderRules/moveOrderRules"
 import { GameDrawCondition, GameWinCondition, firstMoveIsAWin } from "./winConditions/winConditions"
 import { makeMoves } from "./gameTestHelpers"
 import { gameIsAlwaysDrawn } from "./drawConditions/drawConditions"
@@ -31,7 +27,7 @@ function gameWithParticipants({
 	rules = [anyMoveValid],
 	winConditions = [],
 	drawConditions = [],
-	decideWhoMayMoveNext: decideWhoCanMoveNext = anyoneMayMoveNext,
+	decideWhoMayMoveNext: decideWhoCanMoveNext = anyParticipantMayMoveNext,
 }: Partial<GameTestDefinition> = {}) {
 	return {
 		game: new Game(
@@ -307,7 +303,7 @@ describe("Subscribing to available move", () => {
 			participants: [p1],
 		} = gameWithParticipants({
 			rules: [anyMoveValid],
-			decideWhoMayMoveNext: anyoneMayMoveNext,
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
 		})
 
 		const mockParticipantMayMoveListener = vitest.fn()
@@ -325,7 +321,7 @@ describe("Subscribing to available move", () => {
 			participants: [p1],
 		} = gameWithParticipants({
 			rules: [anyMoveValid],
-			decideWhoMayMoveNext: anyoneMayMoveNext,
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
 		})
 
 		const mockParticipantMayMoveListener = vitest.fn()
@@ -341,7 +337,7 @@ describe("Subscribing to available move", () => {
 			participants: [p1],
 		} = gameWithParticipants({
 			rules: [anyMoveValid],
-			decideWhoMayMoveNext: anyoneMayMoveNext,
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
 		})
 
 		const mockParticipantMayMoveListener = vitest.fn()
@@ -361,7 +357,7 @@ describe("Subscribing to available move", () => {
 			participants: [p1],
 		} = gameWithParticipants({
 			rules: [noMoveIsAllowed],
-			decideWhoMayMoveNext: anyoneMayMoveNext,
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
 		})
 
 		const mockParticipantMayMoveListener = vitest.fn()
@@ -380,7 +376,7 @@ describe("Subscribing to available move", () => {
 			game,
 			participants: [p1],
 		} = gameWithParticipants({
-			decideWhoMayMoveNext: anyoneMayMoveNext,
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
 			winConditions: [firstMoveIsAWin],
 		})
 
@@ -400,7 +396,7 @@ describe("Subscribing to available move", () => {
 			game,
 			participants: [p1],
 		} = gameWithParticipants({
-			decideWhoMayMoveNext: anyoneMayMoveNext,
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
 			drawConditions: [gameIsAlwaysDrawn],
 		})
 

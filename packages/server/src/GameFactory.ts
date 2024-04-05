@@ -1,6 +1,7 @@
 import { Game } from "domain/Game"
 import { Participant } from "domain/Participant"
-import { anyMoveIsAllowed, anyoneMayMoveNext } from "domain/gameRules/gameRules"
+import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
+import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
 
 export abstract class GameFactory {
 	abstract createGame(participants: Participant[]): Game
@@ -37,6 +38,6 @@ export class ReturnSequenceOfGamesFactory extends GameFactory {
 
 export class AnythingGoesForeverGameFactory extends GameFactory {
 	createGame(_: Participant[]): Game {
-		return new Game([], 10, 10, [anyMoveIsAllowed], [], [], anyoneMayMoveNext)
+		return new Game([], 10, 10, [anyMoveIsAllowed], [], [], anyParticipantMayMoveNext)
 	}
 }

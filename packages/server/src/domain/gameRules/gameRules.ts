@@ -1,7 +1,6 @@
 import { Move } from "domain/Move"
 import { Participant } from "domain/Participant"
 import { forEach } from "lodash"
-import { vi } from "vitest"
 
 export type GameRuleFunction = (newMove: Move, gameState: GameState, gameConfiguration: GameConfiguration) => boolean
 
@@ -60,27 +59,3 @@ export const standardRules: readonly GameRuleFunction[] = [
 
 export const anyMoveIsAllowed: GameRuleFunction = () => true
 export const noMoveIsAllowed: GameRuleFunction = () => false
-
-export type DecideWhoMayMoveNext = (gameState: GameState) => Participant[]
-
-export const anyoneMayMoveNext: DecideWhoMayMoveNext = (gameState: GameState) => [...gameState.participants]
-
-export const specificPlayerMayMoveNext =
-	(player: Participant): DecideWhoMayMoveNext =>
-	() =>
-		[player]
-
-export const specificPlayersMayMoveNext =
-	(...players: Participant[]): DecideWhoMayMoveNext =>
-	() =>
-		players
-
-export function sequenceOfPlayersMayMoveNext(...participants: Participant[]): DecideWhoMayMoveNext {
-	const sequenceFn = vi.fn()
-
-	participants.forEach(participant => {
-		sequenceFn.mockImplementationOnce(() => [participant])
-	})
-
-	return sequenceFn
-}

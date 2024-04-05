@@ -9,7 +9,8 @@ import { faker } from "@faker-js/faker"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { Game } from "domain/Game"
 import { ReturnSequenceOfGamesFactory } from "GameFactory"
-import { anyMoveIsAllowed, anyoneMayMoveNext } from "domain/gameRules/gameRules"
+import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
+import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
 
 describe("it", () => {
@@ -29,9 +30,9 @@ describe("it", () => {
 		[anyMoveIsAllowed],
 		[gameIsWonOnMoveNumber(1)],
 		[],
-		anyoneMayMoveNext
+		anyParticipantMayMoveNext
 	)
-	const anythingGoesGame = new Game([], 10, 10, [anyMoveIsAllowed], [], [], anyoneMayMoveNext)
+	const anythingGoesGame = new Game([], 10, 10, [anyMoveIsAllowed], [], [], anyParticipantMayMoveNext)
 
 	const winningMove = {
 		mover: fourParticipants[0],

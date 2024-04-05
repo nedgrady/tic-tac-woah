@@ -10,7 +10,8 @@ import { GameWinDto } from "types"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { Game } from "domain/Game"
 import { ReturnSingleGameFactory } from "GameFactory"
-import { anyMoveIsAllowed, anyoneMayMoveNext } from "domain/gameRules/gameRules"
+import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
+import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
 import { alwaysWinWithMoves } from "domain/winConditions/winConditions"
 
 describe("it", () => {
@@ -43,7 +44,7 @@ describe("it", () => {
 		[anyMoveIsAllowed],
 		[alwaysWinWithMoves(winningMoves)],
 		[],
-		anyoneMayMoveNext
+		anyParticipantMayMoveNext
 	)
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
