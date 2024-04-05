@@ -29,6 +29,7 @@ import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
 import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
 import { gameIsAlwaysDrawn, gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
+import { singleParticipantInSequence } from "domain/moveOrderRules/singleParticipantInSequence"
 // import _ from "lodash"
 
 interface ParticipantHandle {
