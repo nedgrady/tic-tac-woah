@@ -1,5 +1,5 @@
-import { TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identifySocketsByWebSocketId } from "auth/socketIdentificationStrategies"
+import { ActiveUser, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
+import { identifySocketsByWebSocketId, identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking } from "matchmaking/matchmaking"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
@@ -9,18 +9,15 @@ import { faker } from "@faker-js/faker"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { ReturnSingleGameFactory } from "GameFactory"
 import { Game } from "domain/Game"
+import { noMoveIsAllowed } from "domain/gameRules/support/noMoveIsAllowed"
+import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
+import { PendingMoveDto } from "types"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
 	const matchmakingBroker = new MatchmakingBroker()
-	const fistMove = {
-		placement: {
-			x: faker.number.int(),
-			y: faker.number.int(),
-		},
-	}
 
-	const allMovesAreInvalidGame = new Game([""], 10, 10, [() => false], [], [], () => [""])
+	const allMovesAreInvalidGame = new Game([""], 10, 10, [noMoveIsAllowed], [], [], anyParticipantMayMoveNext)
 
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
@@ -43,38 +40,20 @@ describe("it", () => {
 			expect(testContext.clientSocket2).toHaveReceivedEvent("gameStart")
 		})
 
-		testContext.clientSocket.emit("makeMove", {
-			...fistMove,
+		const moveAgainstGameRules: PendingMoveDto = {
 			gameId: testContext.clientSocket.events.get("gameStart")[0].id,
-		})
+			placement: { x: 0, y: 0 },
+		}
+
+		await testContext.clientSocket.emitWithAck("makeMove", moveAgainstGameRules)
 
 		return testContext.done
 	})
 
-	it("The move is sent to the first player", async () => {
-		await vi.waitFor(() =>
-			expect(testContext.clientSocket).toHaveReceivedPayload("moveMade", {
-				...fistMove,
-				mover: testContext.clientSocket.id,
-				gameId: testContext.clientSocket.events.get("gameStart")[0].id,
-			})
-		)
+	it("The move is rejected and not sent to player one", async () => {
+		expect(testContext.clientSocket).not.toHaveReceivedEvent("moveMade")
 	})
-	it("The move is sent to the second player", async () => {
-		await vi.waitFor(() =>
-			expect(testContext.clientSocket2).toHaveReceivedPayload("moveMade", {
-				...fistMove,
-				mover: testContext.clientSocket.id,
-				gameId: testContext.clientSocket.events.get("gameStart")[0].id,
-			})
-		)
-	})
-
-	it("First player does not receive a win event", async () => {
-		expect(testContext.clientSocket).not.toHaveReceivedEvent("gameWin")
-	})
-
-	it("Second player does not receive a win event", async () => {
-		expect(testContext.clientSocket2).not.toHaveReceivedEvent("gameWin")
+	it("The move is rejected and not sent to player two", async () => {
+		expect(testContext.clientSocket2).not.toHaveReceivedEvent("moveMade")
 	})
 })
