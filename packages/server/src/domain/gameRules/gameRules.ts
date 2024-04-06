@@ -56,6 +56,3 @@ export const standardRules: readonly GameRuleFunction[] = [
 	moveMustBeMadeByTheCorrectPlayer,
 	moveMustBeMadeIntoAFreeSquare,
 ]
-
-export const anyMoveIsAllowed: GameRuleFunction = () => true
-export const noMoveIsAllowed: GameRuleFunction = () => false

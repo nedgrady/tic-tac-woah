@@ -1,6 +1,6 @@
 import { Game } from "domain/Game"
 import { Participant } from "domain/Participant"
-import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
+import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
 import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
 
 export abstract class GameFactory {

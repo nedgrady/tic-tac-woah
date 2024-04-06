@@ -10,9 +10,9 @@ import { GameWinDto } from "types"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { Game } from "domain/Game"
 import { ReturnSingleGameFactory } from "GameFactory"
-import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
+import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
 import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
-import { alwaysWinWithMoves } from "domain/winConditions/winConditions"
+import { alwaysWinWithMoves } from "domain/winConditions/support/alwaysWinWithMoves"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
