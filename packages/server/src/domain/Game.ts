@@ -68,6 +68,15 @@ export class Game {
 			participants: this.#participants,
 		}
 
+		const nextAvailableMovers = this.decideWhoMayMoveNext({
+			moves: this.#movesReal,
+			participants: this.#participants,
+		})
+
+		if (!nextAvailableMovers.includes(newMove.mover)) {
+			return
+		}
+
 		for (const rule of this.#rules) {
 			if (!rule(newMove, gameState, gameConfiguration)) {
 				return

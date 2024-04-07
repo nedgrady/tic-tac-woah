@@ -1,11 +1,10 @@
-import { expect, it, vitest, describe, ArgumentsType, vi } from "vitest"
+import { expect, it, vitest, describe, ArgumentsType } from "vitest"
 import { Game, GameDrawListener, GameWonListener } from "./Game"
 import { Move } from "./Move"
 import { faker } from "@faker-js/faker"
 import _ from "lodash"
-import { GameConfiguration, GameRuleFunction, GameState } from "./gameRules/gameRules"
+import { GameConfiguration, GameRuleFunction } from "./gameRules/gameRules"
 import { noMoveIsAllowed } from "./gameRules/support/noMoveIsAllowed"
-import { sequenceOfPlayersMayMoveNext } from "./moveOrderRules/support/sequenceOfPlayersMayMoveNext"
 import { anyParticipantMayMoveNext } from "./moveOrderRules/support/anyParticipantMayMoveNext"
 import { DecideWhoMayMoveNext } from "./moveOrderRules/moveOrderRules"
 import { GameDrawCondition, GameWinCondition } from "./winConditions/winConditions"
@@ -13,6 +12,8 @@ import { firstMoveIsAWin } from "./winConditions/support/firstMoveIsAWin"
 import { makeMoves } from "./gameTestHelpers"
 import { gameIsAlwaysDrawn } from "./drawConditions/support/gameIsAlwaysDrawn"
 import { Participant } from "./Participant"
+import { specificParticipantMayMoveNext } from "./moveOrderRules/support/specificParticipantMayMoveNext"
+import { sequenceOfPlayersWithoutRotating } from "./moveOrderRules/support/sequenceOfPlayersWithoutRotating"
 
 type GameTestDefinition = GameConfiguration & {
 	participants?: Participant[]
@@ -158,15 +159,29 @@ it("Emits move made events", () => {
 
 describe("Making a move that violates a rule in all scenarios", () => {
 	it("Ignores the move", () => {
-		const noMoveValid: GameRuleFunction = () => false
 		const {
 			game,
 			participants: [p1, p2],
 		} = gameWithParticipants({
-			rules: [noMoveValid],
+			rules: [noMoveIsAllowed],
 		})
 
 		game.submitMove({ placement: { x: 0, y: 0 }, mover: p2 })
+
+		expect(game.moves()).toHaveLength(0)
+	})
+})
+
+describe("Making a move that violates a move order rule in all scenarios", () => {
+	it("Is ignored", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			decideWhoMayMoveNext: specificParticipantMayMoveNext("p2"),
+		})
+
+		game.submitMove({ placement: { x: 0, y: 0 }, mover: p1 })
 
 		expect(game.moves()).toHaveLength(0)
 	})
@@ -415,7 +430,7 @@ describe("Subscribing to available move", () => {
 
 	it("Respects the whoMayMoveNext", () => {
 		const { game } = gameWithParticipants({
-			decideWhoMayMoveNext: sequenceOfPlayersMayMoveNext("p1", "p2", "p3"),
+			decideWhoMayMoveNext: sequenceOfPlayersWithoutRotating("p1", "p2", "p3"),
 		})
 
 		const listenerForParticipant = {
@@ -437,6 +452,7 @@ describe("Subscribing to available move", () => {
 			listener.mockClear()
 		})
 
+		// TODO - submitMove needs to move the next player forward without re-mocking the moveOrderRule
 		game.submitMove({ placement: { x: 0, y: 0 }, mover: "p1" })
 		expect(listenerForParticipant["p1"]).not.toHaveBeenCalled()
 		expect(listenerForParticipant["p3"]).not.toHaveBeenCalled()
