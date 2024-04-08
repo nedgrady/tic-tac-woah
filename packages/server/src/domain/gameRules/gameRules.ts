@@ -1,5 +1,6 @@
 import { Move } from "domain/Move"
 import { Participant } from "domain/Participant"
+import { forEach } from "lodash"
 
 export type GameRuleFunction = (newMove: Move, gameState: GameState, gameConfiguration: GameConfiguration) => boolean
 
@@ -55,5 +56,3 @@ export const standardRules: readonly GameRuleFunction[] = [
 	moveMustBeMadeByTheCorrectPlayer,
 	moveMustBeMadeIntoAFreeSquare,
 ]
-
-export const anyMoveIsAllowed: GameRuleFunction = () => true

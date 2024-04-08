@@ -25,12 +25,12 @@ import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { MatchmakingBroker } from "MatchmakingBroker"
 import { GameFactory } from "GameFactory"
 import { Game } from "domain/Game"
-import { anyMoveIsAllowed, moveMustBeMadeByTheCorrectPlayer } from "domain/gameRules/gameRules"
-import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
+import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
+import { gameIsWonOnMoveNumber } from "domain/winConditions/support/gameIsWonOnMoveNumber"
 import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
-import { gameIsAlwaysDrawn, gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
-import { Move } from "domain/Move"
-import Coordinates from "domain/Coordinates"
+import { gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
+import { gameIsAlwaysDrawn } from "domain/drawConditions/support/gameIsAlwaysDrawn"
+import { singleParticipantInSequence } from "domain/moveOrderRules/singleParticipantInSequence"
 // import _ from "lodash"
 
 interface ParticipantHandle {
@@ -109,15 +109,16 @@ io.use((socket, next) => {
 const activeGames: Game[] = []
 
 class StandardGameFactory extends GameFactory {
-	createGame(participants: Participant[]): Game {
-		const newGame = new Game(
+	createGame(participants: readonly Participant[]): Game {
+		const newGame = new Game({
 			participants,
-			20,
-			5,
-			[anyMoveIsAllowed],
-			[gameIsWonOnMoveNumber(3)],
-			[gameIsAlwaysDrawn]
-		)
+			boardSize: 20,
+			consecutiveTarget: 5,
+			rules: [anyMoveIsAllowed],
+			winConditions: [gameIsWonOnMoveNumber(3)],
+			endConditions: [gameIsDrawnWhenBoardIsFull],
+			decideWhoMayMoveNext: singleParticipantInSequence,
+		})
 		activeGames.push(newGame)
 		return newGame
 	}

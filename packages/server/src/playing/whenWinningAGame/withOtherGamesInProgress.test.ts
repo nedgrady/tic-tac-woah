@@ -7,10 +7,8 @@ import { StartAndConnectLifetime } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
 import { MatchmakingBroker } from "MatchmakingBroker"
-import { Game } from "domain/Game"
 import { ReturnSequenceOfGamesFactory } from "GameFactory"
-import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
-import { gameIsWonOnMoveNumber } from "domain/winConditions/winConditions"
+import { gameIsWonOnMoveNumber } from "domain/winConditions/support/gameIsWonOnMoveNumber"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -22,8 +20,6 @@ describe("it", () => {
 		"Game B player 0",
 		"Game B player 1",
 	]
-	const alwaysWinningGame = new Game([""], 10, 10, [anyMoveIsAllowed], [gameIsWonOnMoveNumber(1)], [])
-	const anythingGoesGame = new Game([], 10, 10, [anyMoveIsAllowed], [], [])
 
 	const winningMove = {
 		mover: fourParticipants[0],
@@ -48,7 +44,12 @@ describe("it", () => {
 			.use(
 				startGameOnMatchMade(
 					matchmakingBroker,
-					new ReturnSequenceOfGamesFactory(alwaysWinningGame, anythingGoesGame)
+					new ReturnSequenceOfGamesFactory(
+						{ winConditions: [gameIsWonOnMoveNumber(1)] },
+						{
+							/* we don't really care about how this game is configured */
+						}
+					)
 				)
 			)
 	}

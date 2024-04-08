@@ -1,42 +1,67 @@
-import { Game } from "domain/Game"
+import { CreateGameOptions, Game } from "domain/Game"
 import { Participant } from "domain/Participant"
-import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
+import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
+import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
 
 export abstract class GameFactory {
-	abstract createGame(participants: Participant[]): Game
+	abstract createGame(participants: readonly Participant[]): Game
 }
 
 export class ReturnSingleGameFactory extends GameFactory {
-	private game: Game
-
-	constructor(game: Game) {
+	constructor(private readonly gameOptions: Partial<CreateGameOptions> = {}) {
 		super()
-		this.game = game
 	}
 
-	createGame(_: Participant[]): Game {
-		return this.game
+	createGame(participants: readonly Participant[]): Game {
+		const gameOptions: CreateGameOptions = {
+			participants: participants,
+			rules: [anyMoveIsAllowed],
+			winConditions: [],
+			endConditions: [],
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
+			...this.gameOptions,
+		}
+
+		return new Game(gameOptions)
 	}
 }
 
 export class ReturnSequenceOfGamesFactory extends GameFactory {
-	private games: Game[]
-	private currentIndex = 0
+	private gameOptionsIterator: Iterator<Partial<CreateGameOptions>>
 
-	constructor(...games: Game[]) {
+	constructor(...gameOptions: readonly Partial<CreateGameOptions>[]) {
 		super()
-		this.games = games
+
+		this.gameOptionsIterator = gameOptions[Symbol.iterator]()
 	}
 
-	createGame(_: Participant[]): Game {
-		if (this.currentIndex > this.games.length) throw new Error("No more games to return")
-		const game = this.games[this.currentIndex++]
+	createGame(participants: readonly Participant[]): Game {
+		const { value: currentOptions, done } = this.gameOptionsIterator.next()
+
+		if (done) throw new Error("No more games to return")
+
+		const gameOptions: CreateGameOptions = {
+			participants: participants,
+			rules: [anyMoveIsAllowed],
+			winConditions: [],
+			endConditions: [],
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
+			...currentOptions,
+		}
+		const game = new Game(gameOptions)
 		return game
 	}
 }
 
 export class AnythingGoesForeverGameFactory extends GameFactory {
-	createGame(_: Participant[]): Game {
-		return new Game([], 10, 10, [anyMoveIsAllowed], [], [])
+	createGame(participants: readonly Participant[]): Game {
+		const gameOptions: CreateGameOptions = {
+			participants: participants,
+			rules: [anyMoveIsAllowed],
+			winConditions: [],
+			endConditions: [],
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
+		}
+		return new Game(gameOptions)
 	}
 }

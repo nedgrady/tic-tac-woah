@@ -3,7 +3,7 @@ import { MatchmakingBroker } from "MatchmakingBroker"
 import { TicTacWoahUserHandle, TicTacWoahSocketServer, TicTacWoahRemoteServerSocket } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { Game } from "domain/Game"
-import { anyMoveIsAllowed } from "domain/gameRules/gameRules"
+import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
 import { matchmaking } from "matchmaking/matchmaking"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
@@ -28,12 +28,7 @@ describe("it", () => {
 			)
 			.use(addConnectionToQueue(queue))
 			.use(matchmaking(queue, matchmakingBroker))
-			.use(
-				startGameOnMatchMade(
-					matchmakingBroker,
-					new ReturnSingleGameFactory(new Game([], 10, 10, [anyMoveIsAllowed], [], []))
-				)
-			)
+			.use(startGameOnMatchMade(matchmakingBroker, new ReturnSingleGameFactory()))
 	}
 
 	const testContext = new StartAndConnectLifetime(preConfigure)

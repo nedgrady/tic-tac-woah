@@ -4,29 +4,44 @@ import { Move } from "./Move"
 import { faker } from "@faker-js/faker"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction } from "./gameRules/gameRules"
+import { noMoveIsAllowed } from "./gameRules/support/noMoveIsAllowed"
+import { anyParticipantMayMoveNext } from "./moveOrderRules/support/anyParticipantMayMoveNext"
+import { DecideWhoMayMoveNext } from "./moveOrderRules/moveOrderRules"
 import { GameDrawCondition, GameWinCondition } from "./winConditions/winConditions"
+import { firstMoveIsAWin } from "./winConditions/support/firstMoveIsAWin"
 import { makeMoves } from "./gameTestHelpers"
-import { gameIsAlwaysDrawn } from "./drawConditions/drawConditions"
+import { gameIsAlwaysDrawn } from "./drawConditions/support/gameIsAlwaysDrawn"
+import { Participant } from "./Participant"
+import { specificParticipantMayMoveNext } from "./moveOrderRules/support/specificParticipantMayMoveNext"
+import { sequenceOfPlayersWithoutRotating } from "./moveOrderRules/support/sequenceOfPlayersWithoutRotating"
 
 type GameTestDefinition = GameConfiguration & {
-	participantCount?: number
+	participants?: Participant[]
 	rules: readonly GameRuleFunction[]
 	winConditions: readonly GameWinCondition[]
 	drawConditions: readonly GameDrawCondition[]
+	decideWhoMayMoveNext: DecideWhoMayMoveNext
 }
 
 function gameWithParticipants({
 	boardSize: gridSize = 20,
 	consecutiveTarget = 4,
-	participantCount = 3,
+	participants = Array.from({ length: 3 }, () => faker.string.alphanumeric(8)),
 	rules = [anyMoveValid],
 	winConditions = [],
-	drawConditions: endConditions = [],
+	drawConditions = [],
+	decideWhoMayMoveNext = anyParticipantMayMoveNext,
 }: Partial<GameTestDefinition> = {}) {
-	const participants = Array.from({ length: participantCount }, () => faker.string.alphanumeric(8))
-
 	return {
-		game: new Game(participants, gridSize, consecutiveTarget, rules, winConditions, endConditions),
+		game: new Game({
+			participants,
+			boardSize: gridSize,
+			consecutiveTarget,
+			rules,
+			winConditions,
+			endConditions: drawConditions,
+			decideWhoMayMoveNext,
+		}),
 		participants: participants,
 	}
 }
@@ -136,7 +151,7 @@ it("Emits move made events", () => {
 	} = gameWithParticipants()
 
 	const onMoveListener = vitest.fn<[Move], void>()
-	game.onMove(onMoveListener)
+	game.onMoveCompleted(onMoveListener)
 	game.submitMove({ placement: { x: 0, y: 0 }, mover: p1 })
 
 	expect(onMoveListener).toHaveBeenCalledWith({ placement: { x: 0, y: 0 }, mover: p1 })
@@ -144,12 +159,11 @@ it("Emits move made events", () => {
 
 describe("Making a move that violates a rule in all scenarios", () => {
 	it("Ignores the move", () => {
-		const noMoveValid: GameRuleFunction = () => false
 		const {
 			game,
 			participants: [p1, p2],
 		} = gameWithParticipants({
-			rules: [noMoveValid],
+			rules: [noMoveIsAllowed],
 		})
 
 		game.submitMove({ placement: { x: 0, y: 0 }, mover: p2 })
@@ -158,12 +172,22 @@ describe("Making a move that violates a rule in all scenarios", () => {
 	})
 })
 
-describe("Winning a game in all scenarios", () => {
-	const firstMoveIsAWin: GameWinCondition = latestMove => ({
-		result: "win",
-		winningMoves: [latestMove],
-	})
+describe("Making a move that violates a move order rule in all scenarios", () => {
+	it("Is ignored", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			decideWhoMayMoveNext: specificParticipantMayMoveNext("p2"),
+		})
 
+		game.submitMove({ placement: { x: 0, y: 0 }, mover: p1 })
+
+		expect(game.moves()).toHaveLength(0)
+	})
+})
+
+describe("Winning a game in all scenarios", () => {
 	it("Invokes win listener", () => {
 		const {
 			game,
@@ -286,5 +310,181 @@ describe("Non-terminal moves in all scenarios", () => {
 		game.submitMove({ placement: terminalPlacement, mover: p1 })
 
 		expect(mockDrawListener).not.toHaveBeenCalled()
+	})
+})
+
+describe("Subscribing to available move", () => {
+	it("Invokes a listener when a participant is allowed to move when the game has started", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			rules: [anyMoveValid],
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
+		})
+
+		const mockParticipantMayMoveListener = vitest.fn()
+
+		game.onParticipantMayMove(p1, mockParticipantMayMoveListener)
+
+		game.start()
+
+		expect(mockParticipantMayMoveListener).toHaveBeenCalledOnce()
+	})
+
+	it("Does not invoke the listener when the game has not started", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			rules: [anyMoveValid],
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
+		})
+
+		const mockParticipantMayMoveListener = vitest.fn()
+
+		game.onParticipantMayMove(p1, mockParticipantMayMoveListener)
+
+		expect(mockParticipantMayMoveListener).not.toHaveBeenCalledOnce()
+	})
+
+	it("Invokes the listener after a valid move", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			rules: [anyMoveValid],
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
+		})
+
+		const mockParticipantMayMoveListener = vitest.fn()
+
+		game.onParticipantMayMove(p1, mockParticipantMayMoveListener)
+
+		game.start()
+		mockParticipantMayMoveListener.mockClear()
+		game.submitMove({ placement: { x: 0, y: 0 }, mover: p1 })
+
+		expect(mockParticipantMayMoveListener).toHaveBeenCalledOnce()
+	})
+
+	it("Does not invoke the listener after an invalid move", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			rules: [noMoveIsAllowed],
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
+		})
+
+		const mockParticipantMayMoveListener = vitest.fn()
+
+		game.onParticipantMayMove(p1, mockParticipantMayMoveListener)
+
+		game.start()
+		mockParticipantMayMoveListener.mockClear()
+		game.submitMove({ placement: { x: 0, y: 0 }, mover: p1 })
+
+		expect(mockParticipantMayMoveListener).not.toHaveBeenCalled()
+	})
+
+	it("Does not invoke the listener after a win", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
+			winConditions: [firstMoveIsAWin],
+		})
+
+		const mockParticipantMayMoveListener = vitest.fn()
+
+		game.onParticipantMayMove(p1, mockParticipantMayMoveListener)
+
+		game.start()
+		mockParticipantMayMoveListener.mockClear()
+		game.submitMove({ placement: { x: 0, y: 0 }, mover: p1 })
+
+		expect(mockParticipantMayMoveListener).not.toHaveBeenCalled()
+	})
+
+	it("Does not invoke the listener after a draw", () => {
+		const {
+			game,
+			participants: [p1],
+		} = gameWithParticipants({
+			decideWhoMayMoveNext: anyParticipantMayMoveNext,
+			drawConditions: [gameIsAlwaysDrawn],
+		})
+
+		const mockParticipantMayMoveListener = vitest.fn()
+
+		game.onParticipantMayMove(p1, mockParticipantMayMoveListener)
+
+		game.start()
+		mockParticipantMayMoveListener.mockClear()
+		game.submitMove({ placement: { x: 0, y: 0 }, mover: p1 })
+
+		expect(mockParticipantMayMoveListener).not.toHaveBeenCalled()
+	})
+
+	it("Respects the whoMayMoveNext", () => {
+		const { game } = gameWithParticipants({
+			decideWhoMayMoveNext: sequenceOfPlayersWithoutRotating("p1", "p2", "p3"),
+		})
+
+		const listenerForParticipant = {
+			p1: vitest.fn(),
+			p2: vitest.fn(),
+			p3: vitest.fn(),
+		}
+
+		Object.entries(listenerForParticipant).forEach(([participant, listener]) => {
+			game.onParticipantMayMove(participant, listener)
+		})
+
+		game.start()
+		expect(listenerForParticipant["p1"]).toHaveBeenCalled()
+		expect(listenerForParticipant["p2"]).not.toHaveBeenCalled()
+		expect(listenerForParticipant["p3"]).not.toHaveBeenCalled()
+
+		Object.entries(listenerForParticipant).forEach(([_, listener]) => {
+			listener.mockClear()
+		})
+
+		// TODO - submitMove needs to move the next player forward without re-mocking the moveOrderRule
+		game.submitMove({ placement: { x: 0, y: 0 }, mover: "p1" })
+		expect(listenerForParticipant["p1"]).not.toHaveBeenCalled()
+		expect(listenerForParticipant["p3"]).not.toHaveBeenCalled()
+		expect(listenerForParticipant["p2"]).toHaveBeenCalled()
+
+		Object.entries(listenerForParticipant).forEach(([_, listener]) => {
+			listener.mockClear()
+		})
+
+		game.submitMove({ placement: { x: 1, y: 1 }, mover: "p2" })
+
+		expect(listenerForParticipant["p3"]).toHaveBeenCalled()
+		expect(listenerForParticipant["p1"]).not.toHaveBeenCalled()
+		expect(listenerForParticipant["p2"]).not.toHaveBeenCalled()
+	})
+
+	it("Supplies the correct moves", () => {
+		const p1 = faker.string.uuid()
+		const mockMoveOrderRule = vitest.fn(() => [p1])
+		const { game } = gameWithParticipants({
+			rules: [anyMoveValid],
+			decideWhoMayMoveNext: mockMoveOrderRule,
+			participants: [p1],
+		})
+		const firstMove: Move = { placement: { x: faker.number.int(), y: faker.number.int() }, mover: p1 }
+
+		game.start()
+		game.submitMove(firstMove)
+
+		expect(mockMoveOrderRule).toHaveBeenCalledWith<Parameters<DecideWhoMayMoveNext>>({
+			moves: [firstMove],
+			participants: [p1],
+		})
 	})
 })

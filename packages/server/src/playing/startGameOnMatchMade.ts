@@ -22,11 +22,11 @@ export function startGameOnMatchMade(
 		const newGame = gameFactory.createGame(participants)
 		activeGames.set(gameId, newGame)
 
-		newGame.onMove(newMove => {
+		newGame.onMoveCompleted(completedMove => {
 			const completedMoveDto: CompletedMoveDto = {
-				mover: newMove.mover,
-				placement: newMove.placement,
-				gameId: gameId,
+				mover: completedMove.mover,
+				placement: completedMove.placement,
+				gameId,
 			}
 			users.forEach(user => {
 				user.connections.forEach(connection => {
@@ -35,7 +35,7 @@ export function startGameOnMatchMade(
 			})
 		})
 
-		newGame.onMove(move => {
+		newGame.onMoveCompleted(move => {
 			if (move.mover.startsWith("AI-")) return
 			// create all possible placement pairings from 0,0 to 20,20
 			const allPossiblePlacements: Coordinates[] = _.range(0, 20).flatMap(x =>
