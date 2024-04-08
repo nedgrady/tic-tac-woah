@@ -37,15 +37,6 @@ describe("it", () => {
 		},
 	]
 
-	const alwaysWinningGame = new Game(
-		[""],
-		10,
-		10,
-		[anyMoveIsAllowed],
-		[alwaysWinWithMoves(winningMoves)],
-		[],
-		anyParticipantMayMoveNext
-	)
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
 			.use(
@@ -58,7 +49,14 @@ describe("it", () => {
 			)
 			.use(addConnectionToQueue(queue))
 			.use(matchmaking(queue, matchmakingBroker))
-			.use(startGameOnMatchMade(matchmakingBroker, new ReturnSingleGameFactory(alwaysWinningGame)))
+			.use(
+				startGameOnMatchMade(
+					matchmakingBroker,
+					new ReturnSingleGameFactory({
+						winConditions: [alwaysWinWithMoves(winningMoves)],
+					})
+				)
+			)
 	}
 
 	const testContext = new StartAndConnectLifetime(preConfigure)

@@ -28,12 +28,7 @@ describe("it", () => {
 			)
 			.use(addConnectionToQueue(queue))
 			.use(matchmaking(queue, matchmakingBroker))
-			.use(
-				startGameOnMatchMade(
-					matchmakingBroker,
-					new ReturnSingleGameFactory(new Game([], 10, 10, [anyMoveIsAllowed], [], []))
-				)
-			)
+			.use(startGameOnMatchMade(matchmakingBroker, new ReturnSingleGameFactory()))
 	}
 
 	const testContext = new StartAndConnectLifetime(preConfigure)

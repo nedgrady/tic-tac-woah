@@ -13,7 +13,6 @@ import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
 import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
 import { gameIsAlwaysDrawn } from "domain/drawConditions/support/gameIsAlwaysDrawn"
 import { GameDrawDto } from "types"
-import { isObject } from "lodash"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -29,16 +28,6 @@ describe("it", () => {
 		},
 	}
 
-	const alwaysDrawingGame = new Game(
-		[""],
-		10,
-		10,
-		[anyMoveIsAllowed],
-		[],
-		[gameIsAlwaysDrawn],
-		anyParticipantMayMoveNext
-	)
-
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
 			.use(
@@ -51,7 +40,14 @@ describe("it", () => {
 			)
 			.use(addConnectionToQueue(queue))
 			.use(matchmaking(queue, matchmakingBroker))
-			.use(startGameOnMatchMade(matchmakingBroker, new ReturnSingleGameFactory(alwaysDrawingGame)))
+			.use(
+				startGameOnMatchMade(
+					matchmakingBroker,
+					new ReturnSingleGameFactory({
+						endConditions: [gameIsAlwaysDrawn],
+					})
+				)
+			)
 	}
 
 	const testContext = new StartAndConnectLifetime(preConfigure)

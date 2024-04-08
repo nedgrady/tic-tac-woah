@@ -17,14 +17,12 @@ describe("it", () => {
 	const queue = new TicTacWoahQueue()
 	const matchmakingBroker = new MatchmakingBroker()
 
-	const allMovesAreInvalidGame = new Game([""], 10, 10, [noMoveIsAllowed], [], [], anyParticipantMayMoveNext)
-
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
 			.use(identifySocketsByWebSocketId)
 			.use(addConnectionToQueue(queue))
 			.use(matchmaking(queue, matchmakingBroker))
-			.use(startGameOnMatchMade(matchmakingBroker, new ReturnSingleGameFactory(allMovesAreInvalidGame)))
+			.use(startGameOnMatchMade(matchmakingBroker, new ReturnSingleGameFactory({ rules: [noMoveIsAllowed] })))
 	}
 
 	const testContext = new StartAndConnectLifetime(preConfigure)

@@ -4,6 +4,7 @@ import { EventEmitter } from "events"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction, GameState } from "./gameRules/gameRules"
 import { GameDrawCondition, GameWinCondition } from "./winConditions/winConditions"
+import { DecideWhoMayMoveNext } from "./moveOrderRules/moveOrderRules"
 
 export type GameWonListener = (winningMoves: readonly Move[]) => void
 export type GameDrawListener = () => void
@@ -16,6 +17,8 @@ export class Game {
 	readonly #boardSize: number
 	readonly #rules: readonly GameRuleFunction[]
 	readonly #winConditions: readonly GameWinCondition[]
+	readonly #endConditions: readonly GameDrawCondition[]
+	readonly #decideWhoMayMoveNext: DecideWhoMayMoveNext
 
 	readonly #onParticipantMayMoveEmitters = new Map<string, EventEmitter>()
 
@@ -42,7 +45,7 @@ export class Game {
 	}
 
 	private fireAvailableMovers() {
-		const nextAvailableMovers = this.decideWhoMayMoveNext({
+		const nextAvailableMovers = this.#decideWhoMayMoveNext({
 			moves: this.#movesReal,
 			participants: this.#participants,
 		})
@@ -68,7 +71,7 @@ export class Game {
 			participants: this.#participants,
 		}
 
-		const nextAvailableMovers = this.decideWhoMayMoveNext({
+		const nextAvailableMovers = this.#decideWhoMayMoveNext({
 			moves: this.#movesReal,
 			participants: this.#participants,
 		})
@@ -94,7 +97,7 @@ export class Game {
 			}
 		}
 
-		for (const endCondition of this.endConditions) {
+		for (const endCondition of this.#endConditions) {
 			const thing = endCondition(newMove, gameState, gameConfiguration)
 			if (thing.result === "draw") {
 				this.#emitter.emit("Draw")
@@ -114,19 +117,23 @@ export class Game {
 		return this.#participants
 	}
 
-	constructor(
-		participants: readonly Participant[],
-		boardSize: number = 20,
-		consecutiveTarget: number = 9999,
-		rules: readonly GameRuleFunction[],
-		winConditions: readonly GameWinCondition[],
-		private readonly endConditions: readonly GameDrawCondition[],
-		private readonly decideWhoMayMoveNext: (gameState: GameState) => Participant[]
-	) {
-		this.#participants = participants
-		this.#boardSize = boardSize
-		this.#consecutiveTarget = consecutiveTarget
-		this.#rules = rules
-		this.#winConditions = winConditions
+	constructor(options: CreateGameOptions) {
+		this.#participants = options.participants
+		this.#boardSize = options.boardSize ?? 20
+		this.#consecutiveTarget = options.consecutiveTarget ?? 999
+		this.#rules = options.rules
+		this.#winConditions = options.winConditions
+		this.#endConditions = options.endConditions
+		this.#decideWhoMayMoveNext = options.decideWhoMayMoveNext
 	}
+}
+
+export interface CreateGameOptions {
+	participants: readonly Participant[]
+	boardSize?: number
+	consecutiveTarget?: number
+	rules: readonly GameRuleFunction[]
+	winConditions: readonly GameWinCondition[]
+	endConditions: readonly GameDrawCondition[]
+	decideWhoMayMoveNext: DecideWhoMayMoveNext
 }

@@ -30,18 +30,18 @@ function gameWithParticipants({
 	rules = [anyMoveValid],
 	winConditions = [],
 	drawConditions = [],
-	decideWhoMayMoveNext: decideWhoCanMoveNext = anyParticipantMayMoveNext,
+	decideWhoMayMoveNext = anyParticipantMayMoveNext,
 }: Partial<GameTestDefinition> = {}) {
 	return {
-		game: new Game(
+		game: new Game({
 			participants,
-			gridSize,
+			boardSize: gridSize,
 			consecutiveTarget,
 			rules,
 			winConditions,
-			drawConditions,
-			decideWhoCanMoveNext
-		),
+			endConditions: drawConditions,
+			decideWhoMayMoveNext,
+		}),
 		participants: participants,
 	}
 }

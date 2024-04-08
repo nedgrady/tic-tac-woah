@@ -23,16 +23,6 @@ describe("it", () => {
 		"Game B player 0",
 		"Game B player 1",
 	]
-	const alwaysWinningGame = new Game(
-		[""],
-		10,
-		10,
-		[anyMoveIsAllowed],
-		[gameIsWonOnMoveNumber(1)],
-		[],
-		anyParticipantMayMoveNext
-	)
-	const anythingGoesGame = new Game([], 10, 10, [anyMoveIsAllowed], [], [], anyParticipantMayMoveNext)
 
 	const winningMove = {
 		mover: fourParticipants[0],
@@ -57,7 +47,12 @@ describe("it", () => {
 			.use(
 				startGameOnMatchMade(
 					matchmakingBroker,
-					new ReturnSequenceOfGamesFactory(alwaysWinningGame, anythingGoesGame)
+					new ReturnSequenceOfGamesFactory(
+						{ winConditions: [gameIsWonOnMoveNumber(1)] },
+						{
+							/* we don't really care about how this game is configured */
+						}
+					)
 				)
 			)
 	}
