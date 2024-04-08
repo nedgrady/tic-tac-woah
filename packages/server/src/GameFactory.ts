@@ -27,16 +27,18 @@ export class ReturnSingleGameFactory extends GameFactory {
 }
 
 export class ReturnSequenceOfGamesFactory extends GameFactory {
-	private gameOptions: readonly Partial<CreateGameOptions>[]
-	private currentIndex = 0
+	private gameOptionsIterator: Iterator<Partial<CreateGameOptions>>
 
 	constructor(...gameOptions: readonly Partial<CreateGameOptions>[]) {
 		super()
-		this.gameOptions = gameOptions
+
+		this.gameOptionsIterator = gameOptions[Symbol.iterator]()
 	}
 
 	createGame(participants: readonly Participant[]): Game {
-		if (this.currentIndex > this.gameOptions.length) throw new Error("No more games to return")
+		const { value: currentOptions, done } = this.gameOptionsIterator.next()
+
+		if (done) throw new Error("No more games to return")
 
 		const gameOptions: CreateGameOptions = {
 			participants: participants,
@@ -44,7 +46,7 @@ export class ReturnSequenceOfGamesFactory extends GameFactory {
 			winConditions: [],
 			endConditions: [],
 			decideWhoMayMoveNext: anyParticipantMayMoveNext,
-			...this.gameOptions,
+			...currentOptions,
 		}
 		const game = new Game(gameOptions)
 		return game

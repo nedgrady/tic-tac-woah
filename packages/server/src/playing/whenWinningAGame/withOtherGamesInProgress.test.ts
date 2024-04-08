@@ -7,10 +7,7 @@ import { StartAndConnectLifetime } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
 import { MatchmakingBroker } from "MatchmakingBroker"
-import { Game } from "domain/Game"
 import { ReturnSequenceOfGamesFactory } from "GameFactory"
-import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
-import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/support/gameIsWonOnMoveNumber"
 
 describe("it", () => {
