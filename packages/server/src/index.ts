@@ -109,16 +109,16 @@ io.use((socket, next) => {
 const activeGames: Game[] = []
 
 class StandardGameFactory extends GameFactory {
-	createGame(participants: Participant[]): Game {
-		const newGame = new Game(
+	createGame(participants: readonly Participant[]): Game {
+		const newGame = new Game({
 			participants,
-			20,
-			5,
-			[anyMoveIsAllowed],
-			[gameIsWonOnMoveNumber(3)],
-			[gameIsDrawnWhenBoardIsFull],
-			singleParticipantInSequence
-		)
+			boardSize: 20,
+			consecutiveTarget: 5,
+			rules: [anyMoveIsAllowed],
+			winConditions: [gameIsWonOnMoveNumber(3)],
+			endConditions: [gameIsDrawnWhenBoardIsFull],
+			decideWhoMayMoveNext: singleParticipantInSequence,
+		})
 		activeGames.push(newGame)
 		return newGame
 	}
