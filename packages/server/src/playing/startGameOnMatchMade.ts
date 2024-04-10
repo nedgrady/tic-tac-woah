@@ -14,7 +14,7 @@ export function startGameOnMatchMade(
 	const activeGames = new Map<string, Game>()
 
 	matchmakingBroker.onMatchMade((users, aiParticipantCount) => {
-		const aiParticiapnts = Array(aiParticipantCount).fill("AI-" + crypto.randomUUID())
+		const aiParticiapnts = _.range(aiParticipantCount).map(i => `AI ${crypto.randomUUID()}`)
 		const participants = [...users.map(user => user.uniqueIdentifier), ...aiParticiapnts]
 
 		const gameId = crypto.randomUUID()
@@ -35,20 +35,20 @@ export function startGameOnMatchMade(
 			})
 		})
 
-		newGame.onMoveCompleted(move => {
-			if (move.mover.startsWith("AI-")) return
-			// create all possible placement pairings from 0,0 to 20,20
-			const allPossiblePlacements: Coordinates[] = _.range(0, 20).flatMap(x =>
-				_.range(0, 20).map(y => ({ x, y }))
-			)
+		aiParticiapnts.forEach(aiParticipant => {
+			newGame.onParticipantMayMove(aiParticipant, () => {
+				console.log("AI may move")
+				// create all possible placement pairings from 0,0 to 20,20
+				const allPossiblePlacements: Coordinates[] = _.range(0, 20).flatMap(x =>
+					_.range(0, 20).map(y => ({ x, y }))
+				)
 
-			const availablePlacements = allPossiblePlacements.filter(
-				placement => !newGame.moves().some(move => _.isEqual(move.placement, placement))
-			)
+				const availablePlacements = allPossiblePlacements.filter(
+					placement => !newGame.moves().some(move => _.isEqual(move.placement, placement))
+				)
 
-			const randomPlacement = availablePlacements[Math.floor(Math.random() * availablePlacements.length)]
+				const randomPlacement = availablePlacements[Math.floor(Math.random() * availablePlacements.length)]
 
-			aiParticiapnts.forEach(aiParticipant => {
 				const aiMove: Move = {
 					mover: aiParticipant,
 					placement: randomPlacement,

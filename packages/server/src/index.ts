@@ -31,6 +31,9 @@ import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFr
 import { gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
 import { gameIsAlwaysDrawn } from "domain/drawConditions/support/gameIsAlwaysDrawn"
 import { singleParticipantInSequence } from "domain/moveOrderRules/singleParticipantInSequence"
+import Coordinates from "domain/Coordinates"
+import { moveMustBeMadeByTheCorrectPlayer } from "domain/gameRules/gameRules"
+import { Move } from "domain/Move"
 // import _ from "lodash"
 
 interface ParticipantHandle {
@@ -127,7 +130,7 @@ class StandardGameFactory extends GameFactory {
 const ttQueue = new TicTacWoahQueue()
 const matchmakingBroker = new MatchmakingBroker()
 
-io.use(identifyByTicTacWoahUsername)
+io.use(identifySocketsByWebSocketId)
 	.use(addConnectionToQueue(ttQueue))
 	.use(removeConnectionFromQueueWhenRequested(ttQueue))
 	.use(removeConnectionFromQueueOnDisconnect(ttQueue))
@@ -157,9 +160,17 @@ io.use((socket, next) => {
 		const gameId = crypto.randomUUID()
 		const participants = [userId, "AI"]
 
-		gameVsAi = new Game(participants, 20, 5, [moveMustBeMadeByTheCorrectPlayer], [gameIsWonOnMoveNumber(20)], [])
+		gameVsAi = new Game({
+			participants,
+			boardSize: 20,
+			consecutiveTarget: 5,
+			rules: [moveMustBeMadeByTheCorrectPlayer],
+			winConditions: [gameIsWonOnMoveNumber(20)],
+			endConditions: [],
+			decideWhoMayMoveNext: singleParticipantInSequence,
+		})
 
-		gameVsAi.onMove(newMove => {
+		gameVsAi.onMoveCompleted(newMove => {
 			const completedMoveDto: CompletedMoveDto = {
 				mover: newMove.mover,
 				placement: newMove.placement,
@@ -170,9 +181,7 @@ io.use((socket, next) => {
 			})
 		})
 
-		gameVsAi.onMove(newMove => {
-			if (newMove.mover === "AI") return
-
+		gameVsAi.onParticipantMayMove("AI", () => {
 			// create all possible placement pairings from 0,0 to 20,20
 			const allPossiblePlacements: Coordinates[] = _.range(0, 20).flatMap(x =>
 				_.range(0, 20).map(y => ({ x, y }))
