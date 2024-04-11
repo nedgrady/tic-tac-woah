@@ -1,5 +1,5 @@
-import { ReturnSingleGameFactory } from "GameFactory"
-import { MatchmakingBroker } from "MatchmakingBroker"
+import { ReturnSingleGameFactory } from "playing/GameFactory"
+import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { TicTacWoahUserHandle, TicTacWoahSocketServer, TicTacWoahRemoteServerSocket } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { Game } from "domain/Game"

@@ -1,6 +1,6 @@
 import { Game } from "domain/Game"
-import { GameFactory } from "GameFactory"
-import { MatchmakingBroker } from "MatchmakingBroker"
+import { GameFactory } from "playing/GameFactory"
+import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 import { GameWinDto, CompletedMoveDto, GameDrawDto } from "types"
 

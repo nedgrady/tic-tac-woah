@@ -7,8 +7,8 @@ import { StartAndConnectLifetime } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
 import { CompletedMoveDto } from "types"
-import { MatchmakingBroker } from "MatchmakingBroker"
-import { AnythingGoesForeverGameFactory } from "GameFactory"
+import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
+import { AnythingGoesForeverGameFactory } from "playing/GameFactory"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()

@@ -6,8 +6,8 @@ import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueu
 import { StartAndConnectLifetime } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
-import { MatchmakingBroker } from "MatchmakingBroker"
-import { ReturnSequenceOfGamesFactory } from "GameFactory"
+import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
+import { ReturnSequenceOfGamesFactory } from "playing/GameFactory"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/support/gameIsWonOnMoveNumber"
 
 describe("it", () => {

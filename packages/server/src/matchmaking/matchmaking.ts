@@ -1,4 +1,4 @@
-import { MatchmakingBroker } from "MatchmakingBroker"
+import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { TicTacWoahQueue } from "queue/addConnectionToQueue"
 import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 
