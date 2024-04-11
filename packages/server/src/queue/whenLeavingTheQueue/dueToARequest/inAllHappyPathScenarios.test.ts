@@ -3,7 +3,7 @@ import { identifyAllSocketsAsTheSameUser } from "auth/socketIdentificationStrate
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { StartAndConnectLifetime, startAndConnect, startAndConnectCount } from "ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
-import { removeConnectionFromQueueWhenRequested } from "../removeConnectionFromQueueWhenRequested"
+import { removeConnectionFromQueueWhenRequested } from "../../removeConnectionFromQueueWhenRequested"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()

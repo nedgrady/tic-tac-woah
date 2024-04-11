@@ -274,6 +274,10 @@ export class StartAndConnectLifetime {
 	public get clientSocket2() {
 		return this.value.clientSockets[1]
 	}
+
+	public get serverIo() {
+		return this.value.serverIo
+	}
 }
 
 export const ticTacWoahTest = test.extend<TicTacWoahTest>({
