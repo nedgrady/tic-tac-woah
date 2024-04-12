@@ -19,7 +19,6 @@ import { identifySocketsByWebSocketId } from "auth/socketIdentificationStrategie
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
 import { removeConnectionFromQueueOnDisconnect } from "queue/removeConnectionFromQueueOnDisconnect"
-import _ from "lodash"
 import { matchmaking } from "matchmaking/matchmaking"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
@@ -30,7 +29,6 @@ import { gameIsWonOnMoveNumber } from "domain/winConditions/support/gameIsWonOnM
 import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
 import { gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
 import { singleParticipantInSequence } from "domain/moveOrderRules/singleParticipantInSequence"
-// import _ from "lodash"
 
 interface ParticipantHandle {
 	readonly activeUser: ActiveUser

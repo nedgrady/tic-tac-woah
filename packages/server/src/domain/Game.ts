@@ -1,7 +1,6 @@
 import { Move } from "./Move"
 import { Participant } from "./Participant"
 import { EventEmitter } from "events"
-import _ from "lodash"
 import { GameConfiguration, GameRuleFunction, GameState } from "./gameRules/gameRules"
 import { GameDrawCondition, GameWinCondition } from "./winConditions/winConditions"
 import { DecideWhoMayMoveNext } from "./moveOrderRules/moveOrderRules"

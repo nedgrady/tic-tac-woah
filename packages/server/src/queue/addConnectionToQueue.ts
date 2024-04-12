@@ -1,10 +1,18 @@
 import { ActiveUser, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 import { EventEmitter } from "events"
 
-export type QueueAddedListener = (queueState: readonly ActiveUser[]) => void
+export type QueueAddedListener = (queueState: readonly QueueEntry[]) => void
+
+export interface QueueEntry {
+	humanCount: number
+	botCount: number
+	boardSize: number
+	consecutiveTarget: number
+	queuer: ActiveUser
+}
 
 export class TicTacWoahQueue {
-	readonly #queue: ActiveUser[] = []
+	readonly #queue: QueueEntry[] = []
 	readonly #emitter: EventEmitter = new EventEmitter()
 	objectId: string
 
@@ -12,14 +20,15 @@ export class TicTacWoahQueue {
 		this.objectId = crypto.randomUUID()
 	}
 
-	add(newUser: ActiveUser) {
+	add(newQueueEntry: QueueEntry) {
 		if (
 			this.#queue.findIndex(
-				userInQueueAlready => userInQueueAlready.uniqueIdentifier === newUser.uniqueIdentifier
+				existingQueueEntry =>
+					existingQueueEntry.queuer.uniqueIdentifier === newQueueEntry.queuer.uniqueIdentifier
 			) !== -1
 		)
 			return
-		this.#queue.push(newUser)
+		this.#queue.push(newQueueEntry)
 		this.#emitter.emit("Added", [...this.#queue])
 	}
 
@@ -27,22 +36,32 @@ export class TicTacWoahQueue {
 		this.#emitter.on("Added", listener)
 	}
 
-	remove(user: ActiveUser) {
+	removeUser(user: ActiveUser) {
 		const id = user.uniqueIdentifier
-		const index = this.#queue.findIndex(u => u.uniqueIdentifier === id)
+		const index = this.#queue.findIndex(q => q.queuer.uniqueIdentifier === id)
+		if (index === -1) return
+		this.#queue.splice(index, 1)
+	}
+
+	dequeueEntry(queueEntry: QueueEntry) {
+		const index = this.#queue.indexOf(queueEntry)
 		if (index === -1) return
 		this.#queue.splice(index, 1)
 	}
 
 	get users(): readonly ActiveUser[] {
-		return this.#queue
+		return this.#queue.map(q => q.queuer)
 	}
 }
 
 export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	return (socket, next) => {
 		socket.on("joinQueue", (joinQueueRequest, callback) => {
-			queue.add(socket.data.activeUser)
+			const queueEntry: QueueEntry = {
+				queuer: socket.data.activeUser,
+				...joinQueueRequest,
+			}
+			queue.add(queueEntry)
 			callback && callback(0)
 		})
 
