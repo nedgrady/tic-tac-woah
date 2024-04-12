@@ -1,7 +1,7 @@
 import { ActiveUser, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifyAllSocketsAsTheSameUser } from "auth/socketIdentificationStrategies"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { StartAndConnectLifetime } from "ticTacWoahTest"
+import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { removeConnectionFromQueueOnDisconnect } from "queue/removeConnectionFromQueueOnDisconnect"
 import { faker } from "@faker-js/faker"

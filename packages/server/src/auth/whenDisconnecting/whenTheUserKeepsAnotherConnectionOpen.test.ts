@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker"
 import { ActiveUser } from "TicTacWoahSocketServer"
 import { identifyAllSocketsAsTheSameUser, removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
-import { StartAndConnectLifetime } from "ticTacWoahTest"
+import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { beforeAll, expect, describe, it, vi } from "vitest"
 
 describe("it", () => {

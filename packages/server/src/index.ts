@@ -15,7 +15,7 @@ import {
 	TicTacWoahSocketServerMiddleware,
 	TicTacWoahUserHandle,
 } from "TicTacWoahSocketServer"
-import { identifySocketsByWebSocketId, identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
+import { identifySocketsByWebSocketId } from "auth/socketIdentificationStrategies"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
 import { removeConnectionFromQueueOnDisconnect } from "queue/removeConnectionFromQueueOnDisconnect"
@@ -29,7 +29,6 @@ import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/support/gameIsWonOnMoveNumber"
 import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
 import { gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
-import { gameIsAlwaysDrawn } from "domain/drawConditions/support/gameIsAlwaysDrawn"
 import { singleParticipantInSequence } from "domain/moveOrderRules/singleParticipantInSequence"
 // import _ from "lodash"
 

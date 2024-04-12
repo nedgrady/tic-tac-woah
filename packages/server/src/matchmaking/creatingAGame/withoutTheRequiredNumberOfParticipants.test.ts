@@ -5,7 +5,7 @@ import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking } from "matchmaking/matchmaking"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { StartAndConnectLifetime } from "ticTacWoahTest"
+import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { vi, expect, beforeAll, describe, it } from "vitest"
 
 describe("it", () => {

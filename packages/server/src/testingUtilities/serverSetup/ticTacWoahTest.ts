@@ -49,7 +49,7 @@ function createTicTacWoahServer() {
 	}
 }
 
-export async function startAndConnectCount(
+async function startAndConnectCount(
 	connectedClientCount: number,
 	preConfigure: (server: TicTacWoahSocketServer) => void,
 	configureClientSockets?: ConfigureTicTacWoahClientSocket

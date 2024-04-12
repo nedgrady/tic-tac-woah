@@ -3,7 +3,7 @@ import { identifySocketsByWebSocketId } from "auth/socketIdentificationStrategie
 import { matchmaking } from "matchmaking/matchmaking"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { StartAndConnectLifetime } from "ticTacWoahTest"
+import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { AnythingGoesForeverGameFactory } from "playing/GameFactory"

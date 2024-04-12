@@ -1,5 +1,5 @@
 import { identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
-import { StartAndConnectLifetime } from "ticTacWoahTest"
+import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { beforeAll, expect, describe, it } from "vitest"
 
 describe("it", () => {

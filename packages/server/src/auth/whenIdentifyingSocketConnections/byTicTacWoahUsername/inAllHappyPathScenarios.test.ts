@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker"
 import { identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
-import { StartAndConnectLifetime } from "ticTacWoahTest"
+import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { beforeAll, expect, vi, describe, it } from "vitest"
 
 describe("it", () => {

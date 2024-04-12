@@ -1,7 +1,7 @@
 import { TicTacWoahSocketServer, ActiveUser } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { StartAndConnectLifetime } from "ticTacWoahTest"
+import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 
 describe("it", () => {
