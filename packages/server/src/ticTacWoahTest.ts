@@ -186,7 +186,8 @@ export async function start(preConfigure?: (server: TicTacWoahSocketServer) => v
 
 export async function startAndConnectCount(
 	connectedClientCount: number,
-	preConfigure: (server: TicTacWoahSocketServer) => void
+	preConfigure: (server: TicTacWoahSocketServer) => void,
+	configureClientSockets?: ConfigureTicTacWoahClientSocket
 ): Promise<TicTacWoahConnectedTestContextCount> {
 	const { app, httpServer, io: serverIo } = createTicTacWoahServer()
 
@@ -201,7 +202,10 @@ export async function startAndConnectCount(
 		})
 	)
 
-	clientSockets.forEach(socket => socket.connect())
+	clientSockets.forEach((socket, index) => {
+		configureClientSockets?.(socket, index)
+		socket.connect()
+	})
 
 	const serverSockets: Map<string, TicTacWoahRemoteServerSocket> = new Map()
 
@@ -242,11 +246,19 @@ export async function startAndConnectCount(
 	}
 }
 
+export type ConfigureTicTacWoahClientSocket = (socket: TicTacWoahClientSocket, index: number) => void
+
 export class StartAndConnectLifetime {
 	private _value: Awaited<ReturnType<typeof startAndConnectCount>> | null
 
+	private _configureSockets: ConfigureTicTacWoahClientSocket[] = []
+
 	constructor(private preConfigure: (server: TicTacWoahSocketServer) => void, private count: number = 2) {
 		this._value = null
+	}
+
+	configureSocket(configure: ConfigureTicTacWoahClientSocket) {
+		this._configureSockets.push(configure)
 	}
 
 	private get value(): Awaited<ReturnType<typeof startAndConnectCount>> {
@@ -256,7 +268,10 @@ export class StartAndConnectLifetime {
 	}
 
 	async start() {
-		this._value = await startAndConnectCount(this.count, this.preConfigure)
+		// apply all the configurations
+		const configureSocket: ConfigureTicTacWoahClientSocket = (socket, index) =>
+			this._configureSockets.forEach(configure => configure(socket, index))
+		this._value = await startAndConnectCount(this.count, this.preConfigure, configureSocket)
 	}
 
 	public get done() {
