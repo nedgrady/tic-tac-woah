@@ -1,6 +1,6 @@
 import express from "express"
 import http, { createServer } from "http"
-import vitest, { expect, test, vi } from "vitest"
+import vitest, { expect, vi } from "vitest"
 import { io as clientIo } from "socket.io-client"
 import { Server as SocketIoServer } from "socket.io"
 import { TicTacWoahEventMap, TicTacWoahRemoteServerSocket, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
@@ -133,7 +133,6 @@ export class StartAndConnectLifetime {
 	}
 
 	async start() {
-		// apply all the configurations
 		const configureSocket: ConfigureTicTacWoahClientSocket = (socket, index) =>
 			this._configureSockets.forEach(configure => configure(socket, index))
 		this._value = await startAndConnectCount(this.count, this.preConfigure, configureSocket)
