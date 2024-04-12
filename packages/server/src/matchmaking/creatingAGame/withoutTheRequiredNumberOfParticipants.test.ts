@@ -1,13 +1,11 @@
 import { ReturnSingleGameFactory } from "playing/GameFactory"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { TicTacWoahUserHandle, TicTacWoahSocketServer, TicTacWoahRemoteServerSocket } from "TicTacWoahSocketServer"
+import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
-import { Game } from "domain/Game"
-import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
 import { matchmaking } from "matchmaking/matchmaking"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { StartAndConnectLifetime, startAndConnect } from "ticTacWoahTest"
+import { StartAndConnectLifetime } from "ticTacWoahTest"
 import { vi, expect, beforeAll, describe, it } from "vitest"
 
 describe("it", () => {
