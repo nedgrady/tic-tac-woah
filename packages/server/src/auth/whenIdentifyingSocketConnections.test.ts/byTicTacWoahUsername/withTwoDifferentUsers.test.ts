@@ -8,7 +8,7 @@ describe("it", () => {
 	beforeAll(async () => {
 		testLifetime.configureSocket((socket, index) => {
 			socket.auth = {
-				token: `any username${index}`,
+				token: `Different Username ${index}`,
 				type: "tic-tac-woah-username",
 			}
 		})
@@ -17,7 +17,7 @@ describe("it", () => {
 		return testLifetime.done
 	})
 
-	it.each([0, 1])("Does a thing %i", async socketIndex => {
+	it.each([0, 1])("Connection %i's socket is populated with the correct connection", async socketIndex => {
 		const activeSockets = await testLifetime.serverIo.fetchSockets()
 
 		const activeUserConnections = activeSockets.flatMap(socket =>
@@ -25,5 +25,17 @@ describe("it", () => {
 		)
 
 		expect(activeUserConnections).toContain(testLifetime.clientSockets[socketIndex].id)
+	})
+
+	it.each([0, 1])("Connection %i's active user contains a single connection", async socketIndex => {
+		const activeSockets = await testLifetime.serverIo.fetchSockets()
+
+		const activeUserFromConnection = activeSockets[socketIndex].data.activeUser
+		expect(activeUserFromConnection.connections).toHaveLength(1)
+	})
+
+	it("The two active users are different", async () => {
+		const [connection1, connection2] = await testLifetime.serverIo.fetchSockets()
+		expect(connection1.data.activeUser.uniqueIdentifier).not.toBe(connection2.data.activeUser.uniqueIdentifier)
 	})
 })
