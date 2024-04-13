@@ -1,7 +1,10 @@
 import { TicTacWoahSocketServer, ActiveUser } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
-import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
+import { Factory } from "factory.ts"
+import { QueueItem, TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
+import { joinQueueRequestFactory } from "testingUtilities/factories"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
+import { JoinQueueRequest } from "types"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 
 describe("it", () => {
@@ -18,11 +21,13 @@ describe("it", () => {
 
 	const testContext = new StartAndConnectLifetime(preConfigure)
 
+	const joinQueueRequests = joinQueueRequestFactory.buildList(2)
+
 	beforeAll(async () => {
 		await testContext.start()
 
-		await testContext.clientSocket.emitWithAck("joinQueue", {})
-		await testContext.clientSocket2.emitWithAck("joinQueue", {})
+		testContext.clientSocket.emit("joinQueue", joinQueueRequests[0])
+		testContext.clientSocket2.emit("joinQueue", joinQueueRequests[1])
 
 		return testContext.done
 	})
@@ -30,6 +35,12 @@ describe("it", () => {
 	it("Adds both players to the queue", async () => {
 		await vi.waitFor(() => {
 			expect(queue.users).toOnlyContainActiveUsers(...twoQueueingUsers)
+		})
+	})
+
+	it.each(joinQueueRequests)("Captures game configuration %#", async joinQueueRequest => {
+		await vi.waitFor(() => {
+			expect(queue.items).toContainEqual<QueueItem>(expect.objectContaining(joinQueueRequest))
 		})
 	})
 })

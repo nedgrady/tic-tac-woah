@@ -1,12 +1,19 @@
 import { ActiveUser, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 import { EventEmitter } from "events"
+import _ from "lodash"
 
 export type QueueAddedListener = (queueState: readonly ActiveUser[]) => void
+
+export interface QueueItem {
+	queuer: ActiveUser
+	humanCount: number
+}
 
 export class TicTacWoahQueue {
 	readonly #queue: ActiveUser[] = []
 	readonly #emitter: EventEmitter = new EventEmitter()
 	objectId: string
+	private _items: QueueItem[] = []
 
 	constructor() {
 		this.objectId = crypto.randomUUID()
@@ -32,10 +39,23 @@ export class TicTacWoahQueue {
 		const index = this.#queue.findIndex(u => u.uniqueIdentifier === id)
 		if (index === -1) return
 		this.#queue.splice(index, 1)
+
+		const queueItemToRemove = this._items.find(item => item.queuer.uniqueIdentifier === id)
+		if (queueItemToRemove) {
+			_.remove(this._items, queueItemToRemove)
+		}
 	}
 
 	get users(): readonly ActiveUser[] {
 		return this.#queue
+	}
+
+	addItem(item: QueueItem) {
+		this._items.push(item)
+	}
+
+	get items(): readonly QueueItem[] {
+		return this._items
 	}
 }
 
@@ -43,6 +63,12 @@ export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketSe
 	return (socket, next) => {
 		socket.on("joinQueue", (joinQueueRequest, callback) => {
 			queue.add(socket.data.activeUser)
+			const queueItem: QueueItem = {
+				queuer: socket.data.activeUser,
+				humanCount: joinQueueRequest.humanCount,
+			}
+
+			queue.addItem(queueItem)
 			callback && callback(0)
 		})
 

@@ -1,10 +1,11 @@
 import { ActiveUser, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifyAllSocketsAsTheSameUser } from "auth/socketIdentificationStrategies"
-import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
+import { QueueItem, TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { removeConnectionFromQueueOnDisconnect } from "queue/removeConnectionFromQueueOnDisconnect"
 import { faker } from "@faker-js/faker"
+import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -17,6 +18,8 @@ describe("it", () => {
 		uniqueIdentifier: "Some reamaing user",
 		connections: new Set(),
 	}
+
+	const joinQueueRequest = joinQueueRequestFactory.build()
 
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
@@ -31,7 +34,7 @@ describe("it", () => {
 		queue.add(remainsInQueue)
 		await testLifetime.start()
 
-		await testLifetime.clientSocket.emitWithAck("joinQueue", {})
+		testLifetime.clientSocket.emit("joinQueue", joinQueueRequest)
 
 		await vi.waitFor(() => {
 			expect(queue.users).toHaveLength(2)
@@ -48,7 +51,19 @@ describe("it", () => {
 		})
 	})
 
+	it("Removes an item from the queue", async () => {
+		await vi.waitFor(() => {
+			expect(queue.items).toHaveLength(1)
+		})
+	})
+
 	it("Leaves the correct user in the queue", async () => {
 		await vi.waitFor(() => expect(queue.users).toContainActiveUser(remainsInQueue))
+	})
+
+	it("Leaves the correct queue item in the queue", async () => {
+		await vi.waitFor(() =>
+			expect(queue.items).toContainSingle<QueueItem>(expect.objectContaining(joinQueueRequest))
+		)
 	})
 })

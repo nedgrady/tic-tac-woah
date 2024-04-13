@@ -30,7 +30,7 @@ describe("it", () => {
 		await testLifetime.clientSocket.emitWithAck("joinQueue", {})
 
 		await vi.waitFor(() => {
-			expect(queue.users).toHaveLength(1)
+			expect(queue.items).toHaveLength(1)
 		})
 
 		testLifetime.clientSocket.disconnect()
@@ -41,6 +41,12 @@ describe("it", () => {
 	it("removes the user from the queue", async () => {
 		await vi.waitFor(() => {
 			expect(queue.users).toHaveLength(0)
+		})
+	})
+
+	it("removes the item from the queue", async () => {
+		await vi.waitFor(() => {
+			expect(queue.items).toHaveLength(0)
 		})
 	})
 })

@@ -1,7 +1,9 @@
 import z from "zod"
 import { type Socket as ClientSocket } from "socket.io-client"
 
-export const JoinQueueRequestSchema = z.object({})
+export const JoinQueueRequestSchema = z.object({
+	humanCount: z.number(),
+})
 
 export type JoinQueueRequest = z.infer<typeof JoinQueueRequestSchema>
 
