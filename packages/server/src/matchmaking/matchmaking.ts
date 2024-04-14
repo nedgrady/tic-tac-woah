@@ -1,18 +1,7 @@
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { QueueItem, TicTacWoahQueue } from "queue/addConnectionToQueue"
-import { ActiveUser, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
-
-abstract class MatchmakingStrategy {
-	abstract doTheThing(queueItems: readonly QueueItem[]): readonly ActiveUser[]
-}
-
-export class AlwaysMatchTwoParticipants extends MatchmakingStrategy {
-	doTheThing(queueItems: readonly QueueItem[]): readonly ActiveUser[] {
-		if (queueItems.length !== 2) return []
-
-		return queueItems.map(item => item.queuer)
-	}
-}
+import { TicTacWoahQueue } from "queue/addConnectionToQueue"
+import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
+import { MatchmakingStrategy } from "./MatchmakingStrategy"
 
 export function matchmaking(
 	queue: TicTacWoahQueue,

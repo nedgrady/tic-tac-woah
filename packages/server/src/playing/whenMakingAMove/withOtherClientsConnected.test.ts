@@ -1,6 +1,7 @@
 import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
-import { AlwaysMatchTwoParticipants, matchmaking } from "matchmaking/matchmaking"
+import { matchmaking } from "matchmaking/matchmaking"
+import { AlwaysMatchTwoParticipants } from "matchmaking/MatchmakingStrategy"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
