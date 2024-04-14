@@ -5,6 +5,7 @@ import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoah
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { removeConnectionFromQueueOnDisconnect } from "queue/removeConnectionFromQueueOnDisconnect"
 import { faker } from "@faker-js/faker"
+import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -26,7 +27,7 @@ describe("it", () => {
 	beforeAll(async () => {
 		await testLifetime.start()
 
-		await testLifetime.clientSocket.emitWithAck("joinQueue", {})
+		testLifetime.clientSocket.emit("joinQueue", joinQueueRequestFactory.build())
 
 		await vi.waitFor(() => {
 			expect(queue.items).toHaveLength(1)

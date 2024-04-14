@@ -4,6 +4,7 @@ import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueu
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { removeConnectionFromQueueWhenRequested } from "../../removeConnectionFromQueueWhenRequested"
+import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -20,7 +21,7 @@ describe("it", () => {
 	beforeAll(async () => {
 		await testLifetime.start()
 
-		await testLifetime.clientSocket.emitWithAck("joinQueue", {})
+		testLifetime.clientSocket.emit("joinQueue", joinQueueRequestFactory.build())
 
 		await vi.waitFor(() => {
 			expect(queue.users).toHaveLength(1)

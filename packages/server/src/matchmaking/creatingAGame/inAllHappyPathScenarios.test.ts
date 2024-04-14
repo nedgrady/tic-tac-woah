@@ -8,6 +8,7 @@ import { vi, expect, beforeAll, describe, it } from "vitest"
 import { faker } from "@faker-js/faker"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { AnythingGoesForeverGameFactory } from "playing/GameFactory"
+import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -34,8 +35,8 @@ describe("it", () => {
 	beforeAll(async () => {
 		await testContext.start()
 
-		await testContext.clientSocket2.emitWithAck("joinQueue", {})
-		await testContext.clientSocket.emitWithAck("joinQueue", {})
+		testContext.clientSocket2.emit("joinQueue", joinQueueRequestFactory.build())
+		testContext.clientSocket.emit("joinQueue", joinQueueRequestFactory.build())
 
 		return testContext.done
 	})
@@ -46,24 +47,30 @@ describe("it", () => {
 		})
 	})
 
-	it("Game start is sent to the first player", () => {
-		expect(testContext.clientSocket).toHaveReceivedPayload("gameStart", {
-			id: expect.any(String),
-			players: expect.arrayContaining(twoUsers),
+	it("Game start is sent to the first player", async () => {
+		await vi.waitFor(() => {
+			expect(testContext.clientSocket).toHaveReceivedPayload("gameStart", {
+				id: expect.any(String),
+				players: expect.arrayContaining(twoUsers),
+			})
 		})
 	})
 
-	it("Game start is sent to the second player", () => {
-		expect(testContext.clientSocket2).toHaveReceivedPayload("gameStart", {
-			id: expect.any(String),
-			players: expect.arrayContaining(twoUsers),
+	it("Game start is sent to the second player", async () => {
+		await vi.waitFor(() => {
+			expect(testContext.clientSocket2).toHaveReceivedPayload("gameStart", {
+				id: expect.any(String),
+				players: expect.arrayContaining(twoUsers),
+			})
 		})
 	})
 
-	it("The game id is the same for both players", () => {
-		const gameId1 = testContext.clientSocket.events.get("gameStart")[0].id
-		const gameId2 = testContext.clientSocket2.events.get("gameStart")[0].id
+	it("The game id is the same for both players", async () => {
+		await vi.waitFor(() => {
+			const gameId1 = testContext.clientSocket.events.get("gameStart")[0].id
+			const gameId2 = testContext.clientSocket2.events.get("gameStart")[0].id
 
-		expect(gameId1).toEqual(gameId2)
+			expect(gameId1).toEqual(gameId2)
+		})
 	})
 })

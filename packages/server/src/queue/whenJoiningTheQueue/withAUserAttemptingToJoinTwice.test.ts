@@ -4,6 +4,7 @@ import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueu
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
+import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -22,8 +23,8 @@ describe("it", () => {
 	beforeAll(async () => {
 		await testContext.start()
 
-		await testContext.clientSocket.emitWithAck("joinQueue", {})
-		await testContext.clientSocket2.emitWithAck("joinQueue", {})
+		testContext.clientSocket.emit("joinQueue", joinQueueRequestFactory.build())
+		testContext.clientSocket2.emit("joinQueue", joinQueueRequestFactory.build())
 
 		return testContext.done
 	})

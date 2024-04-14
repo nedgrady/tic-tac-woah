@@ -13,6 +13,7 @@ import { ReturnSingleGameFactory } from "playing/GameFactory"
 import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
 import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
 import { alwaysWinWithMoves } from "domain/winConditions/support/alwaysWinWithMoves"
+import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -64,8 +65,8 @@ describe("it", () => {
 	beforeAll(async () => {
 		await testContext.start()
 
-		await testContext.clientSocket2.emitWithAck("joinQueue", {})
-		await testContext.clientSocket.emitWithAck("joinQueue", {})
+		testContext.clientSocket2.emit("joinQueue", joinQueueRequestFactory.build())
+		testContext.clientSocket.emit("joinQueue", joinQueueRequestFactory.build())
 
 		await vi.waitFor(() => {
 			expect(testContext.clientSocket).toHaveReceivedEvent("gameStart")

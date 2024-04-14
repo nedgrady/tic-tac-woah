@@ -9,6 +9,7 @@ import { faker } from "@faker-js/faker"
 import { CompletedMoveDto } from "types"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { AnythingGoesForeverGameFactory } from "playing/GameFactory"
+import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -32,8 +33,8 @@ describe("it", () => {
 	beforeAll(async () => {
 		await testContext.start()
 
-		await testContext.clientSocket2.emitWithAck("joinQueue", {})
-		await testContext.clientSocket.emitWithAck("joinQueue", {})
+		testContext.clientSocket.emit("joinQueue", joinQueueRequestFactory.build())
+		testContext.clientSocket2.emit("joinQueue", joinQueueRequestFactory.build())
 
 		await vi.waitFor(() => {
 			expect(testContext.clientSocket).toHaveReceivedEvent("gameStart")

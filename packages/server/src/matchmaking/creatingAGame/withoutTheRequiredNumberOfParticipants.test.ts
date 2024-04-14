@@ -7,6 +7,7 @@ import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { vi, expect, beforeAll, describe, it } from "vitest"
+import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -33,7 +34,7 @@ describe("it", () => {
 
 	beforeAll(async () => {
 		await testContext.start()
-		await testContext.clientSocket.emitWithAck("joinQueue", {})
+		testContext.clientSocket.emit("joinQueue", joinQueueRequestFactory.build())
 		await vi.waitFor(() => {
 			expect(queue.users).toHaveLength(1)
 		})

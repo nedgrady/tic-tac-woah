@@ -1,17 +1,15 @@
-import { ActiveUser, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identifySocketsByWebSocketId, identifySocketsInSequence } from "auth/socketIdentificationStrategies"
+import { TicTacWoahSocketServer } from "TicTacWoahSocketServer"
+import { identifySocketsByWebSocketId } from "auth/socketIdentificationStrategies"
 import { AlwaysMatchTwoParticipants, matchmaking } from "matchmaking/matchmaking"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
-import { faker } from "@faker-js/faker"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { ReturnSingleGameFactory } from "playing/GameFactory"
-import { Game } from "domain/Game"
 import { noMoveIsAllowed } from "domain/gameRules/support/noMoveIsAllowed"
-import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
 import { PendingMoveDto } from "types"
+import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -30,8 +28,8 @@ describe("it", () => {
 	beforeAll(async () => {
 		await testContext.start()
 
-		await testContext.clientSocket2.emitWithAck("joinQueue", {})
-		await testContext.clientSocket.emitWithAck("joinQueue", {})
+		testContext.clientSocket.emit("joinQueue", joinQueueRequestFactory.build())
+		testContext.clientSocket2.emit("joinQueue", joinQueueRequestFactory.build())
 
 		await vi.waitFor(() => {
 			expect(testContext.clientSocket).toHaveReceivedEvent("gameStart")

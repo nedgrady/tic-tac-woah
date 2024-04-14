@@ -7,6 +7,7 @@ import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoah
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { AnythingGoesForeverGameFactory } from "playing/GameFactory"
+import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -36,8 +37,8 @@ describe("it", () => {
 	beforeAll(async () => {
 		await testContext.start()
 
-		await testContext.clientSockets[0].emitWithAck("joinQueue", {})
-		await testContext.clientSockets[1].emitWithAck("joinQueue", {})
+		testContext.clientSockets[0].emit("joinQueue", joinQueueRequestFactory.build())
+		testContext.clientSockets[1].emit("joinQueue", joinQueueRequestFactory.build())
 
 		await vi.waitFor(() => {
 			expect(testContext.clientSockets[1]).toHaveReceivedEvent("gameStart")
