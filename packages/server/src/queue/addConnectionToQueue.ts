@@ -10,7 +10,6 @@ export interface QueueItem {
 }
 
 export class TicTacWoahQueue {
-	readonly #queue: ActiveUser[] = []
 	readonly #emitter: EventEmitter = new EventEmitter()
 	objectId: string
 	private _items: QueueItem[] = []
@@ -19,39 +18,29 @@ export class TicTacWoahQueue {
 		this.objectId = crypto.randomUUID()
 	}
 
-	add(newUser: ActiveUser) {
-		if (
-			this.#queue.findIndex(
-				userInQueueAlready => userInQueueAlready.uniqueIdentifier === newUser.uniqueIdentifier
-			) !== -1
-		)
-			return
-		this.#queue.push(newUser)
-		this.#emitter.emit("Added", [...this.#queue])
-	}
-
 	onAdded(listener: QueueAddedListener) {
 		this.#emitter.on("Added", listener)
 	}
 
 	remove(user: ActiveUser) {
 		const id = user.uniqueIdentifier
-		const index = this.#queue.findIndex(u => u.uniqueIdentifier === id)
-		if (index === -1) return
-		this.#queue.splice(index, 1)
-
-		const queueItemToRemove = this._items.find(item => item.queuer.uniqueIdentifier === id)
-		if (queueItemToRemove) {
-			_.remove(this._items, queueItemToRemove)
-		}
+		const itemIndex = this._items.findIndex(u => u.queuer.uniqueIdentifier === id)
+		this._items.splice(itemIndex, 1)
 	}
 
 	get users(): readonly ActiveUser[] {
-		return this.#queue
+		return this._items.map(item => item.queuer)
 	}
 
-	addItem(item: QueueItem) {
-		this._items.push(item)
+	addItem(newQueueItem: QueueItem) {
+		if (
+			this._items.findIndex(
+				existingQueueItem => existingQueueItem.queuer.uniqueIdentifier === newQueueItem.queuer.uniqueIdentifier
+			) !== -1
+		)
+			return
+		this._items.push(newQueueItem)
+		this.#emitter.emit("Added", [...this._items.map(item => item.queuer)])
 	}
 
 	get items(): readonly QueueItem[] {
@@ -62,7 +51,6 @@ export class TicTacWoahQueue {
 export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	return (socket, next) => {
 		socket.on("joinQueue", (joinQueueRequest, callback) => {
-			queue.add(socket.data.activeUser)
 			const queueItem: QueueItem = {
 				queuer: socket.data.activeUser,
 				humanCount: joinQueueRequest.humanCount,

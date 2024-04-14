@@ -24,7 +24,6 @@ describe("it", () => {
 	const testLifetime = new StartAndConnectLifetime(preConfigure, 1)
 
 	beforeAll(async () => {
-		queue.add(queueLeaver)
 		await testLifetime.start()
 
 		await testLifetime.clientSocket.emitWithAck("joinQueue", {})

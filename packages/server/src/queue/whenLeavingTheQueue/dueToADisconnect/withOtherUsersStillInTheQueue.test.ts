@@ -4,22 +4,26 @@ import { QueueItem, TicTacWoahQueue, addConnectionToQueue } from "queue/addConne
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { removeConnectionFromQueueOnDisconnect } from "queue/removeConnectionFromQueueOnDisconnect"
-import { faker } from "@faker-js/faker"
 import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
 
 	const remainsInQueue: ActiveUser = {
-		uniqueIdentifier: "Some leaving user",
-		connections: new Set(),
-	}
-	const queueLeaver: ActiveUser = {
 		uniqueIdentifier: "Some reamaing user",
 		connections: new Set(),
 	}
 
+	const queueLeaver: ActiveUser = {
+		uniqueIdentifier: "Some leaving user",
+		connections: new Set(),
+	}
+
 	const joinQueueRequest = joinQueueRequestFactory.build()
+	const remainsInQueueItem: QueueItem = {
+		queuer: remainsInQueue,
+		humanCount: joinQueueRequest.humanCount,
+	}
 
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
@@ -31,13 +35,14 @@ describe("it", () => {
 	const testLifetime = new StartAndConnectLifetime(preConfigure, 1)
 
 	beforeAll(async () => {
-		queue.add(remainsInQueue)
+		queue.addItem(remainsInQueueItem)
 		await testLifetime.start()
 
 		testLifetime.clientSocket.emit("joinQueue", joinQueueRequest)
 
 		await vi.waitFor(() => {
 			expect(queue.users).toHaveLength(2)
+			expect(queue.items).toHaveLength(2)
 		})
 
 		testLifetime.clientSocket.disconnect()

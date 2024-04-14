@@ -36,4 +36,10 @@ describe("it", () => {
 			expect(queue.users).toHaveLength(0)
 		})
 	})
+
+	it("removes the queue item from the queue", async () => {
+		await vi.waitFor(() => {
+			expect(queue.items).toHaveLength(0)
+		})
+	})
 })
