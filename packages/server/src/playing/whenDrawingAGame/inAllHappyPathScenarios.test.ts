@@ -1,6 +1,6 @@
 import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
-import { matchmaking } from "matchmaking/matchmaking"
+import { AlwaysMatchTwoParticipants, matchmaking } from "matchmaking/matchmaking"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
@@ -39,7 +39,7 @@ describe("it", () => {
 				)
 			)
 			.use(addConnectionToQueue(queue))
-			.use(matchmaking(queue, matchmakingBroker))
+			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchTwoParticipants()))
 			.use(
 				startGameOnMatchMade(
 					matchmakingBroker,

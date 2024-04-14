@@ -49,6 +49,10 @@ export class TicTacWoahQueue {
 		this._emitter.emit("queueAdded", [...this._items])
 	}
 
+	removeItems(items: readonly QueueItem[]) {
+		this._items = _.difference(this._items, items)
+	}
+
 	get items(): readonly QueueItem[] {
 		return this._items
 	}
