@@ -1,16 +1,22 @@
 import { ActiveUser, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 import { EventEmitter } from "events"
 import _ from "lodash"
+import TypedEmitter from "typed-emitter"
 
-export type QueueAddedListener = (queueState: readonly ActiveUser[]) => void
+export type QueueAddedListener = (queueState: readonly QueueItem[]) => void
 
 export interface QueueItem {
 	queuer: ActiveUser
 	humanCount: number
 }
 
+type QueueEvents = {
+	queueAdded: QueueAddedListener
+}
+
 export class TicTacWoahQueue {
-	readonly #emitter: EventEmitter = new EventEmitter()
+	private readonly _emitter = new EventEmitter() as TypedEmitter<QueueEvents>
+
 	objectId: string
 	private _items: QueueItem[] = []
 
@@ -19,7 +25,7 @@ export class TicTacWoahQueue {
 	}
 
 	onAdded(listener: QueueAddedListener) {
-		this.#emitter.on("Added", listener)
+		this._emitter.on("queueAdded", listener)
 	}
 
 	remove(user: ActiveUser) {
@@ -40,7 +46,7 @@ export class TicTacWoahQueue {
 		)
 			return
 		this._items.push(newQueueItem)
-		this.#emitter.emit("Added", [...this._items.map(item => item.queuer)])
+		this._emitter.emit("queueAdded", [...this._items])
 	}
 
 	get items(): readonly QueueItem[] {

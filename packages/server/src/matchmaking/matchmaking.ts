@@ -6,8 +6,9 @@ export function matchmaking(
 	queue: TicTacWoahQueue,
 	matchmakingBroker: MatchmakingBroker
 ): TicTacWoahSocketServerMiddleware {
-	queue.onAdded(users => {
-		if (users.length === 2) {
+	queue.onAdded(queueItems => {
+		const users = queueItems.map(item => item.queuer)
+		if (queueItems.length === 2) {
 			queue.remove(users[0])
 			queue.remove(users[1])
 
