@@ -9,10 +9,13 @@ export function matchmaking(
 	matchmakingStrategy: MatchmakingStrategy
 ): TicTacWoahSocketServerMiddleware {
 	queue.onAdded(queueItems => {
-		const usersInMadeMatch = matchmakingStrategy.doTheThing(queueItems)
-		if (usersInMadeMatch.length > 0) {
+		const madeMatches = matchmakingStrategy.doTheThing(queueItems)
+
+		if (madeMatches.length > 0) {
 			queue.removeItems(queueItems)
-			matchmakingBroker.notifyMatchMade(usersInMadeMatch)
+
+			// TODO - handle multiple matches
+			matchmakingBroker.notifyMatchMade(madeMatches[0])
 		}
 	})
 	return (_, next) => {

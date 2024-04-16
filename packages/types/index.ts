@@ -28,6 +28,10 @@ export type CompletedMoveDto = z.infer<typeof CompletedMoveDtoSchema>
 export const GameStartDtoSchema = z.object({
 	id: z.string(),
 	players: z.array(z.string()),
+	rules: z.object({
+		boardSize: z.number(),
+		consecutiveTarget: z.number(),
+	}),
 })
 
 export type GameStartDto = z.infer<typeof GameStartDtoSchema>

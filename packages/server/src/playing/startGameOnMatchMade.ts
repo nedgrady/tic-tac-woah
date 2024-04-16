@@ -2,7 +2,7 @@ import { Game } from "domain/Game"
 import { GameFactory } from "playing/GameFactory"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
-import { GameWinDto, CompletedMoveDto, GameDrawDto } from "types"
+import { GameWinDto, CompletedMoveDto, GameDrawDto, GameStartDto } from "types"
 
 export function startGameOnMatchMade(
 	matchmakingBroker: MatchmakingBroker,
@@ -10,8 +10,8 @@ export function startGameOnMatchMade(
 ): TicTacWoahSocketServerMiddleware {
 	const activeGames = new Map<string, Game>()
 
-	matchmakingBroker.onMatchMade(users => {
-		const participants = users.map(user => user.uniqueIdentifier)
+	matchmakingBroker.onMatchMade(madeMatch => {
+		const participants = madeMatch.participants.map(participant => participant.uniqueIdentifier)
 
 		const gameId = crypto.randomUUID()
 
@@ -24,7 +24,7 @@ export function startGameOnMatchMade(
 				placement: completedMove.placement,
 				gameId,
 			}
-			users.forEach(user => {
+			madeMatch.participants.forEach(user => {
 				user.connections.forEach(connection => {
 					connection.emit("moveMade", completedMoveDto)
 				})
@@ -43,7 +43,7 @@ export function startGameOnMatchMade(
 				winningMoves: winningMoveDtos,
 			}
 
-			users.forEach(user => {
+			madeMatch.participants.forEach(user => {
 				user.connections.forEach(connection => {
 					connection.emit("gameWin", gameWinDto)
 				})
@@ -54,7 +54,7 @@ export function startGameOnMatchMade(
 			const gameDrawDto: GameDrawDto = {
 				gameId,
 			}
-			users.forEach(user => {
+			madeMatch.participants.forEach(user => {
 				user.connections.forEach(connection => {
 					connection.emit("gameDraw", gameDrawDto)
 				})
@@ -63,10 +63,15 @@ export function startGameOnMatchMade(
 
 		newGame.start()
 
-		users.forEach(user => {
+		madeMatch.participants.forEach(user => {
 			user.connections.forEach(connection => {
 				connection.join(gameId)
-				connection.emit("gameStart", { id: gameId, players: participants })
+				const gameStart: GameStartDto = {
+					id: gameId,
+					players: participants,
+					rules: madeMatch.rules,
+				}
+				connection.emit("gameStart", gameStart)
 			})
 		})
 	})

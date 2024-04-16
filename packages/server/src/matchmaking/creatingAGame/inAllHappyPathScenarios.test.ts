@@ -1,7 +1,7 @@
 import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking } from "matchmaking/matchmaking"
-import { AlwaysMatchTwoParticipants } from "matchmaking/MatchmakingStrategy"
+import { AlwaysMatchTwoParticipants, AlwaysMatchTwoParticipantsWithRules } from "matchmaking/MatchmakingStrategy"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
@@ -9,12 +9,13 @@ import { vi, expect, beforeAll, describe, it } from "vitest"
 import { faker } from "@faker-js/faker"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { AnythingGoesForeverGameFactory } from "playing/GameFactory"
-import { joinQueueRequestFactory } from "testingUtilities/factories"
+import { joinQueueRequestFactory, madeMatchRulesFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
 	const matchmakingBroker = new MatchmakingBroker()
 	const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = [faker.string.uuid(), faker.string.uuid()]
+	const matchedRules = madeMatchRulesFactory.build()
 
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
@@ -27,7 +28,7 @@ describe("it", () => {
 				)
 			)
 			.use(addConnectionToQueue(queue))
-			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchTwoParticipants()))
+			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchTwoParticipantsWithRules(matchedRules)))
 			.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
 	}
 
@@ -53,6 +54,7 @@ describe("it", () => {
 			expect(testContext.clientSocket).toHaveReceivedPayload("gameStart", {
 				id: expect.any(String),
 				players: expect.arrayContaining(twoUsers),
+				rules: matchedRules,
 			})
 		})
 	})
@@ -62,6 +64,7 @@ describe("it", () => {
 			expect(testContext.clientSocket2).toHaveReceivedPayload("gameStart", {
 				id: expect.any(String),
 				players: expect.arrayContaining(twoUsers),
+				rules: matchedRules,
 			})
 		})
 	})
