@@ -8,6 +8,7 @@ export type QueueAddedListener = (queueState: readonly QueueItem[]) => void
 export interface QueueItem {
 	queuer: ActiveUser
 	humanCount: number
+	consecutiveTarget?: number
 }
 
 type QueueEvents = {
