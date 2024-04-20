@@ -42,7 +42,10 @@ function Queue() {
 			})
 		})
 
-		const joinQueueRequest: JoinQueueRequest = {}
+		const joinQueueRequest: JoinQueueRequest = {
+			humanCount: 2,
+			consecutiveTarget: 5,
+		}
 		socket.emit("joinQueue", joinQueueRequest)
 
 		return () => {

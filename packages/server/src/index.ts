@@ -30,6 +30,7 @@ import { gameIsWonOnMoveNumber } from "domain/winConditions/support/gameIsWonOnM
 import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
 import { gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
 import { singleParticipantInSequence } from "domain/moveOrderRules/singleParticipantInSequence"
+import { StandardMathcmakingStrategy } from "matchmaking/StandardMathcmakingStrategy"
 // import _ from "lodash"
 
 interface ParticipantHandle {
@@ -131,7 +132,7 @@ io.use(identifySocketsByWebSocketId)
 	.use(removeConnectionFromQueueWhenRequested(ttQueue))
 	.use(removeConnectionFromQueueOnDisconnect(ttQueue))
 	.use(removeConnectionFromActiveUser)
-	.use(matchmaking(ttQueue, matchmakingBroker))
+	.use(matchmaking(ttQueue, matchmakingBroker, new StandardMathcmakingStrategy()))
 	.use(startGameOnMatchMade(matchmakingBroker, new StandardGameFactory()))
 
 app.use(cors())
