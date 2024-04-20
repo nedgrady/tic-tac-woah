@@ -8,7 +8,7 @@ export type QueueAddedListener = (queueState: readonly QueueItem[]) => void
 export interface QueueItem {
 	queuer: ActiveUser
 	humanCount: number
-	consecutiveTarget?: number
+	consecutiveTarget: number
 }
 
 type QueueEvents = {
@@ -65,6 +65,7 @@ export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketSe
 			const queueItem: QueueItem = {
 				queuer: socket.data.activeUser,
 				humanCount: joinQueueRequest.humanCount,
+				consecutiveTarget: joinQueueRequest.consecutiveTarget,
 			}
 
 			queue.addItem(queueItem)

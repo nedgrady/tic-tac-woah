@@ -23,6 +23,7 @@ describe("it", () => {
 	const remainsInQueueItem: QueueItem = {
 		queuer: remainsInQueue,
 		humanCount: joinQueueRequest.humanCount,
+		consecutiveTarget: joinQueueRequest.consecutiveTarget,
 	}
 
 	const preConfigure = (server: TicTacWoahSocketServer) => {
