@@ -1,8 +1,7 @@
 import { expect, test } from "vitest"
 import { MadeMatch } from "./MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
-import { activeUserFactory, queueItemFactory } from "testingUtilities/factories"
-import { ActiveUser } from "TicTacWoahSocketServer"
+import { activeUserFactory } from "testingUtilities/factories"
 import { StandardMathcmakingStrategy } from "./StandardMathcmakingStrategy"
 
 export function compatibleGroupKey(item: QueueItem) {
@@ -367,39 +366,3 @@ test.each(manyMatchesTestCases)("Many matches %#", ({ queueItems, expectedMatche
 
 	expect(madeMatches).toEqual<MadeMatch[]>(expectedMatches)
 })
-
-// test("Two compatible entries", () => {})
-
-// test("Three compatible entries", () => {
-// 	const matchmaking = new StandardMathcmakingStrategy()
-
-// 	const queuers = activeUserFactory.buildList(3)
-
-// 	const queueItems: QueueItem[] = [
-// 		{
-// 			humanCount: 3,
-// 			queuer: queuers[0],
-// 			consecutiveTarget: 3,
-// 		},
-// 		{
-// 			humanCount: 3,
-// 			queuer: queuers[1],
-// 			consecutiveTarget: 3,
-// 		},
-// 		{
-// 			humanCount: 3,
-// 			queuer: queuers[2],
-// 			consecutiveTarget: 3,
-// 		},
-// 	]
-
-// 	const madeMatch = matchmaking.doTheThing(queueItems)[0]
-
-// 	expect(madeMatch).toEqual<MadeMatch>({
-// 		participants: expect.arrayContaining(queuers),
-// 		rules: {
-// 			boardSize: 20,
-// 			consecutiveTarget: 3,
-// 		},
-// 	})
-// })
