@@ -15,6 +15,7 @@ export default defineConfig({
 			auth: `${path.resolve(__dirname, "./src/auth/")}`,
 			matchmaking: `${path.resolve(__dirname, "./src/matchmaking/")}`,
 			utilities: `${path.resolve(__dirname, "./src/utilities/")}`,
+			testingUtilities: `${path.resolve(__dirname, "./src/testingUtilities/")}`,
 		},
 	},
 	plugins: [tsconfigPaths()],
