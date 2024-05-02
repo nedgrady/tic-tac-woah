@@ -4,10 +4,6 @@ import { QueueItem } from "queue/addConnectionToQueue"
 import { activeUserFactory } from "testingUtilities/factories"
 import { StandardMathcmakingStrategy } from "./StandardMathcmakingStrategy"
 
-export function compatibleGroupKey(item: QueueItem) {
-	return `${item.humanCount}-${item.consecutiveTarget}`
-}
-
 type NoMatchesTestCase = readonly QueueItem[]
 
 const noMatchesTestCases: NoMatchesTestCase[] = [

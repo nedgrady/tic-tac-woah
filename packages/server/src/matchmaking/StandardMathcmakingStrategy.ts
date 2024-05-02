@@ -1,7 +1,7 @@
 import { MadeMatch, MatchmakingStrategy } from "./MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
 import _ from "lodash"
-import { compatibleGroupKey } from "./Matchmaking.test"
+import { compatibleGroupKey } from "./MatchmakingStrategy"
 
 function groupBy<TKey, TValue>(list: readonly TValue[], keyGetter: (item: TValue) => TKey) {
 	const map = new Map<TKey, TValue[]>()

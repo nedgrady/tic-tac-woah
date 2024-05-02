@@ -48,3 +48,7 @@ export class AlwaysMatchTwoParticipantsWithRules extends MatchmakingStrategy {
 		]
 	}
 }
+
+export function compatibleGroupKey(item: QueueItem) {
+	return `${item.humanCount}-${item.consecutiveTarget}`
+}
