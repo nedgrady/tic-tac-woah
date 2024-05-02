@@ -1,7 +1,7 @@
 import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking } from "matchmaking/matchmaking"
-import { AlwaysMatchTwoParticipants, AlwaysMatchTwoParticipantsWithRules } from "matchmaking/MatchmakingStrategy"
+import { AlwaysMatchFirstTwoParticipantsWithRules } from "matchmaking/MatchmakingStrategy"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
@@ -28,7 +28,7 @@ describe("it", () => {
 				)
 			)
 			.use(addConnectionToQueue(queue))
-			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchTwoParticipantsWithRules(matchedRules)))
+			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchFirstTwoParticipantsWithRules(matchedRules)))
 			.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
 	}
 

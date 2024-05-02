@@ -11,11 +11,11 @@ export function matchmaking(
 	queue.onAdded(queueItems => {
 		const madeMatches = matchmakingStrategy.doTheThing(queueItems)
 
-		if (madeMatches.length > 0) {
-			queue.removeItems(queueItems)
-
-			// TODO - handle multiple matches
-			matchmakingBroker.notifyMatchMade(madeMatches[0])
+		for (const madeMatch of madeMatches) {
+			for (const participant of madeMatch.participants) {
+				queue.remove(participant)
+			}
+			matchmakingBroker.notifyMatchMade(madeMatch)
 		}
 	})
 	return (_, next) => {

@@ -1,49 +1,52 @@
-import { ReturnSingleGameFactory } from "playing/GameFactory"
-import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
+import { TicTacWoahSocketServer } from "TicTacWoahSocketServer"
+import { identifySocketsByWebSocketId } from "auth/socketIdentificationStrategies"
 import { matchmaking } from "matchmaking/matchmaking"
 import { AlwaysMatchFirstTwoParticipants } from "matchmaking/MatchmakingStrategy"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { vi, expect, beforeAll, describe, it } from "vitest"
+import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
+import { AnythingGoesForeverGameFactory } from "playing/GameFactory"
 import { joinQueueRequestFactory } from "testingUtilities/factories"
+import _ from "lodash"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
 	const matchmakingBroker = new MatchmakingBroker()
 
-	const twoUsers: [TicTacWoahUserHandle, TicTacWoahUserHandle] = ["User 1", "User 2"]
-
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
-			.use(
-				identifySocketsInSequence(
-					twoUsers.map(handle => ({
-						connections: new Set(),
-						uniqueIdentifier: handle,
-					}))
-				)
-			)
+			.use(identifySocketsByWebSocketId)
 			.use(addConnectionToQueue(queue))
 			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchFirstTwoParticipants()))
-			.use(startGameOnMatchMade(matchmakingBroker, new ReturnSingleGameFactory()))
+			.use(startGameOnMatchMade(matchmakingBroker, new AnythingGoesForeverGameFactory()))
 	}
 
-	const testContext = new StartAndConnectLifetime(preConfigure)
+	const testContext = new StartAndConnectLifetime(preConfigure, 3)
 
 	beforeAll(async () => {
-		await testContext.start()
-		testContext.clientSocket.emit("joinQueue", joinQueueRequestFactory.build())
-		await vi.waitFor(() => {
-			expect(queue.users).toHaveLength(1)
+		queue.addItem({
+			queuer: { connections: new Set(), uniqueIdentifier: "User 1" },
+			consecutiveTarget: 2,
+			humanCount: 2,
 		})
+
+		queue.addItem({
+			queuer: { connections: new Set(), uniqueIdentifier: "User 2" },
+			consecutiveTarget: 2,
+			humanCount: 2,
+		})
+		await testContext.start()
+
+		testContext.clientSocket.emit("joinQueue", joinQueueRequestFactory.build())
 
 		return testContext.done
 	})
 
-	it("does not create a game", () => {
-		expect(testContext.clientSocket).not.toHaveReceivedEvent("gameStart")
+	it("Leaves the remaining queuer in the queue", async () => {
+		await vi.waitFor(() => {
+			expect(queue.users).toHaveLength(1)
+		})
 	})
 })
