@@ -1,13 +1,13 @@
 import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking } from "matchmaking/matchmaking"
-import { AlwaysMatchFirstTwoParticipants } from "matchmaking/MatchmakingStrategy"
+import { AlwaysMatchFirstTwoParticipants } from "matchmaking/support/AlwaysMatchFirstTwoParticipants"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { AnythingGoesForeverGameFactory } from "playing/GameFactory"
+import { AnythingGoesForeverGameFactory } from "playing/support/AnythingGoesForeverGameFactory"
 import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {

@@ -1,14 +1,14 @@
 import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { matchmaking } from "matchmaking/matchmaking"
-import { AlwaysMatchFirstTwoParticipantsWithRules } from "matchmaking/MatchmakingStrategy"
+import { AlwaysMatchFirstTwoParticipantsWithRules } from "matchmaking/support/AlwaysMatchFirstTwoParticipantsWithRules"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { vi, expect, beforeAll, describe, it } from "vitest"
 import { faker } from "@faker-js/faker"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { AnythingGoesForeverGameFactory } from "playing/GameFactory"
+import { AnythingGoesForeverGameFactory } from "playing/support/AnythingGoesForeverGameFactory"
 import { joinQueueRequestFactory, madeMatchRulesFactory } from "testingUtilities/factories"
 
 describe("it", () => {
