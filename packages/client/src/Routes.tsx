@@ -4,6 +4,7 @@ import { Queue } from "./Queue"
 import { Root } from "./Root"
 import { Game } from "./game/Game"
 import { useAppSelector } from "./redux/hooks"
+import { CreateGameForm } from "./CreateGameForm"
 
 const rootRoute = new RootRoute({
 	component: Root,
@@ -12,7 +13,13 @@ const rootRoute = new RootRoute({
 const homeRoute = new Route({
 	getParentRoute: () => rootRoute,
 	path: "/",
-	component: Home,
+	component: CreateGameForm,
+})
+
+export const createGameRoute = new Route({
+	getParentRoute: () => rootRoute,
+	path: "play",
+	component: CreateGameForm,
 })
 
 export const queueRoot = new Route({
@@ -46,11 +53,5 @@ const redirectHomeRoute = new Route({
 const routeTree = rootRoute.addChildren([queueRoot, homeRoute, activeGameRoute, redirectHomeRoute])
 
 const router = new Router({ routeTree })
-
-declare module "@tanstack/react-router" {
-	interface Register {
-		router: typeof router
-	}
-}
 
 export default router

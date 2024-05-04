@@ -1,10 +1,10 @@
 import react from "@vitejs/plugin-react-swc"
-import { PluginOption } from "vite"
 import { defineConfig } from "vitest/config"
+import { TanStackRouterVite } from "@tanstack/router-vite-plugin"
 
 // https://vitejs.dev/config/
 export default defineConfig({
-	plugins: [react()],
+	plugins: [react(), TanStackRouterVite()],
 	base: "/tic-tac-woah/",
 	test: {
 		environment: "happy-dom",
