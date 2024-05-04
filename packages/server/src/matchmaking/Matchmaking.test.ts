@@ -1,41 +1,20 @@
 import { expect, test } from "vitest"
 import { MadeMatch } from "./MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
-import { activeUserFactory } from "testingUtilities/factories"
+import { activeUserFactory, queueItemFactory } from "testingUtilities/factories"
 import { StandardMathcmakingStrategy } from "./StandardMathcmakingStrategy"
-
 type NoMatchesTestCase = readonly QueueItem[]
 
 const noMatchesTestCases: NoMatchesTestCase[] = [
 	[],
 	[
-		{
-			humanCount: 3,
-			queuer: activeUserFactory.build(),
-			consecutiveTarget: 3,
-		},
-		{
-			humanCount: 3,
-			queuer: activeUserFactory.build(),
-			consecutiveTarget: 3,
-		},
+		queueItemFactory.build({ humanCount: 3, consecutiveTarget: 3 }),
+		queueItemFactory.build({ humanCount: 3, consecutiveTarget: 3 }),
 	],
 	[
-		{
-			humanCount: 2,
-			queuer: activeUserFactory.build(),
-			consecutiveTarget: 3,
-		},
-		{
-			humanCount: 3,
-			queuer: activeUserFactory.build(),
-			consecutiveTarget: 3,
-		},
-		{
-			humanCount: 3,
-			queuer: activeUserFactory.build(),
-			consecutiveTarget: 3,
-		},
+		queueItemFactory.build({ humanCount: 2, consecutiveTarget: 3 }),
+		queueItemFactory.build({ humanCount: 3, consecutiveTarget: 3 }),
+		queueItemFactory.build({ humanCount: 3, consecutiveTarget: 3 }),
 	],
 ]
 
@@ -49,16 +28,8 @@ const queuers = activeUserFactory.buildList(10)
 const singleMatchesTestCases: SingleMatchTestCase[] = [
 	{
 		queueItems: [
-			{
-				humanCount: 2,
-				queuer: queuers[0],
-				consecutiveTarget: 3,
-			},
-			{
-				humanCount: 2,
-				queuer: queuers[1],
-				consecutiveTarget: 3,
-			},
+			queueItemFactory.build({ humanCount: 2, aiCount: 0, queuer: queuers[0], consecutiveTarget: 3 }),
+			queueItemFactory.build({ humanCount: 2, queuer: queuers[1], consecutiveTarget: 3 }),
 		],
 		expectedMatch: {
 			participants: expect.arrayContaining([queuers[0], queuers[1]]),
@@ -70,21 +41,9 @@ const singleMatchesTestCases: SingleMatchTestCase[] = [
 	},
 	{
 		queueItems: [
-			{
-				humanCount: 3,
-				queuer: queuers[0],
-				consecutiveTarget: 3,
-			},
-			{
-				humanCount: 3,
-				queuer: queuers[1],
-				consecutiveTarget: 3,
-			},
-			{
-				humanCount: 3,
-				queuer: queuers[2],
-				consecutiveTarget: 3,
-			},
+			queueItemFactory.build({ humanCount: 3, queuer: queuers[0], consecutiveTarget: 3 }),
+			queueItemFactory.build({ humanCount: 3, queuer: queuers[1], consecutiveTarget: 3 }),
+			queueItemFactory.build({ humanCount: 3, queuer: queuers[2], consecutiveTarget: 3 }),
 		],
 		expectedMatch: {
 			participants: expect.arrayContaining([queuers[0], queuers[1], queuers[2]]),
@@ -96,21 +55,9 @@ const singleMatchesTestCases: SingleMatchTestCase[] = [
 	},
 	{
 		queueItems: [
-			{
-				humanCount: 3,
-				queuer: queuers[0],
-				consecutiveTarget: 4,
-			},
-			{
-				humanCount: 3,
-				queuer: queuers[1],
-				consecutiveTarget: 4,
-			},
-			{
-				humanCount: 3,
-				queuer: queuers[2],
-				consecutiveTarget: 4,
-			},
+			queueItemFactory.build({ humanCount: 3, queuer: queuers[0], consecutiveTarget: 4 }),
+			queueItemFactory.build({ humanCount: 3, queuer: queuers[1], consecutiveTarget: 4 }),
+			queueItemFactory.build({ humanCount: 3, queuer: queuers[2], consecutiveTarget: 4 }),
 		],
 		expectedMatch: {
 			participants: expect.arrayContaining([queuers[0], queuers[1], queuers[2]]),
@@ -122,21 +69,9 @@ const singleMatchesTestCases: SingleMatchTestCase[] = [
 	},
 	{
 		queueItems: [
-			{
-				humanCount: 4,
-				queuer: queuers[0],
-				consecutiveTarget: 4,
-			},
-			{
-				humanCount: 2,
-				queuer: queuers[1],
-				consecutiveTarget: 4,
-			},
-			{
-				humanCount: 2,
-				queuer: queuers[2],
-				consecutiveTarget: 4,
-			},
+			queueItemFactory.build({ humanCount: 4, queuer: queuers[0], consecutiveTarget: 4 }),
+			queueItemFactory.build({ humanCount: 2, queuer: queuers[1], consecutiveTarget: 4 }),
+			queueItemFactory.build({ humanCount: 2, queuer: queuers[2], consecutiveTarget: 4 }),
 		],
 		expectedMatch: {
 			participants: expect.arrayContaining([queuers[1], queuers[2]]),
@@ -148,26 +83,10 @@ const singleMatchesTestCases: SingleMatchTestCase[] = [
 	},
 	{
 		queueItems: [
-			{
-				humanCount: 3,
-				queuer: queuers[0],
-				consecutiveTarget: 3,
-			},
-			{
-				humanCount: 2,
-				queuer: queuers[1],
-				consecutiveTarget: 2,
-			},
-			{
-				humanCount: 3,
-				queuer: queuers[2],
-				consecutiveTarget: 3,
-			},
-			{
-				humanCount: 2,
-				queuer: queuers[3],
-				consecutiveTarget: 2,
-			},
+			queueItemFactory.build({ humanCount: 3, queuer: queuers[0], consecutiveTarget: 3 }),
+			queueItemFactory.build({ humanCount: 2, queuer: queuers[1], consecutiveTarget: 2 }),
+			queueItemFactory.build({ humanCount: 3, queuer: queuers[2], consecutiveTarget: 3 }),
+			queueItemFactory.build({ humanCount: 2, queuer: queuers[3], consecutiveTarget: 2 }),
 		],
 		expectedMatch: {
 			participants: expect.arrayContaining([queuers[1], queuers[3]]),
@@ -203,26 +122,10 @@ type ManyMatchesTestCase = {
 const manyMatchesTestCases: ManyMatchesTestCase[] = [
 	{
 		queueItems: [
-			{
-				consecutiveTarget: 2,
-				humanCount: 2,
-				queuer: queuers[0],
-			},
-			{
-				consecutiveTarget: 2,
-				humanCount: 2,
-				queuer: queuers[1],
-			},
-			{
-				consecutiveTarget: 3,
-				humanCount: 2,
-				queuer: queuers[2],
-			},
-			{
-				consecutiveTarget: 3,
-				humanCount: 2,
-				queuer: queuers[3],
-			},
+			queueItemFactory.build({ consecutiveTarget: 2, humanCount: 2, queuer: queuers[0] }),
+			queueItemFactory.build({ consecutiveTarget: 2, humanCount: 2, queuer: queuers[1] }),
+			queueItemFactory.build({ consecutiveTarget: 3, humanCount: 2, queuer: queuers[2] }),
+			queueItemFactory.build({ consecutiveTarget: 3, humanCount: 2, queuer: queuers[3] }),
 		],
 		expectedMatches: [
 			{
@@ -243,41 +146,13 @@ const manyMatchesTestCases: ManyMatchesTestCase[] = [
 	},
 	{
 		queueItems: [
-			{
-				consecutiveTarget: 3,
-				humanCount: 3,
-				queuer: queuers[0],
-			},
-			{
-				consecutiveTarget: 4,
-				humanCount: 2,
-				queuer: queuers[1],
-			},
-			{
-				consecutiveTarget: 4,
-				humanCount: 4,
-				queuer: queuers[2],
-			},
-			{
-				consecutiveTarget: 4,
-				humanCount: 2,
-				queuer: queuers[3],
-			},
-			{
-				consecutiveTarget: 5,
-				humanCount: 3,
-				queuer: queuers[4],
-			},
-			{
-				consecutiveTarget: 5,
-				humanCount: 3,
-				queuer: queuers[5],
-			},
-			{
-				consecutiveTarget: 5,
-				humanCount: 3,
-				queuer: queuers[6],
-			},
+			queueItemFactory.build({ consecutiveTarget: 3, humanCount: 3, queuer: queuers[0] }),
+			queueItemFactory.build({ consecutiveTarget: 4, humanCount: 2, queuer: queuers[1] }),
+			queueItemFactory.build({ consecutiveTarget: 4, humanCount: 4, queuer: queuers[2] }),
+			queueItemFactory.build({ consecutiveTarget: 4, humanCount: 2, queuer: queuers[3] }),
+			queueItemFactory.build({ consecutiveTarget: 5, humanCount: 3, queuer: queuers[4] }),
+			queueItemFactory.build({ consecutiveTarget: 5, humanCount: 3, queuer: queuers[5] }),
+			queueItemFactory.build({ consecutiveTarget: 5, humanCount: 3, queuer: queuers[6] }),
 		],
 		expectedMatches: [
 			{
@@ -298,36 +173,12 @@ const manyMatchesTestCases: ManyMatchesTestCase[] = [
 	},
 	{
 		queueItems: [
-			{
-				humanCount: 2,
-				queuer: queuers[0],
-				consecutiveTarget: 3,
-			},
-			{
-				humanCount: 2,
-				queuer: queuers[1],
-				consecutiveTarget: 3,
-			},
-			{
-				humanCount: 2,
-				queuer: queuers[2],
-				consecutiveTarget: 4,
-			},
-			{
-				humanCount: 2,
-				queuer: queuers[3],
-				consecutiveTarget: 4,
-			},
-			{
-				humanCount: 2,
-				queuer: queuers[4],
-				consecutiveTarget: 5,
-			},
-			{
-				humanCount: 2,
-				queuer: queuers[5],
-				consecutiveTarget: 5,
-			},
+			queueItemFactory.build({ humanCount: 2, queuer: queuers[0], consecutiveTarget: 3 }),
+			queueItemFactory.build({ humanCount: 2, queuer: queuers[1], consecutiveTarget: 3 }),
+			queueItemFactory.build({ humanCount: 2, queuer: queuers[2], consecutiveTarget: 4 }),
+			queueItemFactory.build({ humanCount: 2, queuer: queuers[3], consecutiveTarget: 4 }),
+			queueItemFactory.build({ humanCount: 2, queuer: queuers[4], consecutiveTarget: 5 }),
+			queueItemFactory.build({ humanCount: 2, queuer: queuers[5], consecutiveTarget: 5 }),
 		],
 		expectedMatches: [
 			{

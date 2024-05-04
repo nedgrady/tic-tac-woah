@@ -8,6 +8,7 @@ export type QueueAddedListener = (queueState: readonly QueueItem[]) => void
 export interface QueueItem {
 	queuer: ActiveUser
 	humanCount: number
+	aiCount: number
 	consecutiveTarget: number
 }
 
@@ -42,7 +43,7 @@ export class TicTacWoahQueue {
 	addItem(newQueueItem: QueueItem) {
 		if (
 			this._items.findIndex(
-				existingQueueItem => existingQueueItem.queuer.uniqueIdentifier === newQueueItem.queuer.uniqueIdentifier
+				existingQueueItem => existingQueueItem.queuer.uniqueIdentifier === newQueueItem.queuer.uniqueIdentifier,
 			) !== -1
 		)
 			return
@@ -66,6 +67,7 @@ export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketSe
 				queuer: socket.data.activeUser,
 				humanCount: joinQueueRequest.humanCount,
 				consecutiveTarget: joinQueueRequest.consecutiveTarget,
+				aiCount: -1,
 			}
 
 			queue.addItem(queueItem)

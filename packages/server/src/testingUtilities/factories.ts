@@ -34,4 +34,5 @@ export const queueItemFactory = Factory.define<QueueItem>(() => ({
 	queuer: activeUserFactory.build(),
 	humanCount: faker.number.int(),
 	consecutiveTarget: faker.number.int(),
+	aiCount: faker.number.int(),
 }))
