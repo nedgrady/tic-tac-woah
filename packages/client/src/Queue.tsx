@@ -7,8 +7,8 @@ import useSocketState from "./useSocketState"
 import { useNavigate } from "@tanstack/react-router"
 import { useQueue } from "./lobby/useQueue"
 import { Suspense } from "react"
-import { queueRoot } from "./Routes"
 import { UserMustBeAuthenticated, useTicTacWoahAuth } from "./auth/UsernameMustBePresent"
+import { Route } from "./routes/queue"
 
 function ProtectedQueue() {
 	return (
@@ -24,7 +24,8 @@ function Queue() {
 	const auth = useTicTacWoahAuth()
 	const socketState = useSocketState(socket)
 	// TODO - how to not have to hardcode/import this?
-	const navigate = useNavigate({ from: queueRoot.id })
+	const navigate = useNavigate()
+	const { consecutiveTarget, participantCount } = Route.useSearch()
 
 	useEffectOnce(() => {
 		socket.auth = {
@@ -43,8 +44,8 @@ function Queue() {
 		})
 
 		const joinQueueRequest: JoinQueueRequest = {
-			humanCount: 2,
-			consecutiveTarget: 5,
+			humanCount: participantCount,
+			consecutiveTarget: consecutiveTarget,
 		}
 		socket.emit("joinQueue", joinQueueRequest)
 

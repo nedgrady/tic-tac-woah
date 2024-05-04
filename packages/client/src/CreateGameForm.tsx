@@ -1,7 +1,6 @@
 import { FormGroup, Button, Slider, Typography } from "@mui/material"
 import { useState } from "react"
-
-interface CreateGameSettings {
+export interface CreateGameSettings {
 	participantCount: number
 	consecutiveTarget: number
 }
@@ -57,15 +56,5 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 				Submit
 			</Button>
 		</FormGroup>
-	)
-}
-
-export function CreateGame() {
-	return (
-		<CreateGameForm
-			onCreate={function (settings: CreateGameSettings): void {
-				console.log(settings)
-			}}
-		/>
 	)
 }

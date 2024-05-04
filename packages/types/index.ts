@@ -1,4 +1,4 @@
-import z from "zod"
+import { z } from "zod"
 import { type Socket as ClientSocket } from "socket.io-client"
 
 export const JoinQueueRequestSchema = z.object({

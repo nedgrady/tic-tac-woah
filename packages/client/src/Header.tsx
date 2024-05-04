@@ -1,9 +1,7 @@
-import * as React from "react"
 import AppBar from "@mui/material/AppBar"
 import Box from "@mui/material/Box"
 import Toolbar from "@mui/material/Toolbar"
 import Typography from "@mui/material/Typography"
-import GitHubIcon from "@mui/icons-material/GitHub"
 
 export function Header() {
 	return (
@@ -13,9 +11,7 @@ export function Header() {
 					<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
 						Tic Tac WOAH!
 					</Typography>
-					<a href="https://github.com/nedgrady/tic-tac-woah">
-						<GitHubIcon />
-					</a>
+					<a href="https://github.com/nedgrady/tic-tac-woah"></a>
 				</Toolbar>
 			</AppBar>
 		</Box>
