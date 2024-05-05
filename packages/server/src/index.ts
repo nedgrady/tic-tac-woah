@@ -126,13 +126,16 @@ class StandardGameFactory extends GameFactory {
 
 const ttQueue = new TicTacWoahQueue()
 const matchmakingBroker = new MatchmakingBroker()
+const standardMathcmakingStrategy = new StandardMathcmakingStrategy(
+	queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}-${queueItem.aiCount}`,
+)
 
 io.use(identifySocketsByWebSocketId)
 	.use(addConnectionToQueue(ttQueue))
 	.use(removeConnectionFromQueueWhenRequested(ttQueue))
 	.use(removeConnectionFromQueueOnDisconnect(ttQueue))
 	.use(removeConnectionFromActiveUser)
-	.use(matchmaking(ttQueue, matchmakingBroker, new StandardMathcmakingStrategy()))
+	.use(matchmaking(ttQueue, matchmakingBroker, standardMathcmakingStrategy))
 	.use(startGameOnMatchMade(matchmakingBroker, new StandardGameFactory()))
 
 app.use(cors())
