@@ -16,18 +16,25 @@ function groupBy<TKey, TValue>(list: readonly TValue[], keyGetter: (item: TValue
 	return map
 }
 
+export type QueueItemCompatibilityFunction = (item: QueueItem) => string
+
 export class StandardMathcmakingStrategy extends MatchmakingStrategy {
+	constructor(private queueItemCompatibilityFunction: QueueItemCompatibilityFunction) {
+		super()
+	}
+
 	doTheThing(queueItems: readonly QueueItem[]): readonly MadeMatch[] {
 		const madeMatches: MadeMatch[] = []
-		const compatibleChunks = groupBy(queueItems, compatibleGroupKey)
+		const compatibleChunks = groupBy(queueItems, this.queueItemCompatibilityFunction)
 
 		for (const chunk of compatibleChunks.values()) {
 			const chunksWithSufficientParticipants = _.chunk(chunk, chunk[0].humanCount).filter(
-				potentialMatch => potentialMatch.length === chunk[0].humanCount
+				potentialMatch => potentialMatch.length === chunk[0].humanCount,
 			)
 			for (const chunk of chunksWithSufficientParticipants) {
 				madeMatches.push({
 					participants: chunk.map(item => item.queuer),
+					aiCount: chunk[0].aiCount,
 					rules: {
 						boardSize: 20,
 						consecutiveTarget: chunk[0].consecutiveTarget,

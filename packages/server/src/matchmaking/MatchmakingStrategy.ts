@@ -3,6 +3,7 @@ import { ActiveUser } from "TicTacWoahSocketServer"
 
 export interface MadeMatch {
 	readonly participants: readonly Participant[]
+	readonly aiCount: number
 	readonly rules: MadeMatchRules
 }
 

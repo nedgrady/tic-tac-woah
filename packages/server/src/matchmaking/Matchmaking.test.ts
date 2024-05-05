@@ -2,7 +2,8 @@ import { expect, test } from "vitest"
 import { MadeMatch } from "./MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
 import { activeUserFactory, queueItemFactory } from "testingUtilities/factories"
-import { StandardMathcmakingStrategy } from "./StandardMathcmakingStrategy"
+import { QueueItemCompatibilityFunction, StandardMathcmakingStrategy } from "./StandardMathcmakingStrategy"
+
 type NoMatchesTestCase = readonly QueueItem[]
 
 const noMatchesTestCases: NoMatchesTestCase[] = [
@@ -33,6 +34,7 @@ const singleMatchesTestCases: SingleMatchTestCase[] = [
 		],
 		expectedMatch: {
 			participants: expect.arrayContaining([queuers[0], queuers[1]]),
+			aiCount: expect.any(Number),
 			rules: {
 				boardSize: 20,
 				consecutiveTarget: 3,
@@ -47,6 +49,7 @@ const singleMatchesTestCases: SingleMatchTestCase[] = [
 		],
 		expectedMatch: {
 			participants: expect.arrayContaining([queuers[0], queuers[1], queuers[2]]),
+			aiCount: expect.any(Number),
 			rules: {
 				boardSize: 20,
 				consecutiveTarget: 3,
@@ -61,6 +64,7 @@ const singleMatchesTestCases: SingleMatchTestCase[] = [
 		],
 		expectedMatch: {
 			participants: expect.arrayContaining([queuers[0], queuers[1], queuers[2]]),
+			aiCount: expect.any(Number),
 			rules: {
 				boardSize: 20,
 				consecutiveTarget: 4,
@@ -75,6 +79,7 @@ const singleMatchesTestCases: SingleMatchTestCase[] = [
 		],
 		expectedMatch: {
 			participants: expect.arrayContaining([queuers[1], queuers[2]]),
+			aiCount: expect.any(Number),
 			rules: {
 				boardSize: 20,
 				consecutiveTarget: 4,
@@ -90,6 +95,7 @@ const singleMatchesTestCases: SingleMatchTestCase[] = [
 		],
 		expectedMatch: {
 			participants: expect.arrayContaining([queuers[1], queuers[3]]),
+			aiCount: expect.any(Number),
 			rules: {
 				boardSize: 20,
 				consecutiveTarget: 2,
@@ -99,7 +105,9 @@ const singleMatchesTestCases: SingleMatchTestCase[] = [
 ]
 
 test.each(noMatchesTestCases.map(testCase => [testCase]))("No matches", queueItems => {
-	const matchmaking = new StandardMathcmakingStrategy()
+	const matchmaking = new StandardMathcmakingStrategy(
+		queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}`,
+	)
 
 	const madeMatches = matchmaking.doTheThing(queueItems)
 
@@ -107,7 +115,9 @@ test.each(noMatchesTestCases.map(testCase => [testCase]))("No matches", queueIte
 })
 
 test.each(singleMatchesTestCases)("Single match %#", ({ queueItems, expectedMatch }) => {
-	const matchmaking = new StandardMathcmakingStrategy()
+	const matchmaking = new StandardMathcmakingStrategy(
+		queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}`,
+	)
 
 	const madeMatch = matchmaking.doTheThing(queueItems)[0]
 
@@ -130,6 +140,7 @@ const manyMatchesTestCases: ManyMatchesTestCase[] = [
 		expectedMatches: [
 			{
 				participants: expect.arrayContaining([queuers[0], queuers[1]]),
+				aiCount: expect.any(Number),
 				rules: {
 					boardSize: 20,
 					consecutiveTarget: 2,
@@ -137,6 +148,7 @@ const manyMatchesTestCases: ManyMatchesTestCase[] = [
 			},
 			{
 				participants: expect.arrayContaining([queuers[2], queuers[3]]),
+				aiCount: expect.any(Number),
 				rules: {
 					boardSize: 20,
 					consecutiveTarget: 3,
@@ -157,6 +169,7 @@ const manyMatchesTestCases: ManyMatchesTestCase[] = [
 		expectedMatches: [
 			{
 				participants: expect.arrayContaining([queuers[1], queuers[3]]),
+				aiCount: expect.any(Number),
 				rules: {
 					boardSize: 20,
 					consecutiveTarget: 4,
@@ -164,6 +177,7 @@ const manyMatchesTestCases: ManyMatchesTestCase[] = [
 			},
 			{
 				participants: expect.arrayContaining([queuers[4], queuers[5], queuers[6]]),
+				aiCount: expect.any(Number),
 				rules: {
 					boardSize: 20,
 					consecutiveTarget: 5,
@@ -183,6 +197,7 @@ const manyMatchesTestCases: ManyMatchesTestCase[] = [
 		expectedMatches: [
 			{
 				participants: expect.arrayContaining([queuers[0], queuers[1]]),
+				aiCount: expect.any(Number),
 				rules: {
 					boardSize: 20,
 					consecutiveTarget: 3,
@@ -190,6 +205,7 @@ const manyMatchesTestCases: ManyMatchesTestCase[] = [
 			},
 			{
 				participants: expect.arrayContaining([queuers[2], queuers[3]]),
+				aiCount: expect.any(Number),
 				rules: {
 					boardSize: 20,
 					consecutiveTarget: 4,
@@ -197,6 +213,7 @@ const manyMatchesTestCases: ManyMatchesTestCase[] = [
 			},
 			{
 				participants: expect.arrayContaining([queuers[4], queuers[5]]),
+				aiCount: expect.any(Number),
 				rules: {
 					boardSize: 20,
 					consecutiveTarget: 5,
@@ -207,9 +224,35 @@ const manyMatchesTestCases: ManyMatchesTestCase[] = [
 ]
 
 test.each(manyMatchesTestCases)("Many matches %#", ({ queueItems, expectedMatches }) => {
-	const matchmaking = new StandardMathcmakingStrategy()
+	const matchmaking = new StandardMathcmakingStrategy(
+		queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}`,
+	)
 
 	const madeMatches = matchmaking.doTheThing(queueItems)
 
 	expect(madeMatches).toEqual<MadeMatch[]>(expectedMatches)
+})
+
+const potentialGroupingTestCases: QueueItemCompatibilityFunction[] = [
+	queueItem => queueItem.consecutiveTarget.toString(),
+	queueItem => queueItem.humanCount.toString(),
+	queueItem => queueItem.aiCount.toString(),
+]
+
+test.each(potentialGroupingTestCases)("Potential grouping %#", queueItemCompatibilityFunction => {
+	const matchmaking = new StandardMathcmakingStrategy(queueItemCompatibilityFunction)
+
+	const singleQueueItemMatchedIntoGame = queueItemFactory.build({ humanCount: 1 })
+	const madeMatches = matchmaking.doTheThing([singleQueueItemMatchedIntoGame])
+
+	const expectedMatch: MadeMatch = {
+		participants: [singleQueueItemMatchedIntoGame.queuer],
+		aiCount: singleQueueItemMatchedIntoGame.aiCount,
+		rules: {
+			boardSize: 20,
+			consecutiveTarget: singleQueueItemMatchedIntoGame.consecutiveTarget,
+		},
+	}
+
+	expect(madeMatches).toEqual([expectedMatch])
 })
