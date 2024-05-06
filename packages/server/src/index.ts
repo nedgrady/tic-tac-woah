@@ -31,6 +31,7 @@ import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFr
 import { gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
 import { singleParticipantInSequence } from "domain/moveOrderRules/singleParticipantInSequence"
 import { StandardMathcmakingStrategy } from "matchmaking/StandardMathcmakingStrategy"
+import { MadeMatch } from "matchmaking/MatchmakingStrategy"
 // import _ from "lodash"
 
 interface ParticipantHandle {
@@ -109,13 +110,13 @@ io.use((socket, next) => {
 const activeGames: Game[] = []
 
 class StandardGameFactory extends GameFactory {
-	createGame(participants: readonly Participant[]): Game {
+	createGame(madeMatch: MadeMatch): Game {
 		const newGame = new Game({
-			participants,
+			participants: madeMatch.participants.map(participant => participant.uniqueIdentifier),
 			boardSize: 20,
 			consecutiveTarget: 5,
 			rules: [anyMoveIsAllowed],
-			winConditions: [gameIsWonOnMoveNumber(3)],
+			winConditions: [gameIsWonOnMoveNumber(10)],
 			endConditions: [gameIsDrawnWhenBoardIsFull],
 			decideWhoMayMoveNext: singleParticipantInSequence,
 		})

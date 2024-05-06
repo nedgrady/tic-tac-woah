@@ -1,17 +1,17 @@
 import { CreateGameOptions, Game } from "domain/Game"
-import { Participant } from "domain/Participant"
 import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
 import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
 import { GameFactory } from "../GameFactory"
+import { MadeMatch } from "matchmaking/MatchmakingStrategy"
 
 export class ReturnSingleGameFactory extends GameFactory {
 	constructor(private readonly gameOptions: Partial<CreateGameOptions> = {}) {
 		super()
 	}
 
-	createGame(participants: readonly Participant[]): Game {
+	createGame(madeMatch: MadeMatch): Game {
 		const gameOptions: CreateGameOptions = {
-			participants: participants,
+			participants: madeMatch.participants.map(participant => participant.uniqueIdentifier),
 			rules: [anyMoveIsAllowed],
 			winConditions: [],
 			endConditions: [],

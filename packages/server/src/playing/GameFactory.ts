@@ -1,6 +1,6 @@
 import { Game } from "domain/Game"
-import { Participant } from "domain/Participant"
+import { MadeMatch } from "matchmaking/MatchmakingStrategy"
 
 export abstract class GameFactory {
-	abstract createGame(participants: readonly Participant[]): Game
+	abstract createGame(madeMatch: MadeMatch): Game
 }

@@ -46,6 +46,3 @@ export class StandardMathcmakingStrategy extends MatchmakingStrategy {
 		return madeMatches
 	}
 }
-export function compatibleGroupKey(item: QueueItem) {
-	return `${item.humanCount}-${item.consecutiveTarget}`
-}

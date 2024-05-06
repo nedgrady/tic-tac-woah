@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { Queue } from "../Queue"
 import { z } from "zod"
-import { routeTree } from "../routeTree.gen"
 
 const CreateGameSettingsSchema = z.object({
 	consecutiveTarget: z.number(),
