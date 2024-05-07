@@ -6,7 +6,7 @@ import { GameWinDto, CompletedMoveDto, GameDrawDto, GameStartDto } from "types"
 
 export function startGameOnMatchMade(
 	matchmakingBroker: MatchmakingBroker,
-	gameFactory: GameFactory
+	gameFactory: GameFactory,
 ): TicTacWoahSocketServerMiddleware {
 	const activeGames = new Map<string, Game>()
 
@@ -15,7 +15,7 @@ export function startGameOnMatchMade(
 
 		const gameId = crypto.randomUUID()
 
-		const newGame = gameFactory.createGame(participants)
+		const newGame = gameFactory.createGame(madeMatch)
 		activeGames.set(gameId, newGame)
 
 		newGame.onMoveCompleted(completedMove => {

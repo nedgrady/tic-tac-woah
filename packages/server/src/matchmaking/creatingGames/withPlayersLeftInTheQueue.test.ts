@@ -8,7 +8,7 @@ import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoah
 import { vi, expect, beforeAll, describe, it } from "vitest"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { AnythingGoesForeverGameFactory } from "playing/support/AnythingGoesForeverGameFactory"
-import { joinQueueRequestFactory } from "testingUtilities/factories"
+import { joinQueueRequestFactory, queueItemFactory } from "testingUtilities/factories"
 import _ from "lodash"
 
 describe("it", () => {
@@ -26,17 +26,22 @@ describe("it", () => {
 	const testContext = new StartAndConnectLifetime(preConfigure, 3)
 
 	beforeAll(async () => {
-		queue.addItem({
-			queuer: { connections: new Set(), uniqueIdentifier: "User 1" },
-			consecutiveTarget: 2,
-			humanCount: 2,
-		})
+		queue.addItem(
+			queueItemFactory.build({
+				queuer: { uniqueIdentifier: "User 1" },
+				consecutiveTarget: 2,
+				humanCount: 2,
+			}),
+		)
 
-		queue.addItem({
-			queuer: { connections: new Set(), uniqueIdentifier: "User 2" },
-			consecutiveTarget: 2,
-			humanCount: 2,
-		})
+		queue.addItem(
+			queueItemFactory.build({
+				queuer: { uniqueIdentifier: "User 2" },
+				consecutiveTarget: 2,
+				humanCount: 2,
+			}),
+		)
+
 		await testContext.start()
 
 		testContext.clientSocket.emit("joinQueue", joinQueueRequestFactory.build())

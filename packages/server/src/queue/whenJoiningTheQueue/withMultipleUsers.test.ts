@@ -1,6 +1,5 @@
 import { TicTacWoahSocketServer, ActiveUser } from "TicTacWoahSocketServer"
 import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
-import { Factory } from "factory.ts"
 import { QueueItem, TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { joinQueueRequestFactory } from "testingUtilities/factories"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"

@@ -1,8 +1,7 @@
-import { TicTacWoahEventMap, TicTacWoahEventName } from "TicTacWoahSocketServer"
+import { gameStartDtoFactory } from "testingUtilities/factories"
 import { AssertableTicTacWoahClientSocket } from "testingUtilities/serverSetup/ticTacWoahTest"
-import { GameStartDto } from "types"
 import { StrongMap } from "utilities/StrongMap"
-import { expect, test, vi } from "vitest"
+import { expect, test } from "vitest"
 
 test("No events works", () => {
 	const mockEvents: AssertableTicTacWoahClientSocket["events"] = new StrongMap()
@@ -16,7 +15,7 @@ test("No events works", () => {
 
 test("Some events works", () => {
 	const mockEvents: AssertableTicTacWoahClientSocket["events"] = new StrongMap()
-	mockEvents.add("gameStart", { id: "123", players: ["123", "456"] })
+	mockEvents.add("gameStart", gameStartDtoFactory.build())
 
 	const client: AssertableTicTacWoahClientSocket = {
 		events: mockEvents,

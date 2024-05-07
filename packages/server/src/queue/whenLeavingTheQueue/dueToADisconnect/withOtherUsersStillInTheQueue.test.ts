@@ -24,6 +24,7 @@ describe("it", () => {
 		queuer: remainsInQueue,
 		humanCount: joinQueueRequest.humanCount,
 		consecutiveTarget: joinQueueRequest.consecutiveTarget,
+		aiCount: 0,
 	}
 
 	const preConfigure = (server: TicTacWoahSocketServer) => {
@@ -69,7 +70,7 @@ describe("it", () => {
 
 	it("Leaves the correct queue item in the queue", async () => {
 		await vi.waitFor(() =>
-			expect(queue.items).toContainSingle<QueueItem>(expect.objectContaining(joinQueueRequest))
+			expect(queue.items).toContainSingle<QueueItem>(expect.objectContaining(joinQueueRequest)),
 		)
 	})
 })
