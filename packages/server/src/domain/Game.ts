@@ -3,7 +3,8 @@ import { Participant } from "./Participant"
 import { EventEmitter } from "events"
 import _ from "lodash"
 import { GameConfiguration, GameRuleFunction, GameState } from "./gameRules/gameRules"
-import { GameDrawCondition, GameWinCondition } from "./winConditions/winConditions"
+import { GameWinCondition } from "./winConditions/winConditions"
+import { GameDrawCondition } from "./drawConditions/drawConditions"
 import { DecideWhoMayMoveNext } from "./moveOrderRules/moveOrderRules"
 
 export type GameWonListener = (winningMoves: readonly Move[]) => void

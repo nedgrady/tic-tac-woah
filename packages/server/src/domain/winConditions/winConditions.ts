@@ -5,7 +5,7 @@ import _ from "lodash"
 export type GameWinCondition = (
 	latestMove: Move,
 	gameState: GameState,
-	gameConfiguration: GameConfiguration
+	gameConfiguration: GameConfiguration,
 ) => GameWinConditionResult
 
 export type GameWinConditionResult = GameWin | GameContinues
@@ -14,18 +14,6 @@ export interface GameWin {
 	// TODO - better name for this
 	readonly result: "win"
 	readonly winningMoves: readonly Move[]
-}
-
-export type GameDrawCondition = (
-	latestMove: Move,
-	gameState: GameState,
-	gameConfiguration: GameConfiguration
-) => GameDrawConditionResult
-
-export type GameDrawConditionResult = GameDraw | GameContinues
-
-export interface GameDraw {
-	readonly result: "draw"
 }
 
 export interface GameContinues {
@@ -37,7 +25,7 @@ export const continueGame: GameWinConditionResult = { result: "continues" }
 export const winByConsecutiveVerticalPlacements: GameWinCondition = (
 	latestMove: Move,
 	gameState: GameState,
-	gameConfiguration: GameConfiguration
+	gameConfiguration: GameConfiguration,
 ) => {
 	const placementsByCurrentPlayer = gameState.moves
 		.filter(move => move.mover === latestMove.mover)
@@ -68,7 +56,7 @@ export const winByConsecutiveVerticalPlacements: GameWinCondition = (
 export const winByConsecutiveHorizontalPlacements: GameWinCondition = (
 	latestMove: Move,
 	gameState: GameState,
-	gameConfiguration: GameConfiguration
+	gameConfiguration: GameConfiguration,
 ) => {
 	const placementsByCurrentPlayer = gameState.moves
 		.filter(move => move.mover === latestMove.mover)
@@ -111,7 +99,7 @@ export function overlappingChunks<TItem>(array: TItem[], chunkSize: number) {
 export const winByConsecutiveDiagonalPlacements: GameWinCondition = (
 	latestMove: Move,
 	gameState: GameState,
-	gameConfiguration: GameConfiguration
+	gameConfiguration: GameConfiguration,
 ) => {
 	// So write some test cases that cover that scenario
 	// Rotate all coordinates 45 degrees about the origin

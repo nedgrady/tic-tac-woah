@@ -1,4 +1,4 @@
-import { GameDrawCondition } from "domain/winConditions/winConditions"
+import { GameDrawCondition } from "../drawConditions"
 
 export const gameIsAlwaysDrawn: GameDrawCondition = () => {
 	return { result: "draw" }
