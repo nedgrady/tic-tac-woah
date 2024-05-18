@@ -52,11 +52,11 @@ function createTicTacWoahServer() {
 async function startAndConnectCount(
 	connectedClientCount: number,
 	preConfigure: (server: TicTacWoahSocketServer) => void,
-	configureClientSockets?: ConfigureTicTacWoahClientSocket
+	configureClientSockets?: ConfigureTicTacWoahClientSocket,
 ): Promise<TicTacWoahConnectedTestContextCount> {
 	const { app, httpServer, io: serverIo } = createTicTacWoahServer()
 
-	preConfigure?.(serverIo)
+	preConfigure(serverIo)
 
 	await new Promise<void>(done => httpServer.listen(done))
 
@@ -64,7 +64,7 @@ async function startAndConnectCount(
 	const clientSockets: TicTacWoahClientSocket[] = Array.from({ length: connectedClientCount }, () =>
 		clientIo(`http://localhost:${port}`, {
 			autoConnect: false,
-		})
+		}),
 	)
 
 	clientSockets.forEach((socket, index) => {
@@ -100,7 +100,7 @@ async function startAndConnectCount(
 			return new Promise<void>(done =>
 				httpServer.close(() => {
 					done()
-				})
+				}),
 			)
 		},
 		app,
@@ -118,7 +118,10 @@ export class StartAndConnectLifetime {
 
 	private _configureSockets: ConfigureTicTacWoahClientSocket[] = []
 
-	constructor(private preConfigure: (server: TicTacWoahSocketServer) => void, private count: number = 2) {
+	constructor(
+		private preConfigure: (server: TicTacWoahSocketServer) => void,
+		private count: number = 2,
+	) {
 		this._value = null
 	}
 
