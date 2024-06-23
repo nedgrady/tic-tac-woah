@@ -6,7 +6,7 @@ export const matchers: Parameters<(typeof expect)["extend"]>[0] = {
 	toHaveReceivedPayload(
 		received: AssertableTicTacWoahClientSocket,
 		event: TicTacWoahEventName,
-		payload: TicTacWoahEventMap[TicTacWoahEventName]
+		payload: TicTacWoahEventMap[TicTacWoahEventName],
 	) {
 		const eventsOfExpectedType = received.events.get(event)
 		const pass = this.equals(eventsOfExpectedType, expect.arrayContaining([payload]))
@@ -15,7 +15,7 @@ export const matchers: Parameters<(typeof expect)["extend"]>[0] = {
 				`Expected client '${received.id}' ${
 					this.isNot ? "not " : " "
 				} to have received a '${event}' payload matching \n${this.utils.printExpected(
-					payload
+					payload,
 				)}\n but received \n${this.utils.printReceived(eventsOfExpectedType)}`,
 			pass,
 		}
@@ -28,6 +28,23 @@ export const matchers: Parameters<(typeof expect)["extend"]>[0] = {
 					this.isNot ? "not " : " "
 				}have received a '${expectedEvent}' event`,
 			pass: eventsOfExpectedType !== undefined && eventsOfExpectedType.length > 0,
+		}
+	},
+	toHaveOnlyReceivedPayloadForEvent(
+		received: AssertableTicTacWoahClientSocket,
+		event: TicTacWoahEventName,
+		payload: TicTacWoahEventMap[TicTacWoahEventName],
+	) {
+		const eventsOfExpectedType = received.events.get(event)
+		const pass = this.equals(eventsOfExpectedType, [payload])
+		return {
+			message: () =>
+				`Expected client '${received.id}' ${
+					this.isNot ? "not " : " "
+				} to have received a '${event}' payload matching \n${this.utils.printExpected(
+					payload,
+				)}\n but received \n${this.utils.printReceived(eventsOfExpectedType)}`,
+			pass,
 		}
 	},
 }

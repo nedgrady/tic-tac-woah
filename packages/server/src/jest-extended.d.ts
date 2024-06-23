@@ -15,6 +15,10 @@ interface CustomMatchers<R = unknown> {
 	toContainSingle<TItem>(activeUser: TItem): R
 	toHaveReceivedEvent(event: TicTacWoahEventName): R
 	toHaveReceivedPayload<TEvent extends TicTacWoahEventName>(event: TEvent, payload: TicTacWoahEventMap[TEvent])
+	toHaveOnlyReceivedPayloadForEvent<TEvent extends TicTacWoahEventName>(
+		event: TEvent,
+		payload: TicTacWoahEventMap[TEvent],
+	)
 }
 
 declare module "vitest" {

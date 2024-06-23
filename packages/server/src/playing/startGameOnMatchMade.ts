@@ -11,7 +11,7 @@ export function startGameOnMatchMade(
 	const activeGames = new Map<string, Game>()
 
 	matchmakingBroker.onMatchMade(madeMatch => {
-		const aiParticipants = ["AI"]
+		const aiParticipants = madeMatch.aiCount == 1 ? ["AI"] : []
 		const participants = [
 			...madeMatch.participants.map(participant => participant.uniqueIdentifier),
 			...aiParticipants,

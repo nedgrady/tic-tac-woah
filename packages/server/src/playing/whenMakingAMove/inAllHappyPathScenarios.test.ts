@@ -56,7 +56,7 @@ describe("it", () => {
 				...fistMove,
 				mover: testContext.clientSocket.id,
 				gameId: testContext.clientSocket.events.get("gameStart")[0].id,
-			})
+			}),
 		)
 	})
 	it("The move is sent to the second player", async () => {
@@ -65,7 +65,7 @@ describe("it", () => {
 				...fistMove,
 				mover: testContext.clientSocket.id,
 				gameId: testContext.clientSocket.events.get("gameStart")[0].id,
-			})
+			}),
 		)
 	})
 

@@ -24,8 +24,8 @@ describe("it", () => {
 					twoUsers.map(handle => ({
 						connections: new Set(),
 						uniqueIdentifier: handle,
-					}))
-				)
+					})),
+				),
 			)
 			.use(addConnectionToQueue(queue))
 			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchFirstTwoParticipantsWithRules(matchedRules)))
@@ -75,6 +75,22 @@ describe("it", () => {
 			const gameId2 = testContext.clientSocket2.events.get("gameStart")[0].id
 
 			expect(gameId1).toEqual(gameId2)
+		})
+	})
+
+	it("The game only caontains the two players", async () => {
+		await vi.waitFor(() => {
+			const players = testContext.clientSocket.events.get("gameStart")[0].players
+
+			expect(players).toHaveLength(2)
+		})
+	})
+
+	it("The game only caontains the two players 2", async () => {
+		await vi.waitFor(() => {
+			const players = testContext.clientSocket2.events.get("gameStart")[0].players
+
+			expect(players).toHaveLength(2)
 		})
 	})
 })
