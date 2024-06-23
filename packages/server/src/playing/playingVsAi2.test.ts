@@ -58,35 +58,10 @@ describe("it", () => {
 			expect(testContext.clientSocket).toHaveReceivedEvent("gameStart")
 		})
 
-		// const gameId = testContext.clientSocket.events.get("gameStart")[0].id
-
-		// // const moveToMake = pendingMoveDtoFactory.build({
-		// // 	gameId,
-		// // })
-
-		// // testContext.clientSocket.emit("makeMove", moveToMake)
-
 		return testContext.done
 	})
 
 	it("No move is made ", async () => {
 		expect(testContext.clientSocket).not.toHaveReceivedEvent("moveMade")
 	})
-	// it("The move is sent to the second player", async () => {
-	// 	await vi.waitFor(() =>
-	// 		expect(testContext.clientSocket2).toHaveReceivedPayload("moveMade", {
-	// 			...fistMove,
-	// 			mover: testContext.clientSocket.id,
-	// 			gameId: testContext.clientSocket.events.get("gameStart")[0].id,
-	// 		}),
-	// 	)
-	// })
-
-	// it("First player does not receive a win event", async () => {
-	// 	expect(testContext.clientSocket).not.toHaveReceivedEvent("gameWin")
-	// })
-
-	// it("Second player does not receive a win event", async () => {
-	// 	expect(testContext.clientSocket2).not.toHaveReceivedEvent("gameWin")
-	// })
 })
