@@ -11,12 +11,29 @@ export function startGameOnMatchMade(
 	const activeGames = new Map<string, Game>()
 
 	matchmakingBroker.onMatchMade(madeMatch => {
-		const participants = madeMatch.participants.map(participant => participant.uniqueIdentifier)
+		const aiParticipants = ["AI"]
+		const participants = [
+			...madeMatch.participants.map(participant => participant.uniqueIdentifier),
+			...aiParticipants,
+		]
 
 		const gameId = crypto.randomUUID()
 
 		const newGame = gameFactory.createGame(madeMatch)
 		activeGames.set(gameId, newGame)
+
+		newGame.onParticipantMayMove("AI", () => {
+			madeMatch.participants[0].connections.forEach(firstCon => {
+				firstCon.emit("moveMade", {
+					gameId: "TODO",
+					mover: "TODO",
+					placement: {
+						x: 0,
+						y: 0,
+					},
+				})
+			})
+		})
 
 		newGame.onMoveCompleted(completedMove => {
 			const completedMoveDto: CompletedMoveDto = {

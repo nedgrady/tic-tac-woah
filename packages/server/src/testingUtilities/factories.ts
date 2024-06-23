@@ -3,7 +3,7 @@ import { ActiveUser } from "TicTacWoahSocketServer"
 import { Factory } from "fishery"
 import { MadeMatchRules } from "matchmaking/MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
-import { GameStartDto, JoinQueueRequest } from "types"
+import { GameStartDto, JoinQueueRequest, PendingMoveDto } from "types"
 
 export const joinQueueRequestFactory = Factory.define<JoinQueueRequest>(() => ({
 	humanCount: faker.number.int(),
@@ -22,6 +22,15 @@ export const gameStartDtoFactory = Factory.define<GameStartDto>(({ sequence }) =
 export const madeMatchRulesFactory = Factory.define<MadeMatchRules>(() => ({
 	boardSize: faker.number.int(),
 	consecutiveTarget: faker.number.int(),
+}))
+
+export const pendingMoveDtoFactory = Factory.define<PendingMoveDto>(({ sequence }) => ({
+	gameId: faker.string.uuid(),
+	mover: faker.string.uuid(),
+	placement: {
+		x: faker.number.int(),
+		y: faker.number.int(),
+	},
 }))
 
 export const activeUserFactory = Factory.define<ActiveUser>(() => ({

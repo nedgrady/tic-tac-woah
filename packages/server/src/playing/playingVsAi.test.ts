@@ -1,16 +1,14 @@
 import { TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identifyAllSocketsAsTheSameUser, identifySocketsByWebSocketId } from "auth/socketIdentificationStrategies"
+import { identifyAllSocketsAsTheSameUser } from "auth/socketIdentificationStrategies"
 import { matchmaking } from "matchmaking/matchmaking"
 import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { QueueItem, TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { AnythingGoesForeverGameFactory } from "playing/support/AnythingGoesForeverGameFactory"
 import { joinQueueRequestFactory, madeMatchRulesFactory } from "testingUtilities/factories"
 import { MadeMatch, MatchmakingStrategy } from "matchmaking/MatchmakingStrategy"
 import { ReturnSingleGameFactory } from "./support/ReturnSingleGameFactory"
-import { Game } from "domain/Game"
 import _ from "lodash"
 
 class AlwaysMatchVsSingleAiOpponent extends MatchmakingStrategy {
@@ -25,7 +23,7 @@ class AlwaysMatchVsSingleAiOpponent extends MatchmakingStrategy {
 	}
 }
 
-describe.skip("it", () => {
+describe("it", () => {
 	const queue = new TicTacWoahQueue()
 	const matchmakingBroker = new MatchmakingBroker()
 
@@ -47,6 +45,7 @@ describe.skip("it", () => {
 							thing.moves.length < 1
 								? [thing.participants.find(participant => participant !== "Human Player")!]
 								: [],
+						participants: ["Human Player", "AI"],
 					}),
 				),
 			)
