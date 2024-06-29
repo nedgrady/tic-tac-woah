@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker"
 import { ActiveUser } from "TicTacWoahSocketServer"
+import Coordinates from "domain/Coordinates"
+import { Move } from "domain/Move"
 import { Factory } from "fishery"
 import { MadeMatchRules } from "matchmaking/MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
@@ -26,6 +28,19 @@ export const madeMatchRulesFactory = Factory.define<MadeMatchRules>(() => ({
 
 export const pendingMoveDtoFactory = Factory.define<PendingMoveDto>(({ sequence }) => ({
 	gameId: faker.string.uuid(),
+	mover: faker.string.uuid(),
+	placement: {
+		x: faker.number.int(),
+		y: faker.number.int(),
+	},
+}))
+
+export const coorinatesFactory = Factory.define<Coordinates>(() => ({
+	x: faker.number.int(),
+	y: faker.number.int(),
+}))
+
+export const moveFactory = Factory.define<Move>(({ sequence }) => ({
 	mover: faker.string.uuid(),
 	placement: {
 		x: faker.number.int(),
