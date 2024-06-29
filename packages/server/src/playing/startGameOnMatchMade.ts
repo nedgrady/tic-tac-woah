@@ -23,15 +23,34 @@ export function startGameOnMatchMade(
 		activeGames.set(gameId, newGame)
 
 		newGame.onParticipantMayMove("AI", () => {
-			madeMatch.participants[0].connections.forEach(firstCon => {
-				firstCon.emit("moveMade", {
-					gameId: "TODO",
-					mover: "TODO",
-					placement: {
-						x: 0,
-						y: 0,
-					},
+			if (madeMatch.aiParticipants) {
+				const aiParticipant = madeMatch.aiParticipants[0]
+				const aiMove = aiParticipant.nextMove()
+				newGame.submitMove({
+					mover: "AI",
+					placement: aiMove.placement,
 				})
+			}
+
+			madeMatch.participants[0].connections.forEach(firstCon => {
+				if (!madeMatch.aiParticipants) {
+					firstCon.emit("moveMade", {
+						gameId: "TODO",
+						mover: "TODO",
+						placement: {
+							x: 0,
+							y: 0,
+						},
+					})
+
+					return
+				}
+
+				// firstCon.emit("moveMade", {
+				// 	gameId: "TODO",
+				// 	mover: "TODO",
+				// 	placement: aiMove.placement,
+				// })
 			})
 		})
 
