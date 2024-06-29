@@ -6,7 +6,7 @@ import { QueueItem, TicTacWoahQueue, addConnectionToQueue } from "queue/addConne
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { joinQueueRequestFactory, madeMatchRulesFactory, pendingMoveDtoFactory } from "testingUtilities/factories"
+import { joinQueueRequestFactory, madeMatchRulesFactory } from "testingUtilities/factories"
 import { MadeMatch, MatchmakingStrategy } from "matchmaking/MatchmakingStrategy"
 import { ReturnSingleGameFactory } from "./support/ReturnSingleGameFactory"
 import _ from "lodash"
