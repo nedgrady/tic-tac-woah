@@ -1,4 +1,4 @@
-import { AiParticipant, MadeMatch, MatchmakingStrategy } from "./MatchmakingStrategy"
+import { MadeMatch, MatchmakingStrategy } from "./MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
 import _ from "lodash"
 
@@ -34,7 +34,6 @@ export class StandardMathcmakingStrategy extends MatchmakingStrategy {
 			for (const chunk of chunksWithSufficientParticipants) {
 				madeMatches.push({
 					participants: chunk.map(item => item.queuer),
-					// aiCount: chunk[0].aiCount,
 					aiParticipants: [],
 					rules: {
 						boardSize: 20,

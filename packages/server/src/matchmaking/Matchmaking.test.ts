@@ -1,10 +1,8 @@
 import { expect, test } from "vitest"
-import { AiParticipant, MadeMatch } from "./MatchmakingStrategy"
+import { MadeMatch } from "./MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
-import { activeUserFactory, moveFactory, queueItemFactory } from "testingUtilities/factories"
+import { activeUserFactory, queueItemFactory } from "testingUtilities/factories"
 import { QueueItemCompatibilityFunction, StandardMathcmakingStrategy } from "./StandardMathcmakingStrategy"
-import { Move } from "domain/Move"
-import { faker } from "@faker-js/faker"
 
 type NoMatchesTestCase = readonly QueueItem[]
 
