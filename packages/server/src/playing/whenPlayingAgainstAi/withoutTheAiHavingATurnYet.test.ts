@@ -7,15 +7,47 @@ import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoah
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { joinQueueRequestFactory, madeMatchRulesFactory } from "testingUtilities/factories"
-import { MadeMatch, MatchmakingStrategy } from "matchmaking/MatchmakingStrategy"
-import { ReturnSingleGameFactory } from "./support/ReturnSingleGameFactory"
+import { AiParticipant, MadeMatch, MatchmakingStrategy } from "matchmaking/MatchmakingStrategy"
+import { ReturnSingleGameFactory } from "../support/ReturnSingleGameFactory"
 import _ from "lodash"
+import Coordinates from "domain/Coordinates"
+import { Move } from "domain/Move"
+
+class MakeSequenceOfMoves implements AiParticipant {
+	// 	private gameOptionsIterator: Iterator<Partial<CreateGameOptions>>
+
+	// constructor(...gameOptions: readonly Partial<CreateGameOptions>[]) {
+	// 	super()
+
+	// 	this.gameOptionsIterator = gameOptions[Symbol.iterator]()
+	// }
+	private readonly coordinatesIterator: Iterator<Coordinates>
+
+	constructor(coordinates: readonly Coordinates[]) {
+		this.coordinatesIterator = coordinates[Symbol.iterator]()
+	}
+
+	nextMove(): Move {
+		const { value: currentMove, done } = this.coordinatesIterator.next()
+
+		if (done) throw new Error("No more coordinates to return")
+
+		return {
+			placement: currentMove,
+			mover: "TODO",
+		}
+	}
+}
 
 class AlwaysMatchVsSingleAiOpponent extends MatchmakingStrategy {
+	constructor(private aiMoves: readonly Coordinates[] = []) {
+		super()
+	}
+
 	doTheThing(queueItems: readonly QueueItem[]): readonly MadeMatch[] {
 		return [
 			{
-				aiCount: 1,
+				aiParticipants: [new MakeSequenceOfMoves(this.aiMoves)],
 				participants: [queueItems[0].queuer],
 				rules: madeMatchRulesFactory.build(),
 			},
@@ -61,7 +93,7 @@ describe("it", () => {
 		return testContext.done
 	})
 
-	it("No move is made ", async () => {
+	it("No moves are made by the ai", async () => {
 		expect(testContext.clientSocket).not.toHaveReceivedEvent("moveMade")
 	})
 })

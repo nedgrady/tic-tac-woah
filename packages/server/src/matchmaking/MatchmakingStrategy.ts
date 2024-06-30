@@ -8,7 +8,6 @@ export abstract class AiParticipant {
 
 export interface MadeMatch {
 	readonly participants: readonly Participant[]
-	readonly aiCount: number
 	readonly aiParticipants?: readonly AiParticipant[]
 	readonly rules: MadeMatchRules
 }

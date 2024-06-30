@@ -8,7 +8,7 @@ import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { coorinatesFactory, joinQueueRequestFactory, madeMatchRulesFactory } from "testingUtilities/factories"
 import { AiParticipant, MadeMatch, MatchmakingStrategy } from "matchmaking/MatchmakingStrategy"
-import { ReturnSingleGameFactory } from "./support/ReturnSingleGameFactory"
+import { ReturnSingleGameFactory } from "../support/ReturnSingleGameFactory"
 import _ from "lodash"
 import { Move } from "domain/Move"
 import Coordinates from "domain/Coordinates"
@@ -23,7 +23,7 @@ class MakeSequenceOfMoves implements AiParticipant {
 	// }
 	private readonly coordinatesIterator: Iterator<Coordinates>
 
-	constructor(...coordinates: readonly Coordinates[]) {
+	constructor(coordinates: readonly Coordinates[]) {
 		this.coordinatesIterator = coordinates[Symbol.iterator]()
 	}
 
@@ -47,8 +47,7 @@ class AlwaysMatchVsSingleAiOpponent extends MatchmakingStrategy {
 	doTheThing(queueItems: readonly QueueItem[]): readonly MadeMatch[] {
 		return [
 			{
-				aiCount: 1,
-				aiParticipants: [new MakeSequenceOfMoves(...this.aiMoves)],
+				aiParticipants: [new MakeSequenceOfMoves(this.aiMoves)],
 				participants: [queueItems[0].queuer],
 				rules: madeMatchRulesFactory.build(),
 			},
@@ -96,7 +95,7 @@ describe("it", () => {
 		return testContext.done
 	})
 
-	it.each(aiMoves)("Receives the ai move %s", async aiMove => {
+	it.each(aiMoves)("The move '%s' is received", async aiMove => {
 		await vi.waitFor(() => {
 			expect(testContext.clientSocket).toHaveReceivedPayload("moveMade", {
 				mover: "AI",
