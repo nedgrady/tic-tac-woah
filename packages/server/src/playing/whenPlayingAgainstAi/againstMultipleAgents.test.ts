@@ -42,15 +42,22 @@ class MakeSequenceOfMoves implements AiParticipant {
 	}
 }
 
-class AlwaysMatchVsSingleAiOpponent extends MatchmakingStrategy {
-	constructor(private aiMoves: readonly Coordinates[]) {
+interface AiAgentSpecification {
+	readonly identifier: string
+	readonly moves: readonly Coordinates[]
+}
+
+class AlwaysMatchVsAiOpponents extends MatchmakingStrategy {
+	constructor(private aiAgentSpecifications: readonly AiAgentSpecification[]) {
 		super()
 	}
 
 	doTheThing(queueItems: readonly QueueItem[]): readonly MadeMatch[] {
 		return [
 			{
-				aiParticipants: [new MakeSequenceOfMoves(this.aiMoves, "AI")],
+				aiParticipants: this.aiAgentSpecifications.map(
+					aiMove => new MakeSequenceOfMoves(aiMove.moves, aiMove.identifier),
+				),
 				participants: [queueItems[0].queuer],
 				rules: madeMatchRulesFactory.build(),
 			},
@@ -62,7 +69,16 @@ describe("it", () => {
 	const queue = new TicTacWoahQueue()
 	const matchmakingBroker = new MatchmakingBroker()
 
-	const aiMoves = coorinatesFactory.buildList(3)
+	const aiAgentIdentifiers = [
+		"AI Agent Who Can Move On Move 0",
+		"AI Agent Who Can Move On Move 1",
+		"AI Agent Who Can Move On Move 2",
+	]
+
+	const aiAgentSpecifications: AiAgentSpecification[] = aiAgentIdentifiers.map(identifier => ({
+		identifier,
+		moves: coorinatesFactory.buildList(1),
+	}))
 
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
@@ -73,12 +89,12 @@ describe("it", () => {
 				}),
 			)
 			.use(addConnectionToQueue(queue))
-			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchVsSingleAiOpponent(aiMoves)))
+			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchVsAiOpponents(aiAgentSpecifications)))
 			.use(
 				startGameOnMatchMade(
 					matchmakingBroker,
 					new ReturnSingleGameFactory({
-						decideWhoMayMoveNext: gameState => [gameState.moves.length < 3 ? "AI" : "Human Player"],
+						decideWhoMayMoveNext: gameState => [aiAgentIdentifiers[gameState.moves.length]],
 					}),
 				),
 			)
@@ -98,12 +114,12 @@ describe("it", () => {
 		return testContext.done
 	})
 
-	it.each(aiMoves)("The move '%s' is received", async aiMove => {
+	it.each(aiAgentSpecifications)("The move made by '%s' is received", async aiAgentSpecfication => {
 		await vi.waitFor(() => {
 			expect(testContext.clientSocket).toHaveReceivedPayload("moveMade", {
-				mover: "AI",
+				mover: aiAgentSpecfication.identifier,
 				gameId: expect.any(String),
-				placement: aiMove,
+				placement: aiAgentSpecfication.moves[0],
 			})
 		})
 	})

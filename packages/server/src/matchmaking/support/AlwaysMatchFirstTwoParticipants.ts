@@ -7,7 +7,7 @@ export class AlwaysMatchFirstTwoParticipants extends MatchmakingStrategy {
 
 		const madeMatch: MadeMatch = {
 			participants: [queueItems[0].queuer, queueItems[1].queuer],
-			aiCount: 0,
+			aiParticipants: [],
 			rules: {
 				boardSize: 20,
 				consecutiveTarget: 999,

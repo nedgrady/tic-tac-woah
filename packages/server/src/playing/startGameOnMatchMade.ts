@@ -18,15 +18,16 @@ export function startGameOnMatchMade(
 		const newGame = gameFactory.createGame(madeMatch)
 		activeGames.set(gameId, newGame)
 
-		newGame.onParticipantMayMove("AI", () => {
-			if (madeMatch.aiParticipants) {
-				const aiParticipant = madeMatch.aiParticipants[0]
-				const aiMove = aiParticipant.nextMove()
-				newGame.submitMove({
-					mover: "AI",
-					placement: aiMove.placement,
-				})
-			}
+		madeMatch.aiParticipants?.forEach(aiParticipant => {
+			newGame.onParticipantMayMove(aiParticipant.id, () => {
+				if (madeMatch.aiParticipants) {
+					const aiMove = aiParticipant.nextMove()
+					newGame.submitMove({
+						mover: aiParticipant.id,
+						placement: aiMove.placement,
+					})
+				}
+			})
 		})
 
 		newGame.onMoveCompleted(completedMove => {

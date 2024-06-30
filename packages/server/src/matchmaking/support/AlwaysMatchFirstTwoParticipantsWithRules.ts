@@ -12,7 +12,7 @@ export class AlwaysMatchFirstTwoParticipantsWithRules extends MatchmakingStrateg
 			{
 				participants: [queueItems[0].queuer, queueItems[1].queuer],
 				rules: this.rules,
-				aiCount: 0,
+				aiParticipants: [],
 			},
 		]
 	}

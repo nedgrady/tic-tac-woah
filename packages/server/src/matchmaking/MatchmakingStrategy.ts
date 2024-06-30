@@ -3,12 +3,13 @@ import { QueueItem } from "queue/addConnectionToQueue"
 import { ActiveUser } from "TicTacWoahSocketServer"
 
 export abstract class AiParticipant {
+	abstract get id(): string
 	abstract nextMove(): Move
 }
 
 export interface MadeMatch {
 	readonly participants: readonly Participant[]
-	readonly aiParticipants?: readonly AiParticipant[]
+	readonly aiParticipants: readonly AiParticipant[]
 	readonly rules: MadeMatchRules
 }
 

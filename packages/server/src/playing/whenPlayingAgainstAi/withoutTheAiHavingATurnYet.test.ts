@@ -23,7 +23,10 @@ class MakeSequenceOfMoves implements AiParticipant {
 	// }
 	private readonly coordinatesIterator: Iterator<Coordinates>
 
-	constructor(coordinates: readonly Coordinates[]) {
+	constructor(
+		coordinates: readonly Coordinates[],
+		public readonly id: string,
+	) {
 		this.coordinatesIterator = coordinates[Symbol.iterator]()
 	}
 
@@ -47,7 +50,7 @@ class AlwaysMatchVsSingleAiOpponent extends MatchmakingStrategy {
 	doTheThing(queueItems: readonly QueueItem[]): readonly MadeMatch[] {
 		return [
 			{
-				aiParticipants: [new MakeSequenceOfMoves(this.aiMoves)],
+				aiParticipants: [new MakeSequenceOfMoves(this.aiMoves, "AI")],
 				participants: [queueItems[0].queuer],
 				rules: madeMatchRulesFactory.build(),
 			},
