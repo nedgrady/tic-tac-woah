@@ -1,4 +1,4 @@
-import { MadeMatch, MatchmakingStrategy } from "./MatchmakingStrategy"
+import { AiParticipant, MadeMatch, MatchmakingStrategy } from "./MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
 import _ from "lodash"
 
@@ -18,8 +18,15 @@ function groupBy<TKey, TValue>(list: readonly TValue[], keyGetter: (item: TValue
 
 export type QueueItemCompatibilityFunction = (item: QueueItem) => string
 
+export abstract class AiParticipantFactory {
+	abstract createAiAgent(): AiParticipant
+}
+
 export class StandardMathcmakingStrategy extends MatchmakingStrategy {
-	constructor(private queueItemCompatibilityFunction: QueueItemCompatibilityFunction) {
+	constructor(
+		private queueItemCompatibilityFunction: QueueItemCompatibilityFunction,
+		private aiParticipantFactory: AiParticipantFactory,
+	) {
 		super()
 	}
 
@@ -34,7 +41,9 @@ export class StandardMathcmakingStrategy extends MatchmakingStrategy {
 			for (const chunk of chunksWithSufficientParticipants) {
 				madeMatches.push({
 					participants: chunk.map(item => item.queuer),
-					aiParticipants: [],
+					aiParticipants: Array.from({ length: chunk[0].aiCount }).map(() =>
+						this.aiParticipantFactory?.createAiAgent(),
+					),
 					rules: {
 						boardSize: 20,
 						consecutiveTarget: chunk[0].consecutiveTarget,

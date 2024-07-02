@@ -18,7 +18,7 @@ export function startGameOnMatchMade(
 		const newGame = gameFactory.createGame(madeMatch)
 		activeGames.set(gameId, newGame)
 
-		madeMatch.aiParticipants?.forEach(aiParticipant => {
+		madeMatch.aiParticipants.forEach(aiParticipant => {
 			newGame.onParticipantMayMove(aiParticipant.id, () => {
 				const aiMove = aiParticipant.nextMove()
 				newGame.submitMove({
@@ -78,7 +78,7 @@ export function startGameOnMatchMade(
 				connection.join(gameId)
 				const gameStart: GameStartDto = {
 					id: gameId,
-					players: participants,
+					players: [...participants, ...madeMatch.aiParticipants.map(ai => ai.id)],
 					rules: madeMatch.rules,
 				}
 				connection.emit("gameStart", gameStart)

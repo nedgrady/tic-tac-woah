@@ -1,8 +1,50 @@
 import { expect, test } from "vitest"
-import { MadeMatch } from "./MatchmakingStrategy"
+import { AiParticipant, MadeMatch } from "./MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
-import { activeUserFactory, queueItemFactory } from "testingUtilities/factories"
-import { QueueItemCompatibilityFunction, StandardMathcmakingStrategy } from "./StandardMathcmakingStrategy"
+import { activeUserFactory, aiParticipantFactory, queueItemFactory } from "testingUtilities/factories"
+import {
+	AiParticipantFactory,
+	QueueItemCompatibilityFunction,
+	StandardMathcmakingStrategy,
+} from "./StandardMathcmakingStrategy"
+
+class ThrowingIterator<TEntityToReturn> {
+	private iterator: Iterator<TEntityToReturn>
+
+	constructor(
+		private readonly entities: TEntityToReturn[],
+		private readonly entityName: string,
+	) {
+		this.iterator = entities[Symbol.iterator]()
+	}
+
+	next(): TEntityToReturn {
+		const { value: currentEntity, done } = this.iterator.next()
+
+		if (done) throw new Error(`No more entities of type ${this.entityName} to return`)
+
+		return currentEntity
+	}
+}
+
+class ReturnSequenceOfAiParticipants extends AiParticipantFactory {
+	private gameOptionsIterator: ThrowingIterator<AiParticipant>
+
+	constructor(private readonly aiParticipants: AiParticipant[]) {
+		super()
+		this.gameOptionsIterator = new ThrowingIterator(aiParticipants, "AiParticipant")
+	}
+
+	createAiAgent(): AiParticipant {
+		return this.gameOptionsIterator.next()
+	}
+}
+
+class AnyAiParticipantFactory extends AiParticipantFactory {
+	createAiAgent(): AiParticipant {
+		return aiParticipantFactory.build()
+	}
+}
 
 type NoMatchesTestCase = readonly QueueItem[]
 
@@ -18,6 +60,17 @@ const noMatchesTestCases: NoMatchesTestCase[] = [
 		queueItemFactory.build({ humanCount: 3, consecutiveTarget: 3 }),
 	],
 ]
+
+test.each(noMatchesTestCases.map(testCase => [testCase]))("No matches", queueItems => {
+	const matchmaking = new StandardMathcmakingStrategy(
+		queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}`,
+		new AnyAiParticipantFactory(),
+	)
+
+	const madeMatches = matchmaking.doTheThing(queueItems)
+
+	expect(madeMatches).toEqual([])
+})
 
 type SingleMatchTestCase = {
 	queueItems: readonly QueueItem[]
@@ -104,19 +157,10 @@ const singleMatchesTestCases: SingleMatchTestCase[] = [
 	},
 ]
 
-test.each(noMatchesTestCases.map(testCase => [testCase]))("No matches", queueItems => {
-	const matchmaking = new StandardMathcmakingStrategy(
-		queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}`,
-	)
-
-	const madeMatches = matchmaking.doTheThing(queueItems)
-
-	expect(madeMatches).toEqual([])
-})
-
 test.each(singleMatchesTestCases)("Single match %#", ({ queueItems, expectedMatch }) => {
 	const matchmaking = new StandardMathcmakingStrategy(
 		queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}`,
+		new AnyAiParticipantFactory(),
 	)
 
 	const madeMatch = matchmaking.doTheThing(queueItems)[0]
@@ -226,6 +270,7 @@ const manyMatchesTestCases: ManyMatchesTestCase[] = [
 test.each(manyMatchesTestCases)("Many matches %#", ({ queueItems, expectedMatches }) => {
 	const matchmaking = new StandardMathcmakingStrategy(
 		queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}`,
+		new AnyAiParticipantFactory(),
 	)
 
 	const madeMatches = matchmaking.doTheThing(queueItems)
@@ -242,9 +287,10 @@ const potentialGroupingTestCases: QueueItemCompatibilityFunction[] = [
 test.each(potentialGroupingTestCases)("Potential grouping %#", queueItemCompatibilityFunction => {
 	const singleQueueItemMatchedIntoGame = queueItemFactory.build({
 		humanCount: 1,
+		aiCount: 3,
 	})
 
-	const matchmaking = new StandardMathcmakingStrategy(queueItemCompatibilityFunction)
+	const matchmaking = new StandardMathcmakingStrategy(queueItemCompatibilityFunction, new AnyAiParticipantFactory())
 	const madeMatches = matchmaking.doTheThing([singleQueueItemMatchedIntoGame])
 
 	const expectedMatch: MadeMatch = {
@@ -258,4 +304,22 @@ test.each(potentialGroupingTestCases)("Potential grouping %#", queueItemCompatib
 	}
 
 	expect(madeMatches).toEqual([expectedMatch])
+})
+
+test("Ai participants", () => {
+	const singleQueueItemMatchedIntoGame = queueItemFactory.build({
+		humanCount: 1,
+		aiCount: 3,
+	})
+
+	const expectedAiParticipants = aiParticipantFactory.buildList(3)
+
+	const matchmaking = new StandardMathcmakingStrategy(
+		() => "1",
+		new ReturnSequenceOfAiParticipants(expectedAiParticipants),
+	)
+
+	const madeMatches = matchmaking.doTheThing([singleQueueItemMatchedIntoGame])
+
+	expect(madeMatches[0].aiParticipants).toEqual(expectedAiParticipants)
 })

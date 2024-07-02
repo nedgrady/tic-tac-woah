@@ -30,8 +30,8 @@ import { gameIsWonOnMoveNumber } from "domain/winConditions/support/gameIsWonOnM
 import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
 import { gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
 import { singleParticipantInSequence } from "domain/moveOrderRules/singleParticipantInSequence"
-import { StandardMathcmakingStrategy } from "matchmaking/StandardMathcmakingStrategy"
-import { MadeMatch } from "matchmaking/MatchmakingStrategy"
+import { AiParticipantFactory, StandardMathcmakingStrategy } from "matchmaking/StandardMathcmakingStrategy"
+import { AiParticipant, MadeMatch } from "matchmaking/MatchmakingStrategy"
 // import _ from "lodash"
 
 interface ParticipantHandle {
@@ -125,10 +125,23 @@ class StandardGameFactory extends GameFactory {
 	}
 }
 
+class StandardAiParticipantFactory extends AiParticipantFactory {
+	createAiAgent(): AiParticipant {
+		const id = crypto.randomUUID()
+		return {
+			id: crypto.randomUUID(),
+			nextMove: () => {
+				return { placement: { x: Math.min(Math.random() * 20), y: Math.min(Math.random() * 20) }, mover: id }
+			},
+		}
+	}
+}
+
 const ttQueue = new TicTacWoahQueue()
 const matchmakingBroker = new MatchmakingBroker()
 const standardMathcmakingStrategy = new StandardMathcmakingStrategy(
 	queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}-${queueItem.aiCount}`,
+	new StandardAiParticipantFactory(),
 )
 
 io.use(identifySocketsByWebSocketId)

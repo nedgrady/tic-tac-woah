@@ -3,9 +3,10 @@ import { ActiveUser } from "TicTacWoahSocketServer"
 import Coordinates from "domain/Coordinates"
 import { Move } from "domain/Move"
 import { Factory } from "fishery"
-import { MadeMatchRules } from "matchmaking/MatchmakingStrategy"
+import { AiParticipant, MadeMatchRules } from "matchmaking/MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
 import { GameStartDto, JoinQueueRequest, PendingMoveDto } from "types"
+import { vi } from "vitest"
 
 export const joinQueueRequestFactory = Factory.define<JoinQueueRequest>(() => ({
 	humanCount: faker.number.int(),
@@ -56,7 +57,12 @@ export const activeUserFactory = Factory.define<ActiveUser>(() => ({
 
 export const queueItemFactory = Factory.define<QueueItem>(() => ({
 	queuer: activeUserFactory.build(),
-	humanCount: faker.number.int(),
+	humanCount: faker.number.int({ min: 0, max: 100 }),
 	consecutiveTarget: faker.number.int(),
-	aiCount: faker.number.int(),
+	aiCount: faker.number.int({ min: 0, max: 100 }),
+}))
+
+export const aiParticipantFactory = Factory.define<AiParticipant>(() => ({
+	id: faker.string.uuid(),
+	nextMove: vi.fn(),
 }))
