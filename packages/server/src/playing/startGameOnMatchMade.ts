@@ -20,13 +20,11 @@ export function startGameOnMatchMade(
 
 		madeMatch.aiParticipants?.forEach(aiParticipant => {
 			newGame.onParticipantMayMove(aiParticipant.id, () => {
-				if (madeMatch.aiParticipants) {
-					const aiMove = aiParticipant.nextMove()
-					newGame.submitMove({
-						mover: aiParticipant.id,
-						placement: aiMove.placement,
-					})
-				}
+				const aiMove = aiParticipant.nextMove()
+				newGame.submitMove({
+					mover: aiParticipant.id,
+					placement: aiMove.placement,
+				})
 			})
 		})
 
