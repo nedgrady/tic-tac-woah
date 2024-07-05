@@ -60,9 +60,9 @@ function useGameDisplay(): { board: readonly (BoardMoveDisplay | EmptyBoardMoveD
 						token: playerTokens.get(cell.mover) ?? "?",
 						isWinningMove: cell.isWinningMove,
 						// eslint-disable-next-line no-mixed-spaces-and-tabs
-				  }
-				: emptyBoardMoveDisplay
-		)
+					}
+				: emptyBoardMoveDisplay,
+		),
 	)
 
 	return { board }
@@ -104,6 +104,8 @@ export function Game() {
 
 	const winningMoves = useAppSelector(selectWinningMoves)
 	const game = useAppSelector(state => state.gameReducer.game)
+
+	console.log("Game", game)
 
 	const makeMove = useMakeMove(game.id)
 

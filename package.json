@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"start": "concurrently \"npm run dev -w client\"  \"npm run start:dev -w server\""
+		"start": "concurrently \"npm run dev -w client\"  \"npm run start:dev -w server\"",
+		"clean": "concurrently \"npm exec --workspaces -- npx rimraf node_modules\" \"npx rimraf node_modules\""
 	},
 	"repository": {
 		"type": "git",
