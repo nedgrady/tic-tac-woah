@@ -1,5 +1,5 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router"
-import { CreateGameForm, CreateGameSettings } from "../CreateGameForm"
+import { CreateGameForm } from "../CreateGameForm"
 
 export const Route = createLazyFileRoute("/play")({
 	component: CreateGame,
@@ -10,7 +10,7 @@ export function CreateGame() {
 	return (
 		<>
 			<CreateGameForm
-				onCreate={function (settings: CreateGameSettings): void {
+				onCreate={settings => {
 					navigate({ to: "/queue", search: settings })
 				}}
 			/>

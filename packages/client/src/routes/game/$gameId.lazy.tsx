@@ -1,9 +1,9 @@
-import { Navigate, createFileRoute } from "@tanstack/react-router"
+import { Navigate, createLazyFileRoute } from "@tanstack/react-router"
 
 import { useAppSelector } from "../../redux/hooks"
 import { Game } from "../../game/Game"
 
-export const Route = createFileRoute("/game/$gameId")({
+export const Route = createLazyFileRoute("/game/$gameId")({
 	component: GameRoute,
 })
 
@@ -14,6 +14,7 @@ function GameRoute() {
 	const { game } = useAppSelector(state => state.gameReducer)
 
 	if (game.id === "Empty Game") return <Navigate to="/queue" />
+
 	return <Game />
 }
 

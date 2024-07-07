@@ -8,7 +8,7 @@ import { useNavigate } from "@tanstack/react-router"
 import { useQueue } from "./lobby/useQueue"
 import { Suspense } from "react"
 import { UserMustBeAuthenticated, useTicTacWoahAuth } from "./auth/UsernameMustBePresent"
-import { Route } from "./routes/queue"
+import { Route } from "./routes/queue.lazy"
 
 function ProtectedQueue() {
 	return (
