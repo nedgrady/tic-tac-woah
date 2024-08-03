@@ -42,7 +42,7 @@ export class StandardMathcmakingStrategy extends MatchmakingStrategy {
 				madeMatches.push({
 					participants: chunk.map(item => item.queuer),
 					aiParticipants: Array.from({ length: chunk[0].aiCount }).map(() =>
-						this.aiParticipantFactory?.createAiAgent(),
+						this.aiParticipantFactory.createAiAgent(),
 					),
 					rules: {
 						boardSize: 20,
