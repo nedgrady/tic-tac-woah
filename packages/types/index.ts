@@ -4,6 +4,7 @@ import { type Socket as ClientSocket } from "socket.io-client"
 export const JoinQueueRequestSchema = z.object({
 	humanCount: z.number(),
 	consecutiveTarget: z.number(),
+	aiCount: z.number(),
 })
 
 export type JoinQueueRequest = z.infer<typeof JoinQueueRequestSchema>

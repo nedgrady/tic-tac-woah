@@ -11,6 +11,7 @@ import { vi } from "vitest"
 export const joinQueueRequestFactory = Factory.define<JoinQueueRequest>(() => ({
 	humanCount: faker.number.int(),
 	consecutiveTarget: faker.number.int(),
+	aiCount: faker.number.int(),
 }))
 
 export const gameStartDtoFactory = Factory.define<GameStartDto>(({ sequence }) => ({

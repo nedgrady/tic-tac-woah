@@ -33,7 +33,7 @@ export const matchers: Parameters<(typeof expect)["extend"]>[0] = {
 			message: () =>
 				`Expected received collection to contain active user.\n${this.utils.diff(
 					received.map(toImportantBits),
-					toImportantBits(activeUser)
+					toImportantBits(activeUser),
 				)}`,
 			pass: received.some(receivedUser => this.equals(receivedUser, activeUser)),
 		}
@@ -46,7 +46,7 @@ export const matchers: Parameters<(typeof expect)["extend"]>[0] = {
 			message: () =>
 				`Expected ActiveUser array to contain the received ActiveUser\n. ${this.utils.diff(
 					received.map(formatActiveUser),
-					formatActiveUser(activeUser)
+					formatActiveUser(activeUser),
 				)}`,
 			pass,
 		}
@@ -55,14 +55,14 @@ export const matchers: Parameters<(typeof expect)["extend"]>[0] = {
 	toOnlyContainActiveUsers(received: ActiveUser[], ...expectedUsers: ActiveUser[]) {
 		const pass =
 			expectedUsers.every(expectedUser =>
-				received.some(receivedUser => this.equals(receivedUser, expectedUser))
+				received.some(receivedUser => this.equals(receivedUser, expectedUser)),
 			) && received.every(receivedUser => expectedUsers.some(user => this.equals(receivedUser, user)))
 
 		return {
 			message: () =>
 				`Expected ActiveUser array to only contain the received ActiveUser user array.\n${this.utils.diff(
 					received.map(formatActiveUser),
-					expectedUsers.map(formatActiveUser)
+					expectedUsers.map(formatActiveUser),
 				)}`,
 			pass,
 		}

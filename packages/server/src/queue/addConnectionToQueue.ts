@@ -67,7 +67,7 @@ export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketSe
 				queuer: socket.data.activeUser,
 				humanCount: joinQueueRequest.humanCount,
 				consecutiveTarget: joinQueueRequest.consecutiveTarget,
-				aiCount: -1,
+				aiCount: joinQueueRequest.aiCount,
 			}
 
 			queue.addItem(queueItem)

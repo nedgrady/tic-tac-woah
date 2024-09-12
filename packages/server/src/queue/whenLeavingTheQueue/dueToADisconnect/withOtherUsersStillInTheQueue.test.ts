@@ -4,13 +4,13 @@ import { QueueItem, TicTacWoahQueue, addConnectionToQueue } from "queue/addConne
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { removeConnectionFromQueueOnDisconnect } from "queue/removeConnectionFromQueueOnDisconnect"
-import { joinQueueRequestFactory } from "testingUtilities/factories"
+import { joinQueueRequestFactory, queueItemFactory } from "testingUtilities/factories"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
 
 	const remainsInQueue: ActiveUser = {
-		uniqueIdentifier: "Some reamaing user",
+		uniqueIdentifier: "Some remaining user",
 		connections: new Set(),
 	}
 
@@ -20,12 +20,7 @@ describe("it", () => {
 	}
 
 	const joinQueueRequest = joinQueueRequestFactory.build()
-	const remainsInQueueItem: QueueItem = {
-		queuer: remainsInQueue,
-		humanCount: joinQueueRequest.humanCount,
-		consecutiveTarget: joinQueueRequest.consecutiveTarget,
-		aiCount: 0,
-	}
+	const remainsInQueueItem: QueueItem = queueItemFactory.build({ queuer: remainsInQueue })
 
 	const preConfigure = (server: TicTacWoahSocketServer) => {
 		server
@@ -38,8 +33,10 @@ describe("it", () => {
 
 	beforeAll(async () => {
 		queue.addItem(remainsInQueueItem)
+
 		await testLifetime.start()
 
+		console.log(remainsInQueueItem.queuer.uniqueIdentifier)
 		testLifetime.clientSocket.emit("joinQueue", joinQueueRequest)
 
 		await vi.waitFor(() => {
@@ -65,12 +62,10 @@ describe("it", () => {
 	})
 
 	it("Leaves the correct user in the queue", async () => {
-		await vi.waitFor(() => expect(queue.users).toContainActiveUser(remainsInQueue))
+		await vi.waitFor(() => expect(queue.users).toContainSingleActiveUser(remainsInQueueItem.queuer))
 	})
 
 	it("Leaves the correct queue item in the queue", async () => {
-		await vi.waitFor(() =>
-			expect(queue.items).toContainSingle<QueueItem>(expect.objectContaining(joinQueueRequest)),
-		)
+		await vi.waitFor(() => expect(queue.items[0].queuer).toBeActiveUser(remainsInQueue))
 	})
 })
