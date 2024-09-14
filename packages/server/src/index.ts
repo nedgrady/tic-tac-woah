@@ -112,7 +112,10 @@ const activeGames: Game[] = []
 class StandardGameFactory extends GameFactory {
 	createGame(madeMatch: MadeMatch): Game {
 		const newGame = new Game({
-			participants: madeMatch.participants.map(participant => participant.uniqueIdentifier),
+			participants: [
+				...madeMatch.participants.map(participant => participant.uniqueIdentifier),
+				...madeMatch.aiParticipants.map(ai => ai.id),
+			],
 			boardSize: 20,
 			consecutiveTarget: 5,
 			rules: [anyMoveIsAllowed],
@@ -125,13 +128,19 @@ class StandardGameFactory extends GameFactory {
 	}
 }
 
-class StandardAiParticipantFactory extends AiParticipantFactory {
+class RandomlyMovingAiParticipantFactory extends AiParticipantFactory {
 	createAiAgent(): AiParticipant {
 		const id = crypto.randomUUID()
 		return {
 			id: crypto.randomUUID(),
 			nextMove: () => {
-				return { placement: { x: Math.min(Math.random() * 20), y: Math.min(Math.random() * 20) }, mover: id }
+				return {
+					placement: {
+						x: Math.floor(Math.min(Math.random() * 20)),
+						y: Math.floor(Math.min(Math.random() * 20)),
+					},
+					mover: id,
+				}
 			},
 		}
 	}
@@ -141,7 +150,7 @@ const ttQueue = new TicTacWoahQueue()
 const matchmakingBroker = new MatchmakingBroker()
 const standardMathcmakingStrategy = new StandardMathcmakingStrategy(
 	queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}-${queueItem.aiCount}`,
-	new StandardAiParticipantFactory(),
+	new RandomlyMovingAiParticipantFactory(),
 )
 
 io.use(identifySocketsByWebSocketId)

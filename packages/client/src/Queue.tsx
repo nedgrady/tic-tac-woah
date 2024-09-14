@@ -44,8 +44,9 @@ function Queue() {
 		})
 
 		const joinQueueRequest: JoinQueueRequest = {
-			humanCount: participantCount,
+			humanCount: 1,
 			consecutiveTarget: consecutiveTarget,
+			aiCount: 1,
 		}
 		socket.emit("joinQueue", joinQueueRequest)
 
