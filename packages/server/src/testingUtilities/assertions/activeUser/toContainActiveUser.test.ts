@@ -32,13 +32,13 @@ test("Array contains user with socket ids", () => {
 		},
 		{
 			uniqueIdentifier: "123",
-			connections: new Set(connectionIds.map(id => ({ id } as Socket))),
+			connections: new Set(connectionIds.map(id => ({ id }) as Socket)),
 		},
 	]
 
 	expect(received).toContainActiveUser({
 		uniqueIdentifier: "123",
-		connections: new Set(connectionIds.map(id => ({ id } as Socket))),
+		connections: new Set(connectionIds.map(id => ({ id }) as Socket)),
 	})
 })
 
@@ -46,13 +46,13 @@ test("Array does not contain user", () => {
 	const received: ActiveUser[] = [
 		{
 			uniqueIdentifier: "456",
-			connections: new Set(["HIJ123", "KLM111", "CBA823"].map(id => ({ id } as Socket))),
+			connections: new Set(["HIJ123", "KLM111", "CBA823"].map(id => ({ id }) as Socket)),
 		},
 	]
 
 	expect(received).not.toContainActiveUser({
 		uniqueIdentifier: "123",
-		connections: new Set(["ABC123", "DEF456", "GHI789"].map(id => ({ id } as Socket))),
+		connections: new Set(["ABC123", "DEF456", "GHI789"].map(id => ({ id }) as Socket)),
 	})
 })
 
@@ -83,6 +83,25 @@ test("Other properties on the Socket are ignored", () => {
 
 	a.connections.add({ id: "123", someOtherProperty: "Something" } as unknown as Socket)
 	b.connections.add({ id: "123", someOtherProperty: "Different" } as unknown as Socket)
+
+	expect([a]).toContainActiveUser(b)
+})
+
+test("Other properties on the Active User are ignored", () => {
+	const a: ActiveUser = {
+		uniqueIdentifier: "123",
+		connections: new Set(),
+		objectId: "Sone Id",
+	}
+
+	const b: ActiveUser = {
+		uniqueIdentifier: "123",
+		connections: new Set(),
+		objectId: "Different Id",
+	}
+
+	a.connections.add({ id: "123" } as unknown as Socket)
+	b.connections.add({ id: "123" } as unknown as Socket)
 
 	expect([a]).toContainActiveUser(b)
 })

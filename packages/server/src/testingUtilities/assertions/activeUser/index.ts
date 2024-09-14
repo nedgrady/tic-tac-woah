@@ -23,24 +23,28 @@ export const matchers: Parameters<(typeof expect)["extend"]>[0] = {
 		const expectedBitsWeCareAbout = toImportantBits(activeUser)
 		return {
 			message: () =>
-				`Expected the same active user\n. ${this.utils.diff(receivedBitsWeCareAbout, expectedBitsWeCareAbout)}`,
+				`Expected the same active user\n. ${this.utils.diff(formatActiveUser(received), formatActiveUser(activeUser))}`,
 			pass: this.equals(expectedBitsWeCareAbout, receivedBitsWeCareAbout),
 		}
 	},
 
 	toContainActiveUser(received: ActiveUser[], activeUser: ActiveUser) {
+		const receivedBitsWeCareAbout = received.map(toImportantBits)
+		const expectedBitsWeCareAbout = toImportantBits(activeUser)
 		return {
 			message: () =>
 				`Expected received collection to contain active user.\n${this.utils.diff(
-					received.map(toImportantBits),
-					toImportantBits(activeUser),
+					received.map(formatActiveUser),
+					formatActiveUser(activeUser),
 				)}`,
-			pass: received.some(receivedUser => this.equals(receivedUser, activeUser)),
+			pass: receivedBitsWeCareAbout.some(receivedUser => this.equals(receivedUser, expectedBitsWeCareAbout)),
 		}
 	},
 
 	toContainSingleActiveUser(received: ActiveUser[], activeUser: ActiveUser) {
-		const pass: boolean = received.length === 1 && this.equals(received[0], activeUser)
+		const receivedBitsWeCareAbout = received.map(toImportantBits)
+		const expectedBitsWeCareAbout = toImportantBits(activeUser)
+		const pass: boolean = received.length === 1 && this.equals(receivedBitsWeCareAbout[0], expectedBitsWeCareAbout)
 
 		return {
 			message: () =>
@@ -53,10 +57,16 @@ export const matchers: Parameters<(typeof expect)["extend"]>[0] = {
 	},
 
 	toOnlyContainActiveUsers(received: ActiveUser[], ...expectedUsers: ActiveUser[]) {
+		const receivedBitsWeCareAbout = received.map(toImportantBits)
+		const expectedBitsWeCareAbout = expectedUsers.map(toImportantBits)
+
 		const pass =
-			expectedUsers.every(expectedUser =>
-				received.some(receivedUser => this.equals(receivedUser, expectedUser)),
-			) && received.every(receivedUser => expectedUsers.some(user => this.equals(receivedUser, user)))
+			expectedBitsWeCareAbout.every(expectedUser =>
+				receivedBitsWeCareAbout.some(receivedUser => this.equals(receivedUser, expectedUser)),
+			) &&
+			receivedBitsWeCareAbout.every(receivedUser =>
+				expectedBitsWeCareAbout.some(user => this.equals(receivedUser, user)),
+			)
 
 		return {
 			message: () =>

@@ -88,3 +88,21 @@ test("Array contains different user", () => {
 
 	expect(received).not.toContainSingleActiveUser(a)
 })
+
+test("Array contains single user with differing activeUser properties", () => {
+	const a: ActiveUser = {
+		uniqueIdentifier: "123",
+		connections: new Set(),
+		objectId: "Some object id",
+	}
+
+	const received: ActiveUser[] = [
+		{
+			uniqueIdentifier: "123",
+			connections: new Set(),
+			objectId: "Some other object id",
+		},
+	]
+
+	expect(received).toContainSingleActiveUser(a)
+})
