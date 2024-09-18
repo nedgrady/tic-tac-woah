@@ -1,14 +1,13 @@
 import { FormGroup, Button, Slider, Typography, Stack } from "@mui/material"
 import { useState } from "react"
 import AddPerson from "./add-person.svg?react"
+import AddBot from "./add-bot.svg?react"
 import "./create-game-form.css"
-import { ArrayIndex } from "types"
-
 import { PropsOf } from "@emotion/react"
 import { SelectionState, useSelectedDiff } from "./useSelectedDiff"
 
 const maxHumanParticipants = 5
-const noneSelected: never[] = []
+const maxBotParticipants = 5
 
 export interface CreateGameSettings {
 	participantCount: number
@@ -29,26 +28,58 @@ const colorMap: Record<SelectionState, PropsOf<typeof AddPerson>["color"]> = {
 export function CreateGameForm({ onCreate }: CreateGameProps) {
 	const [consecutiveTarget, setConsecutiveTarget] = useState(4)
 
-	const { hoverOverEntity, selectEntity, selections, resetHover } = useSelectedDiff(maxHumanParticipants - 1)
+	const {
+		hoverOverEntity: hoverOverHuman,
+		selectEntity: selectHuman,
+		selections: humanSelections,
+		resetHover: resetHumanHover,
+	} = useSelectedDiff(maxHumanParticipants - 1)
 
-	const participantCount = selections.filter(
+	const humanCount = humanSelections.filter(
+		selection => selection === "remainsSelected" || selection == "tentativelySelected",
+	).length
+
+	const {
+		hoverOverEntity: hoverOverBot,
+		selectEntity: selectBot,
+		selections: botSelections,
+		resetHover: resetBotHover,
+	} = useSelectedDiff(maxBotParticipants - 1)
+
+	const botCount = botSelections.filter(
 		selection => selection === "remainsSelected" || selection == "tentativelySelected",
 	).length
 
 	return (
 		<FormGroup>
 			<Stack direction="row" spacing={2}>
-				<p>You + {participantCount} other human(s)</p>
-				{selections.map((selectionState, humanIndex) => (
+				<p>You + {humanCount} other human(s)</p>
+				{humanSelections.map((selectionState, humanIndex) => (
 					<Button
 						key={humanIndex}
-						onMouseEnter={() => hoverOverEntity(humanIndex)}
-						onMouseLeave={resetHover}
+						onMouseEnter={() => hoverOverHuman(humanIndex)}
+						onMouseLeave={resetHumanHover}
 						onClick={() => {
-							selectEntity(humanIndex)
+							selectHuman(humanIndex)
 						}}
 					>
 						<AddPerson height={32} width={32} color={colorMap[selectionState]} />
+					</Button>
+				))}
+			</Stack>
+
+			<Stack direction="row" spacing={2}>
+				<p>You + {botCount} other bots(s)</p>
+				{botSelections.map((selectionState, botIndex) => (
+					<Button
+						key={botIndex}
+						onMouseEnter={() => hoverOverBot(botIndex)}
+						onMouseLeave={resetBotHover}
+						onClick={() => {
+							selectBot(botIndex)
+						}}
+					>
+						<AddBot height={32} width={32} color={colorMap[selectionState]} />
 					</Button>
 				))}
 			</Stack>
@@ -71,7 +102,7 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 				color="primary"
 				onClick={() =>
 					onCreate({
-						participantCount,
+						participantCount: humanCount,
 						consecutiveTarget,
 					})
 				}
