@@ -75,3 +75,5 @@ export interface ServerToClientEvents {
 }
 
 export type TicTacWoahClientSocket = ClientSocket<ServerToClientEvents, ClientToServerEvents>
+
+export type ArrayIndex = number

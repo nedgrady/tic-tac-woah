@@ -32,19 +32,10 @@ import { gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions
 import { singleParticipantInSequence } from "domain/moveOrderRules/singleParticipantInSequence"
 import { AiParticipantFactory, StandardMathcmakingStrategy } from "matchmaking/StandardMathcmakingStrategy"
 import { AiParticipant, MadeMatch } from "matchmaking/MatchmakingStrategy"
-// import _ from "lodash"
-
-interface ParticipantHandle {
-	readonly activeUser: ActiveUser
-	readonly participant: Participant
-}
-
-const activeUsers: Map<string, ActiveUser> = new Map<string, ActiveUser>()
+import { moveMustBeMadeByTheCorrectPlayer, moveMustBeWithinTheBoard } from "domain/gameRules/gameRules"
 
 const app = express()
 const httpServer = createServer(app)
-
-const queue: Set<ActiveUser> = new Set<ActiveUser>()
 
 const io: TicTacWoahSocketServer = new Server(httpServer, {
 	cors: {
@@ -93,20 +84,7 @@ io.use((socket, next) => {
 	})
 	next()
 })
-// io.use((socket, next) => {
-// 	const authToken = socket.handshake.auth.token
-// 	let user = activeUsers.get(authToken)
 
-// 	console.log("==== socket.io auth", authToken)
-
-// 	// If the user is not in the activeUsers map, add them
-// 	if (!user) {
-// 		user = { connections: new Set(), uniqueIdentifier: authToken }
-// 		activeUsers.set(authToken, user)
-// 	}
-// 	user.connections.add(socket)
-// 	next()
-// })
 const activeGames: Game[] = []
 
 class StandardGameFactory extends GameFactory {
@@ -118,7 +96,7 @@ class StandardGameFactory extends GameFactory {
 			],
 			boardSize: 20,
 			consecutiveTarget: 5,
-			rules: [anyMoveIsAllowed],
+			rules: [moveMustBeMadeByTheCorrectPlayer, moveMustBeWithinTheBoard, moveMustBeWithinTheBoard],
 			winConditions: [gameIsWonOnMoveNumber(10)],
 			endConditions: [gameIsDrawnWhenBoardIsFull],
 			decideWhoMayMoveNext: singleParticipantInSequence,
