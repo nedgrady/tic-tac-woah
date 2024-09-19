@@ -5,6 +5,7 @@ import { z } from "zod"
 const CreateGameSettingsSchema = z.object({
 	consecutiveTarget: z.number(),
 	participantCount: z.number(),
+	botCount: z.number(),
 })
 
 export type CreateGameSettings = z.infer<typeof CreateGameSettingsSchema>

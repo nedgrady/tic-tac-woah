@@ -25,7 +25,7 @@ function Queue() {
 	const socketState = useSocketState(socket)
 	// TODO - how to not have to hardcode/import this?
 	const navigate = useNavigate()
-	const { consecutiveTarget, participantCount } = Route.useSearch()
+	const { consecutiveTarget, participantCount, botCount } = Route.useSearch()
 
 	useEffectOnce(() => {
 		socket.auth = {
@@ -46,7 +46,7 @@ function Queue() {
 		const joinQueueRequest: JoinQueueRequest = {
 			humanCount: 1,
 			consecutiveTarget: consecutiveTarget,
-			aiCount: 1,
+			aiCount: botCount,
 		}
 		socket.emit("joinQueue", joinQueueRequest)
 
