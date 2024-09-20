@@ -1,6 +1,5 @@
-import { FormGroup, Button, Typography, Stack } from "@mui/material"
+import { FormGroup, Button, Typography, Grid, Paper } from "@mui/material"
 import { PropsWithChildren, ReactNode } from "react"
-import "./create-game-form.css"
 import { SelectionState, useSelectedDiff } from "./useSelectedDiff"
 import styled from "styled-components"
 
@@ -10,9 +9,34 @@ const maxBotParticipants = 5
 const Table = styled.table`
 	border-collapse: collapse;
 	border-style: hidden;
+	max-width: 100vw;
+	width: 300px;
 `
 const Td = styled.td`
 	border: 1px solid white;
+	height: 50px;
+	padding: 0;
+`
+
+const DummyTd = styled.td`
+	border: 1px solid white;
+	width: 15px;
+	height: 15px;
+`
+
+const SummaryPaper = styled(Paper)`
+	padding: 16px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+`
+
+const StyledGrid = styled(Grid)`
+	margin-bottom: 20px;
+`
+
+const ButtonContainer = styled.div`
+	display: flex;
+	align-items: center;
 `
 
 export interface CreateGameSettings {
@@ -51,7 +75,7 @@ const colorMap: Record<SelectionState, string> = {
 	remainsUnselected: "#808080",
 	remainsSelected: "#2626b0",
 	tentativelySelected: "#57b757",
-	tentativelyUnselected: "#c85d5d",
+	tentativelyUnselected: "#808080",
 }
 
 export function CreateGameForm({ onCreate }: CreateGameProps) {
@@ -60,7 +84,7 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 		selectEntity: selectHuman,
 		selections: humanSelections,
 		resetHover: resetHumanHover,
-	} = useSelectedDiff(maxHumanParticipants - 1)
+	} = useSelectedDiff(maxHumanParticipants)
 
 	const humanCount = humanSelections.filter(
 		selection => selection === "remainsSelected" || selection == "tentativelySelected",
@@ -71,7 +95,7 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 		selectEntity: selectBot,
 		selections: botSelections,
 		resetHover: resetBotHover,
-	} = useSelectedDiff(maxBotParticipants - 1)
+	} = useSelectedDiff(maxBotParticipants)
 
 	const botCount = botSelections.filter(
 		selection => selection === "remainsSelected" || selection == "tentativelySelected",
@@ -82,7 +106,7 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 		resetHover: resetConsecutiveTargetHover,
 		selectEntity: selectConsecutiveTarget,
 		selections: consecutiveTargetSelections,
-	} = useSelectedDiff(6)
+	} = useSelectedDiff(5)
 
 	const consecutiveTarget = consecutiveTargetSelections.filter(
 		selection => selection === "remainsSelected" || selection == "tentativelySelected",
@@ -90,93 +114,123 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 
 	return (
 		<FormGroup>
-			<Stack direction="row" spacing={2}>
-				<p>You + {humanCount} other human(s)</p>
-				{humanSelections.map((selectionState, humanIndex) => {
-					return (
-						<Button
-							key={humanIndex}
-							onMouseEnter={() => hoverOverHuman(humanIndex)}
-							onMouseLeave={resetHumanHover}
-							onClick={() => {
-								selectHuman(humanIndex)
-							}}
-						>
-							<HumanParticipantPosition fill={colorMap[selectionState]}>
-								{iconMap[selectionState]}
-							</HumanParticipantPosition>
-						</Button>
-					)
-				})}
-			</Stack>
-			<Stack direction="row" spacing={2}>
-				<p>You + {botCount} other bots(s)</p>
-				{botSelections.map((selectionState, botIndex) => (
-					<Button
-						key={botIndex}
-						onMouseEnter={() => hoverOverBot(botIndex)}
-						onMouseLeave={resetBotHover}
-						onClick={() => {
-							selectBot(botIndex)
-						}}
-					>
-						<BotParticipantPosition fill={colorMap[selectionState]}>
-							{iconMap[selectionState]}
-						</BotParticipantPosition>
-					</Button>
-				))}
-			</Stack>
-			<Typography id="consecutive-target" gutterBottom>
-				Consecutive Target: {consecutiveTarget}
-			</Typography>
-
-			<Table>
-				<tbody>
-					<tr>
-						<Td></Td>
-						<Td></Td>
-						<Td></Td>
-						<Td></Td>
-						<Td></Td>
-						<Td></Td>
-					</tr>
-					<tr>
-						{consecutiveTargetSelections.map((selectionState, consecutiveTargetIndex) => (
-							<Td key={consecutiveTargetIndex}>
-								<Button
-									fullWidth
-									onClick={() => selectConsecutiveTarget(consecutiveTargetIndex)}
-									onMouseEnter={() => hoverOverConsecutiveTarget(consecutiveTargetIndex)}
-									onMouseLeave={resetConsecutiveTargetHover}
-								>
-									<div style={{ color: colorMap[selectionState] }}>x</div>
-								</Button>
-							</Td>
+			<StyledGrid container spacing={2} alignItems="center">
+				<Grid item xs={12} sm={4}>
+					<Typography>Human Participants</Typography>
+				</Grid>
+				<Grid item xs={12} sm={8}>
+					<ButtonContainer>
+						{humanSelections.map((selectionState, humanIndex) => (
+							<Button
+								key={humanIndex}
+								onMouseEnter={() => hoverOverHuman(humanIndex)}
+								onMouseLeave={resetHumanHover}
+								onClick={() => selectHuman(humanIndex)}
+							>
+								<HumanParticipantPosition fill={colorMap[selectionState]}>
+									{iconMap[selectionState]}
+								</HumanParticipantPosition>
+							</Button>
 						))}
-					</tr>
-					<tr>
-						<Td></Td>
-						<Td></Td>
-						<Td></Td>
-						<Td></Td>
-						<Td></Td>
-						<Td></Td>
-					</tr>
-				</tbody>
-			</Table>
+					</ButtonContainer>
+				</Grid>
+			</StyledGrid>
+
+			<StyledGrid container spacing={2} alignItems="center">
+				<Grid item xs={12} sm={4}>
+					<Typography>Bot Participants</Typography>
+				</Grid>
+				<Grid item xs={12} sm={8}>
+					<ButtonContainer>
+						{botSelections.map((selectionState, botIndex) => (
+							<Button
+								key={botIndex}
+								onMouseEnter={() => hoverOverBot(botIndex)}
+								onMouseLeave={resetBotHover}
+								onClick={() => selectBot(botIndex)}
+							>
+								<BotParticipantPosition fill={colorMap[selectionState]}>
+									{iconMap[selectionState]}
+								</BotParticipantPosition>
+							</Button>
+						))}
+					</ButtonContainer>
+				</Grid>
+			</StyledGrid>
+
+			<StyledGrid container spacing={2} alignItems="center">
+				<Grid item xs={12} sm={4}>
+					<Typography>Consecutive Target</Typography>
+				</Grid>
+				<Grid item xs={12} sm={8}>
+					<Table>
+						<tbody>
+							<tr>
+								<DummyTd></DummyTd>
+								<DummyTd></DummyTd>
+								<DummyTd></DummyTd>
+								<DummyTd></DummyTd>
+								<DummyTd></DummyTd>
+							</tr>
+							<tr>
+								{consecutiveTargetSelections.map((selectionState, consecutiveTargetIndex) => (
+									<Td key={consecutiveTargetIndex}>
+										<Button
+											style={{ margin: 0 }}
+											onClick={() => selectConsecutiveTarget(consecutiveTargetIndex)}
+											onMouseEnter={() => hoverOverConsecutiveTarget(consecutiveTargetIndex)}
+											onMouseLeave={resetConsecutiveTargetHover}
+											fullWidth
+										>
+											<div
+												style={{
+													color: colorMap[selectionState],
+													fontSize: "x-large",
+												}}
+											>
+												{selectionState === "remainsSelected" ||
+												selectionState === "tentativelySelected"
+													? "❎"
+													: ""}
+											</div>
+										</Button>
+									</Td>
+								))}
+							</tr>
+							<tr>
+								<DummyTd></DummyTd>
+								<DummyTd></DummyTd>
+								<DummyTd></DummyTd>
+								<DummyTd></DummyTd>
+								<DummyTd></DummyTd>
+							</tr>
+						</tbody>
+					</Table>
+				</Grid>
+			</StyledGrid>
+
+			<SummaryPaper elevation={2}>
+				<Typography variant="h6" gutterBottom>
+					Game Summary
+				</Typography>
+				<Typography>
+					You + {humanCount} other human(s), {botCount} bot(s)
+				</Typography>
+				<Typography>Consecutive Target: {consecutiveTarget}</Typography>
+			</SummaryPaper>
 
 			<Button
 				variant="contained"
 				color="primary"
 				onClick={() =>
 					onCreate({
-						participantCount: 1,
+						participantCount: humanCount + 1, // +1 for the user
 						botCount,
 						consecutiveTarget,
 					})
 				}
 			>
-				Submit
+				Create Game
 			</Button>
 		</FormGroup>
 	)
