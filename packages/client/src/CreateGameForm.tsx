@@ -1,7 +1,17 @@
-import { FormGroup, Button, Typography, Grid, Paper } from "@mui/material"
-import { PropsWithChildren, ReactNode } from "react"
+import { FormGroup, Button, Typography, Grid, Paper, Switch, Stack, FormControlLabel } from "@mui/material"
+import { PropsWithChildren, ReactNode, useState } from "react"
 import { SelectionState, useSelectedDiff } from "./useSelectedDiff"
 import styled from "styled-components"
+
+function useSwitch(initialState: boolean) {
+	const [checked, setChecked] = useState(initialState)
+
+	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setChecked(event.target.checked)
+	}
+
+	return { checked, handleChange } as const
+}
 
 const maxHumanParticipants = 5
 const maxBotParticipants = 5
@@ -15,6 +25,7 @@ const Table = styled.table`
 const Td = styled.td`
 	border: 1px solid white;
 	height: 50px;
+	max-height: 50px;
 	padding: 0;
 `
 
@@ -64,6 +75,13 @@ const controller = (
 	/>
 )
 
+const lock = (
+	<path
+		transform="translate(14.75, 14.75) scale(0.9)"
+		d="M 5 10 C 6.921875 10 8.484375 8.4375 8.484375 6.515625 C 8.484375 5.613281 8.140625 4.789062 7.574219 4.171875 L 7.574219 2.574219 C 7.574219 1.15625 6.421875 0 5 0 C 3.578125 0 2.425781 1.15625 2.425781 2.574219 L 2.425781 4.171875 C 1.859375 4.789062 1.515625 5.613281 1.515625 6.515625 C 1.515625 8.4375 3.078125 10 5 10 Z M 5.453125 6.667969 L 5.453125 7.273438 C 5.453125 7.523438 5.25 7.726562 5 7.726562 C 4.75 7.726562 4.546875 7.523438 4.546875 7.273438 L 4.546875 6.667969 C 4.363281 6.527344 4.242188 6.308594 4.242188 6.0625 C 4.242188 5.644531 4.582031 5.304688 5 5.304688 C 5.417969 5.304688 5.757812 5.644531 5.757812 6.0625 C 5.757812 6.308594 5.636719 6.527344 5.453125 6.667969 Z M 3.332031 2.574219 C 3.332031 1.65625 4.082031 0.910156 5 0.910156 C 5.917969 0.910156 6.667969 1.65625 6.667969 2.574219 L 6.667969 3.457031 C 6.171875 3.183594 5.601562 3.03125 5 3.03125 C 4.398438 3.03125 3.828125 3.183594 3.332031 3.457031 Z M 3.332031 2.574219 "
+	/>
+)
+
 const iconMap: Record<SelectionState, ReactNode> = {
 	remainsUnselected: plus,
 	remainsSelected: controller,
@@ -73,8 +91,8 @@ const iconMap: Record<SelectionState, ReactNode> = {
 
 const colorMap: Record<SelectionState, string> = {
 	remainsUnselected: "#808080",
-	remainsSelected: "#2626b0",
-	tentativelySelected: "#57b757",
+	remainsSelected: "#57b757",
+	tentativelySelected: "#2626b0",
 	tentativelyUnselected: "#808080",
 }
 
@@ -84,11 +102,14 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 		selectEntity: selectHuman,
 		selections: humanSelections,
 		resetHover: resetHumanHover,
-	} = useSelectedDiff(maxHumanParticipants)
+		resetSelections: resetHumanSelections,
+	} = useSelectedDiff(maxHumanParticipants - 1) // -1 for the user
 
 	const humanCount = humanSelections.filter(
 		selection => selection === "remainsSelected" || selection == "tentativelySelected",
 	).length
+
+	const { checked: botsEnabled, handleChange: setBotsEnabled } = useSwitch(true)
 
 	const {
 		hoverOverEntity: hoverOverBot,
@@ -120,6 +141,17 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 				</Grid>
 				<Grid item xs={12} sm={8}>
 					<ButtonContainer>
+						<Button
+							key="user"
+							onMouseEnter={resetHumanHover}
+							onMouseLeave={resetHumanHover}
+							onClick={resetHumanSelections}
+						>
+							<HumanParticipantPosition fill={colorMap["remainsSelected"]}>
+								{lock}
+							</HumanParticipantPosition>
+						</Button>
+
 						{humanSelections.map((selectionState, humanIndex) => (
 							<Button
 								key={humanIndex}
@@ -138,23 +170,45 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 
 			<StyledGrid container spacing={2} alignItems="center">
 				<Grid item xs={12} sm={4}>
-					<Typography>Bot Participants</Typography>
+					<Stack direction="row" alignItems={"center"}>
+						<FormControlLabel
+							control={
+								<Switch
+									defaultChecked
+									value={botsEnabled}
+									onChange={setBotsEnabled}
+									sx={{
+										"&.MuiSwitch-root .MuiSwitch-track": {
+											backgroundColor: botsEnabled ? "#73af73" : "none",
+										},
+										"&.MuiSwitch-root .Mui-checked": {
+											color: colorMap["remainsSelected"],
+										},
+									}}
+								/>
+							}
+							label="Bots"
+							labelPlacement="start"
+						/>
+					</Stack>
 				</Grid>
 				<Grid item xs={12} sm={8}>
-					<ButtonContainer>
-						{botSelections.map((selectionState, botIndex) => (
-							<Button
-								key={botIndex}
-								onMouseEnter={() => hoverOverBot(botIndex)}
-								onMouseLeave={resetBotHover}
-								onClick={() => selectBot(botIndex)}
-							>
-								<BotParticipantPosition fill={colorMap[selectionState]}>
-									{iconMap[selectionState]}
-								</BotParticipantPosition>
-							</Button>
-						))}
-					</ButtonContainer>
+					{botsEnabled && (
+						<ButtonContainer>
+							{botSelections.map((selectionState, botIndex) => (
+								<Button
+									key={botIndex}
+									onMouseEnter={() => hoverOverBot(botIndex)}
+									onMouseLeave={resetBotHover}
+									onClick={() => selectBot(botIndex)}
+								>
+									<BotParticipantPosition fill={colorMap[selectionState]}>
+										{iconMap[selectionState]}
+									</BotParticipantPosition>
+								</Button>
+							))}
+						</ButtonContainer>
+					)}
 				</Grid>
 			</StyledGrid>
 
@@ -176,7 +230,6 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 								{consecutiveTargetSelections.map((selectionState, consecutiveTargetIndex) => (
 									<Td key={consecutiveTargetIndex}>
 										<Button
-											style={{ margin: 0 }}
 											onClick={() => selectConsecutiveTarget(consecutiveTargetIndex)}
 											onMouseEnter={() => hoverOverConsecutiveTarget(consecutiveTargetIndex)}
 											onMouseLeave={resetConsecutiveTargetHover}
@@ -191,7 +244,7 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 												{selectionState === "remainsSelected" ||
 												selectionState === "tentativelySelected"
 													? "❎"
-													: ""}
+													: " "}
 											</div>
 										</Button>
 									</Td>
