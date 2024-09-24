@@ -172,3 +172,23 @@ test("resetting the hover returns the previous selected states", () => {
 		"remainsUnselected",
 	])
 })
+
+test("resetting the selected entities returns to the initial state", () => {
+	const { result } = renderHook(() => useSelectedDiff(5))
+
+	act(() => {
+		result.current.selectEntity(4)
+	})
+
+	act(() => {
+		result.current.resetSelections()
+	})
+
+	expect(result.current.selections).toEqual<SelectionState[]>([
+		"remainsUnselected",
+		"remainsUnselected",
+		"remainsUnselected",
+		"remainsUnselected",
+		"remainsUnselected",
+	])
+})

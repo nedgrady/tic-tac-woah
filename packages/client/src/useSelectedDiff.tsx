@@ -8,6 +8,7 @@ export function useSelectedDiff(countOfEntities: number): {
 	selectEntity: (index: number) => void
 	hoverOverEntity: (index: number) => void
 	resetHover: () => void
+	resetSelections: () => void
 } {
 	const [selectedIndex, setSelectedIndex] = useState<ArrayIndex | null>(null)
 	const [hoveredIndex, setHoveredIndex] = useState<ArrayIndex | null>(null)
@@ -74,6 +75,9 @@ export function useSelectedDiff(countOfEntities: number): {
 		selectEntity: setSelectedIndex,
 		hoverOverEntity: setHoveredIndex,
 		resetHover: () => setHoveredIndex(null),
+		resetSelections: () => {
+			setSelectedIndex(null)
+		},
 	}
 }
 
