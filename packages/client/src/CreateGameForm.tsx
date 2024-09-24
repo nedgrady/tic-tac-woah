@@ -1,4 +1,15 @@
-import { FormGroup, Button, Typography, Grid, Paper, Switch, Stack, FormControlLabel } from "@mui/material"
+import {
+	FormGroup,
+	Button,
+	Typography,
+	Grid,
+	Paper,
+	Switch,
+	Stack,
+	FormControlLabel,
+	Divider,
+	Box,
+} from "@mui/material"
 import { PropsWithChildren, ReactNode, useState } from "react"
 import { SelectionState, useSelectedDiff } from "./useSelectedDiff"
 import styled from "styled-components"
@@ -109,7 +120,7 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 		selection => selection === "remainsSelected" || selection == "tentativelySelected",
 	).length
 
-	const { checked: botsEnabled, handleChange: setBotsEnabled } = useSwitch(true)
+	const { checked: botsEnabled, handleChange: setBotsEnabled } = useSwitch(false)
 
 	const {
 		hoverOverEntity: hoverOverBot,
@@ -127,7 +138,7 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 		resetHover: resetConsecutiveTargetHover,
 		selectEntity: selectConsecutiveTarget,
 		selections: consecutiveTargetSelections,
-	} = useSelectedDiff(5, 0)
+	} = useSelectedDiff(5, 2)
 
 	const consecutiveTarget = consecutiveTargetSelections.filter(
 		selection => selection === "remainsSelected" || selection == "tentativelySelected",
@@ -141,12 +152,7 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 				</Grid>
 				<Grid item xs={12} sm={8}>
 					<ButtonContainer>
-						<Button
-							key="user"
-							onMouseEnter={resetHumanHover}
-							onMouseLeave={resetHumanHover}
-							onClick={resetHumanSelections}
-						>
+						<Button key="user" onMouseEnter={() => hoverOverHuman(-1)} onClick={resetHumanSelections}>
 							<HumanParticipantPosition fill={colorMap["remainsSelected"]}>
 								{lock}
 							</HumanParticipantPosition>
@@ -165,50 +171,6 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 							</Button>
 						))}
 					</ButtonContainer>
-				</Grid>
-			</StyledGrid>
-
-			<StyledGrid container spacing={2} alignItems="center">
-				<Grid item xs={12} sm={4}>
-					<Stack direction="row" alignItems={"center"}>
-						<FormControlLabel
-							control={
-								<Switch
-									defaultChecked
-									value={botsEnabled}
-									onChange={setBotsEnabled}
-									sx={{
-										"&.MuiSwitch-root .MuiSwitch-track": {
-											backgroundColor: botsEnabled ? "#73af73" : "none",
-										},
-										"&.MuiSwitch-root .Mui-checked": {
-											color: colorMap["remainsSelected"],
-										},
-									}}
-								/>
-							}
-							label="Bots"
-							labelPlacement="start"
-						/>
-					</Stack>
-				</Grid>
-				<Grid item xs={12} sm={8}>
-					{botsEnabled && (
-						<ButtonContainer>
-							{botSelections.map((selectionState, botIndex) => (
-								<Button
-									key={botIndex}
-									onMouseEnter={() => hoverOverBot(botIndex)}
-									onMouseLeave={resetBotHover}
-									onClick={() => selectBot(botIndex)}
-								>
-									<BotParticipantPosition fill={colorMap[selectionState]}>
-										{iconMap[selectionState]}
-									</BotParticipantPosition>
-								</Button>
-							))}
-						</ButtonContainer>
-					)}
 				</Grid>
 			</StyledGrid>
 
@@ -262,15 +224,66 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 				</Grid>
 			</StyledGrid>
 
+			<StyledGrid container spacing={2} alignItems="center">
+				<Grid item xs={12} sm={4}>
+					<FormControlLabel
+						sx={{ marginLeft: "4px" }}
+						control={
+							<Switch
+								value={botsEnabled}
+								onChange={setBotsEnabled}
+								sx={{
+									"&.MuiSwitch-root .MuiSwitch-track": {
+										backgroundColor: botsEnabled ? colorMap["remainsSelected"] : "none",
+									},
+									"&.MuiSwitch-root .Mui-checked": {
+										color: colorMap["remainsSelected"],
+									},
+								}}
+							/>
+						}
+						label="Bots"
+						labelPlacement="start"
+					/>
+				</Grid>
+				<Grid item xs={12} sm={8}>
+					{botsEnabled && (
+						<ButtonContainer>
+							{botSelections.map((selectionState, botIndex) => (
+								<Button
+									key={botIndex}
+									onMouseEnter={() => hoverOverBot(botIndex)}
+									onMouseLeave={resetBotHover}
+									onClick={() => selectBot(botIndex)}
+								>
+									<BotParticipantPosition fill={colorMap[selectionState]}>
+										{iconMap[selectionState]}
+									</BotParticipantPosition>
+								</Button>
+							))}
+						</ButtonContainer>
+					)}
+				</Grid>
+			</StyledGrid>
+			{/* 
 			<SummaryPaper elevation={2}>
 				<Typography variant="h6" gutterBottom>
 					Game Summary
 				</Typography>
+				<Stack height="2em" direction="row" alignContent="center">
+					<HumanParticipantPosition>{controller}</HumanParticipantPosition>
+					<Typography>{humanCount + 1}</Typography>
+				</Stack>
+
+				<Stack height="2em" direction="row" alignContent="center">
+					<BotParticipantPosition>{controller}</BotParticipantPosition>
+					<Typography>{botsEnabled ? botCount : "0"}</Typography>
+				</Stack>
 				<Typography>
 					You + {humanCount} other human(s), {botCount} bot(s)
 				</Typography>
 				<Typography>Consecutive Target: {consecutiveTarget}</Typography>
-			</SummaryPaper>
+			</SummaryPaper> */}
 
 			<Button
 				variant="contained"
@@ -283,6 +296,12 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 					})
 				}
 			>
+				<Stack height="2em" direction="row" alignContent="center">
+					<HumanParticipantPosition>{controller}</HumanParticipantPosition>
+					<Typography>{humanCount + 1}</Typography>
+					<BotParticipantPosition>{controller}</BotParticipantPosition>
+					<Typography>{botsEnabled ? botCount : "0"}</Typography>
+				</Stack>
 				Create Game
 			</Button>
 		</FormGroup>
