@@ -3,14 +3,17 @@ import { ArrayIndex } from "types"
 
 export type SelectionState = "remainsUnselected" | "remainsSelected" | "tentativelySelected" | "tentativelyUnselected"
 
-export function useSelectedDiff(countOfEntities: number): {
+export function useSelectedDiff(
+	countOfEntities: number,
+	initialSelection: number | null = null,
+): {
 	selections: SelectionState[]
 	selectEntity: (index: number) => void
 	hoverOverEntity: (index: number) => void
 	resetHover: () => void
 	resetSelections: () => void
 } {
-	const [selectedIndex, setSelectedIndex] = useState<ArrayIndex | null>(null)
+	const [selectedIndex, setSelectedIndex] = useState<ArrayIndex | null>(initialSelection)
 	const [hoveredIndex, setHoveredIndex] = useState<ArrayIndex | null>(null)
 
 	function state(): SelectionState[] {

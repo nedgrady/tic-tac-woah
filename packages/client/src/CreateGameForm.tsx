@@ -127,7 +127,7 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 		resetHover: resetConsecutiveTargetHover,
 		selectEntity: selectConsecutiveTarget,
 		selections: consecutiveTargetSelections,
-	} = useSelectedDiff(5)
+	} = useSelectedDiff(5, 0)
 
 	const consecutiveTarget = consecutiveTargetSelections.filter(
 		selection => selection === "remainsSelected" || selection == "tentativelySelected",

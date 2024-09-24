@@ -192,3 +192,13 @@ test("resetting the selected entities returns to the initial state", () => {
 		"remainsUnselected",
 	])
 })
+
+test("allow an optional initial index", () => {
+	const { result } = renderHook(() => useSelectedDiff(3, 0))
+
+	expect(result.current.selections).toEqual<SelectionState[]>([
+		"remainsSelected",
+		"remainsUnselected",
+		"remainsUnselected",
+	])
+})

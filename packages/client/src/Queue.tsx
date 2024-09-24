@@ -44,7 +44,7 @@ function Queue() {
 		})
 
 		const joinQueueRequest: JoinQueueRequest = {
-			humanCount: 1,
+			humanCount: participantCount,
 			consecutiveTarget: consecutiveTarget,
 			aiCount: botCount,
 		}
