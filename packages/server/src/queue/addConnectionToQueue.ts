@@ -16,6 +16,7 @@ type QueueEvents = {
 	queueAdded: QueueAddedListener
 }
 
+// TODO - this should probably be generic
 export class TicTacWoahQueue {
 	private readonly _emitter = new EventEmitter() as TypedEmitter<QueueEvents>
 
