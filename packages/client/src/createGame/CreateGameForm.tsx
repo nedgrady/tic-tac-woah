@@ -153,7 +153,6 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 										>
 											<div
 												style={{
-													color: colorMap[selectionState],
 													fontSize: "x-large",
 												}}
 											>
