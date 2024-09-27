@@ -2,6 +2,7 @@ import { ActiveUser, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketSe
 import { EventEmitter } from "events"
 import _ from "lodash"
 import TypedEmitter from "typed-emitter"
+import { JoinQueueRequestSchema } from "types"
 
 export type QueueAddedListener = (queueState: readonly QueueItem[]) => void
 
@@ -63,6 +64,7 @@ export class TicTacWoahQueue {
 
 export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	return (socket, next) => {
+		// TODO - ensure the correct object shape, perhaps need to add some sort of cross-cutting filter ability
 		socket.on("joinQueue", (joinQueueRequest, callback) => {
 			const queueItem: QueueItem = {
 				queuer: socket.data.activeUser,
@@ -72,39 +74,10 @@ export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketSe
 			}
 
 			queue.addItem(queueItem)
+			console.log(queue.items)
 			callback && callback(0)
 		})
 
 		next()
 	}
 }
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-function loggedMethod(_target: any, _propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
-	const originalMethod = descriptor.value
-
-	function replacementMethod(this: any, ...args: any[]) {
-		if (isActiveUser(args[0])) {
-			console.log(`Active user: ${args[0].uniqueIdentifier}`)
-		}
-
-		console.log(`Calling ${_propertyKey} with`, args)
-		const result = originalMethod.apply(this, args)
-
-		return result
-	}
-
-	descriptor.value = replacementMethod
-	return descriptor
-
-	function isActiveUser(value: any): value is ActiveUser {
-		return (
-			typeof value === "object" &&
-			value !== null &&
-			value.connections instanceof Set &&
-			typeof value.uniqueIdentifier === "string" &&
-			(typeof value.objectId === "string" || typeof value.objectId === "undefined")
-		)
-	}
-}
-/* eslint-enable @typescript-eslint/no-explicit-any */

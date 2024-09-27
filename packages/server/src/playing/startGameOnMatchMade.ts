@@ -2,7 +2,7 @@ import { Game } from "domain/Game"
 import { GameFactory } from "playing/GameFactory"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
-import { GameWinDto, CompletedMoveDto, GameDrawDto, GameStartDto } from "types"
+import { GameWinDto, CompletedMoveDto, GameDrawDto, GameStartDto, CompletedMoveDtoSchema } from "types"
 
 export function startGameOnMatchMade(
 	matchmakingBroker: MatchmakingBroker,

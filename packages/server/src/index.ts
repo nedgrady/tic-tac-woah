@@ -33,6 +33,7 @@ import { singleParticipantInSequence } from "domain/moveOrderRules/singlePartici
 import { AiParticipantFactory, StandardMathcmakingStrategy } from "matchmaking/StandardMathcmakingStrategy"
 import { AiParticipant, MadeMatch } from "matchmaking/MatchmakingStrategy"
 import { moveMustBeMadeByTheCorrectPlayer, moveMustBeWithinTheBoard } from "domain/gameRules/gameRules"
+import { gameIsAlwaysDrawn } from "domain/drawConditions/support/gameIsAlwaysDrawn"
 
 const app = express()
 const httpServer = createServer(app)
@@ -97,7 +98,7 @@ class StandardGameFactory extends GameFactory {
 			boardSize: 20,
 			consecutiveTarget: 5,
 			rules: [moveMustBeMadeByTheCorrectPlayer, moveMustBeWithinTheBoard, moveMustBeWithinTheBoard],
-			winConditions: [gameIsWonOnMoveNumber(10)],
+			winConditions: [gameIsWonOnMoveNumber(6)],
 			endConditions: [gameIsDrawnWhenBoardIsFull],
 			decideWhoMayMoveNext: singleParticipantInSequence,
 		})

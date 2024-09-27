@@ -5,7 +5,7 @@ import { Provider } from "react-redux"
 import { store } from "./redux/store"
 import ErrorBoundary from "./logging/ErrorBoundary"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { SocketProvider } from "./ticTacWoahSocket"
+import { SocketHistoryProvider, SocketProvider } from "./ticTacWoahSocket"
 
 const queryClient = new QueryClient()
 
@@ -14,9 +14,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 		<Provider store={store}>
 			<QueryClientProvider client={queryClient}>
 				<SocketProvider>
-					<App />
+					<SocketHistoryProvider>
+						<App />
+					</SocketHistoryProvider>
 				</SocketProvider>
 			</QueryClientProvider>
 		</Provider>
-	</React.StrictMode>
+	</React.StrictMode>,
 )

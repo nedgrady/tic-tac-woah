@@ -4,11 +4,13 @@ import styled from "styled-components"
 import { useElementSize } from "usehooks-ts"
 import Board from "../Board"
 import { useMakeMove } from "../useMakeMove"
-import { useTicTacWoahSocket } from "../ticTacWoahSocket"
+import { useSocketHistory, useTicTacWoahSocket } from "../ticTacWoahSocket"
 import { GameWinSchema, CompletedMoveDtoSchema, GameDrawDtoScehma } from "types"
 import { useEffectOnce } from "react-use"
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material"
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack } from "@mui/material"
 import { useNavigate } from "@tanstack/react-router"
+import { CreateGameSettings } from "../routes/queue.lazy"
+import { ButtonLink } from "../Link"
 
 const FlexyGameContainer = styled.div`
 	@media all and (orientation: portrait) {
@@ -104,30 +106,44 @@ export function Game() {
 
 	const winningMoves = useAppSelector(selectWinningMoves)
 	const game = useAppSelector(state => state.gameReducer.game)
-
-	console.log("Game", game)
-
 	const makeMove = useMakeMove(game.id)
-
 	const navigate = useNavigate()
 
 	const playerTokens = new Map<string, Token>(game.players.map((player, index) => [player, tokens[index]]))
 	const winningToken = playerTokens.get(winningMoves[0]?.mover)
+
+	const joinQueueRequestHistory = useSocketHistory("joinQueue")
+
+	const lastCreateGameSettings: CreateGameSettings = {
+		botCount: joinQueueRequestHistory[joinQueueRequestHistory.length - 1].aiCount,
+		consecutiveTarget: joinQueueRequestHistory[joinQueueRequestHistory.length - 1].consecutiveTarget,
+		participantCount: joinQueueRequestHistory[joinQueueRequestHistory.length - 1].humanCount,
+	}
 	return (
 		<>
 			<Dialog open={winningMoves.length > 0}>
 				<DialogTitle>{winningMoves[0]?.mover} Wins</DialogTitle>
 				<DialogContent>With the dubiously discovered token {winningToken}</DialogContent>
-				<Button onClick={() => navigate({ to: "/queue" })}>Play Again</Button>
-				<Button onClick={() => navigate({ to: "/" })}>Home</Button>
+				<Stack direction="column" justifyItems="center" alignItems="center">
+					<ButtonLink to="/queue" search={lastCreateGameSettings} fullWidth size="large">
+						Play Again
+					</ButtonLink>
+					<ButtonLink to="/" fullWidth size="large">
+						Home
+					</ButtonLink>
+				</Stack>
 			</Dialog>
 			<Dialog open={game.draws.length > 0}>
 				<DialogTitle>Draw</DialogTitle>
 				<DialogContent>Game drawn!</DialogContent>
-				<DialogActions>
-					<Button onClick={() => navigate({ to: "/queue" })}>Play Again</Button>
-					<Button onClick={() => navigate({ to: "/" })}>Home</Button>
-				</DialogActions>
+				<Stack direction="column" justifyItems="center" alignItems="center">
+					<ButtonLink to="/queue" search={lastCreateGameSettings} fullWidth size="large">
+						Play Again
+					</ButtonLink>
+					<ButtonLink to="/" fullWidth size="large">
+						Home
+					</ButtonLink>
+				</Stack>
 			</Dialog>
 			<FlexyGameContainer ref={elementSizeRef}>
 				<Board
