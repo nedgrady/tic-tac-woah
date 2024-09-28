@@ -13,7 +13,7 @@ function GameRoute() {
 	// TODO - this looks simiar to the logic in Play.tsx
 	const { game } = useAppSelector(state => state.gameReducer)
 
-	if (game.id === "Empty Game") return <Navigate to="/queue" />
+	if (game.id === "Empty Game") return <Navigate to="/play" />
 
 	return <Game />
 }
