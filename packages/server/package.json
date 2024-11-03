@@ -39,6 +39,7 @@
 	},
 	"dependencies": {
 		"@socket.io/admin-ui": "^0.5.1",
+		"@tanstack/router-vite-plugin": "^1.78.3",
 		"applicationinsights": "^2.9.0",
 		"cors": "^2.8.5",
 		"debug": "^4.3.4",

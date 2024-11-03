@@ -1,30 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router"
-
 import { Queue } from "../Queue"
 import { z } from "zod"
+import { router } from "../router"
+import { zodSearchValidator } from "@tanstack/router-zod-adapter"
 
 const CreateGameSettingsSchema = z.object({
-	consecutiveTarget: z.number().int().negative(),
+	consecutiveTarget: z.number().int().positive(),
 	participantCount: z.number().int().positive(),
-	botCount: z.number(),
+	botCount: z.number().int().positive(),
 })
 
 export type CreateGameSettings = z.infer<typeof CreateGameSettingsSchema>
 
 export const Route = createFileRoute("/queue")({
 	component: Queue,
-	beforeLoad: async () => {
-		// TODO - how to not have to hardcode/import this?
-		console.log("Not implemented 123")
-		throw new Error("Not implemented 123")
+	onError: () => {
+		router.navigate({ to: "/play" })
 	},
-	onError: (error: Error) => {
-		console.error("Error loading queue", error)
-		Route.router?.navigate({ to: "/" })
-	},
-	validateSearch: () => {
-		// CreateGameSettingsSchema.parse
-		console.log("Not implemented 123")
-		throw new Error("Not implemented 123")
-	},
+	validateSearch: zodSearchValidator(CreateGameSettingsSchema),
 })

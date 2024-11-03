@@ -1,6 +1,6 @@
 import react from "@vitejs/plugin-react-swc"
 import { defineConfig } from "vitest/config"
-import { TanStackRouterVite } from "@tanstack/router-vite-plugin"
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite"
 import svgr from "vite-plugin-svgr"
 
 // https://vitejs.dev/config/
