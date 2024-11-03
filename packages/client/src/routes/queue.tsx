@@ -5,9 +5,9 @@ import { router } from "../router"
 import { zodSearchValidator } from "@tanstack/router-zod-adapter"
 
 const CreateGameSettingsSchema = z.object({
-	consecutiveTarget: z.number().int().positive(),
-	participantCount: z.number().int().positive(),
-	botCount: z.number().int().positive(),
+	consecutiveTarget: z.number().int().min(1).max(5),
+	participantCount: z.number().int().min(1).max(5),
+	botCount: z.number().int().min(0).max(5),
 })
 
 export type CreateGameSettings = z.infer<typeof CreateGameSettingsSchema>
