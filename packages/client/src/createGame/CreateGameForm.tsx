@@ -227,7 +227,7 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 				onClick={() =>
 					onCreate({
 						participantCount: humanCount + 1, // +1 for the user
-						botCount,
+						botCount: botsEnabled ? botCount : 0,
 						consecutiveTarget,
 					})
 				}

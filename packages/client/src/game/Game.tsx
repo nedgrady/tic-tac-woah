@@ -9,7 +9,7 @@ import { GameWinSchema, CompletedMoveDtoSchema, GameDrawDtoScehma } from "types"
 import { useEffectOnce } from "react-use"
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack } from "@mui/material"
 import { useNavigate } from "@tanstack/react-router"
-import { CreateGameSettings } from "../routes/queue.lazy"
+import { CreateGameSettings } from "../routes/queue"
 import { ButtonLink } from "../Link"
 
 const FlexyGameContainer = styled.div`

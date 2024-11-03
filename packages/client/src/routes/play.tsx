@@ -1,7 +1,7 @@
-import { createLazyFileRoute, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { CreateGameForm } from "../createGame/CreateGameForm"
 
-export const Route = createLazyFileRoute("/play")({
+export const Route = createFileRoute("/play")({
 	component: CreateGame,
 })
 

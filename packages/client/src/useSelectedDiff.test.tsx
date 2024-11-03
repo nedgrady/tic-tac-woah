@@ -1,7 +1,4 @@
 import { renderHook, act } from "@testing-library/react"
-import { useState } from "react"
-import { ArrayIndex } from "types"
-
 import { expect, test } from "vitest"
 import { useSelectedDiff, SelectionState } from "./useSelectedDiff"
 
