@@ -214,4 +214,21 @@ app.get("/health", (_, response) => {
 // 	applicationInsights.flush()
 // })
 
+if (import.meta.hot) {
+	import.meta.hot.on("vite:beforeFullReload", async () => {
+		// await httpServer.close() with promise
+		await new Promise<void>((resolve, reject) => {
+			httpServer.close(error => {
+				if (error) {
+					console.error("Error closing server", error)
+					reject(error)
+				} else {
+					console.log("Server closed successfully")
+					resolve()
+				}
+			})
+		})
+	})
+}
+
 httpServer.listen(8080)

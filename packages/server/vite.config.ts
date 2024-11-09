@@ -5,7 +5,7 @@ import tsconfigPaths from "vite-tsconfig-paths"
 export default defineConfig({
 	test: {
 		environment: "node",
-		watch: false,
+		watch: true,
 		setupFiles: ["./src/testSetup.ts"],
 	},
 	resolve: {

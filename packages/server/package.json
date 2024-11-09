@@ -4,7 +4,7 @@
 	"version": "1.0.0",
 	"description": "",
 	"scripts": {
-		"start:dev": "npx nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node -r tsconfig-paths/register src/index.ts\"",
+		"start:dev": "npx vite-node --watch ./src/index.ts",
 		"start:prod": "ts-node -r tsconfig-paths/register src/index.ts",
 		"build": "tsc",
 		"test": "vitest"

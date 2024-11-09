@@ -2,7 +2,8 @@
 	"compilerOptions": {
 		"outDir": "dist",
 		"target": "es6",
-		"module": "CommonJS",
+		"module": "esnext",
+		"moduleResolution": "node",
 		"strict": true,
 		"allowJs": true,
 		"strictNullChecks": true,
@@ -16,7 +17,7 @@
 			"*": ["*"]
 		}
 	},
-	"include": ["src"],
+	"include": ["src", "env.d.ts"],
 	"ts-node": {
 		"require": ["tsconfig-paths/register"]
 	}
