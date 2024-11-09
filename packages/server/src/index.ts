@@ -231,4 +231,8 @@ if (import.meta.hot) {
 	})
 }
 
+httpServer.on("listening", () => {
+	console.log("Server listening on port 8080")
+})
+
 httpServer.listen(8080)
