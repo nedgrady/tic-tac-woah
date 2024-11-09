@@ -29,7 +29,6 @@
 		"rimraf": "^2.7.1",
 		"socket.io-client": "^4.7.4",
 		"supertest": "^6.3.4",
-		"ts-node": "^8.10.2",
 		"tsconfig-paths": "^4.2.0",
 		"typed-emitter": "^2.1.0",
 		"typescript": "^5.4.2",

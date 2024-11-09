@@ -17,8 +17,5 @@
 			"*": ["*"]
 		}
 	},
-	"include": ["src", "env.d.ts"],
-	"ts-node": {
-		"require": ["tsconfig-paths/register"]
-	}
+	"include": ["src", "env.d.ts"]
 }
