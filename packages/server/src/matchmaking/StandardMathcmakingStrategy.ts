@@ -1,6 +1,7 @@
-import { AiParticipant, MadeMatch, MatchmakingStrategy } from "./MatchmakingStrategy"
+import { MadeMatch, MatchmakingStrategy } from "./MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
 import _ from "lodash"
+import { AiParticipantFactory } from "aiAgents/AiParticipantFactory"
 
 function groupBy<TKey, TValue>(list: readonly TValue[], keyGetter: (item: TValue) => TKey) {
 	const map = new Map<TKey, TValue[]>()
@@ -17,10 +18,6 @@ function groupBy<TKey, TValue>(list: readonly TValue[], keyGetter: (item: TValue
 }
 
 export type QueueItemCompatibilityFunction = (item: QueueItem) => string
-
-export abstract class AiParticipantFactory {
-	abstract createAiAgent(): AiParticipant
-}
 
 export class StandardMathcmakingStrategy extends MatchmakingStrategy {
 	constructor(

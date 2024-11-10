@@ -7,40 +7,11 @@ import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoah
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { coorinatesFactory, joinQueueRequestFactory, madeMatchRulesFactory } from "testingUtilities/factories"
-import { AiParticipant, MadeMatch, MatchmakingStrategy } from "matchmaking/MatchmakingStrategy"
+import { MadeMatch, MatchmakingStrategy } from "matchmaking/MatchmakingStrategy"
 import { ReturnSingleGameFactory } from "../support/ReturnSingleGameFactory"
 import _ from "lodash"
-import { Move } from "domain/Move"
 import Coordinates from "domain/Coordinates"
-
-class MakeSequenceOfMoves implements AiParticipant {
-	// 	private gameOptionsIterator: Iterator<Partial<CreateGameOptions>>
-
-	// constructor(...gameOptions: readonly Partial<CreateGameOptions>[]) {
-	// 	super()
-
-	// 	this.gameOptionsIterator = gameOptions[Symbol.iterator]()
-	// }
-	private readonly coordinatesIterator: Iterator<Coordinates>
-
-	constructor(
-		coordinates: readonly Coordinates[],
-		public readonly id: string,
-	) {
-		this.coordinatesIterator = coordinates[Symbol.iterator]()
-	}
-
-	nextMove(): Move {
-		const { value: currentMove, done } = this.coordinatesIterator.next()
-
-		if (done) throw new Error("No more coordinates to return")
-
-		return {
-			placement: currentMove,
-			mover: "TODO",
-		}
-	}
-}
+import { MakeSequenceOfMoves } from "aiAgents/support/MakeSequenceOfMoves"
 
 class AlwaysMatchVsSingleAiOpponent extends MatchmakingStrategy {
 	constructor(private aiMoves: readonly Coordinates[]) {

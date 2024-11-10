@@ -4,17 +4,10 @@ import { createServer } from "http"
 import cors from "cors"
 import { Server } from "socket.io"
 import path from "path"
-
 import { instrument } from "@socket.io/admin-ui"
 import { QueueResponse } from "types"
 // import applicationInsights from "./logging/applicationInsights"
-import { Participant } from "domain/Participant"
-import {
-	ActiveUser,
-	TicTacWoahSocketServer,
-	TicTacWoahSocketServerMiddleware,
-	TicTacWoahUserHandle,
-} from "TicTacWoahSocketServer"
+import { TicTacWoahSocketServer, TicTacWoahSocketServerMiddleware, TicTacWoahUserHandle } from "TicTacWoahSocketServer"
 import { identifySocketsByWebSocketId } from "auth/socketIdentificationStrategies"
 import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
@@ -25,15 +18,14 @@ import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { GameFactory } from "playing/GameFactory"
 import { Game } from "domain/Game"
-import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
 import { gameIsWonOnMoveNumber } from "domain/winConditions/support/gameIsWonOnMoveNumber"
 import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
 import { gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
 import { singleParticipantInSequence } from "domain/moveOrderRules/singleParticipantInSequence"
-import { AiParticipantFactory, StandardMathcmakingStrategy } from "matchmaking/StandardMathcmakingStrategy"
-import { AiParticipant, MadeMatch } from "matchmaking/MatchmakingStrategy"
+import { StandardMathcmakingStrategy } from "matchmaking/StandardMathcmakingStrategy"
+import { MadeMatch } from "matchmaking/MatchmakingStrategy"
 import { moveMustBeMadeByTheCorrectPlayer, moveMustBeWithinTheBoard } from "domain/gameRules/gameRules"
-import { gameIsAlwaysDrawn } from "domain/drawConditions/support/gameIsAlwaysDrawn"
+import { RandomlyMovingAiParticipantFactory } from "aiAgents/RandomlyMovingAiParticipantFactory"
 
 const app = express()
 const httpServer = createServer(app)
@@ -104,24 +96,6 @@ class StandardGameFactory extends GameFactory {
 		})
 		activeGames.push(newGame)
 		return newGame
-	}
-}
-
-class RandomlyMovingAiParticipantFactory extends AiParticipantFactory {
-	createAiAgent(): AiParticipant {
-		const id = crypto.randomUUID()
-		return {
-			id: crypto.randomUUID(),
-			nextMove: () => {
-				return {
-					placement: {
-						x: Math.floor(Math.min(Math.random() * 20)),
-						y: Math.floor(Math.min(Math.random() * 20)),
-					},
-					mover: id,
-				}
-			},
-		}
 	}
 }
 

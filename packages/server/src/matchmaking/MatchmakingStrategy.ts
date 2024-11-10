@@ -1,11 +1,6 @@
-import { Move } from "domain/Move"
 import { QueueItem } from "queue/addConnectionToQueue"
 import { ActiveUser } from "TicTacWoahSocketServer"
-
-export abstract class AiParticipant {
-	abstract get id(): string
-	abstract nextMove(): Move
-}
+import { AiParticipant } from "../aiAgents/AiParticipant"
 
 export interface MadeMatch {
 	readonly participants: readonly Participant[]

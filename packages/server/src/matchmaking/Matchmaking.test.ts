@@ -1,18 +1,16 @@
 import { expect, test } from "vitest"
-import { AiParticipant, MadeMatch } from "./MatchmakingStrategy"
+import { MadeMatch } from "./MatchmakingStrategy"
 import { QueueItem } from "queue/addConnectionToQueue"
 import { activeUserFactory, aiParticipantFactory, queueItemFactory } from "testingUtilities/factories"
-import {
-	AiParticipantFactory,
-	QueueItemCompatibilityFunction,
-	StandardMathcmakingStrategy,
-} from "./StandardMathcmakingStrategy"
+import { QueueItemCompatibilityFunction, StandardMathcmakingStrategy } from "./StandardMathcmakingStrategy"
+import { AnyAiParticipantFactory } from "../aiAgents/support/AnyAiParticipantFactory"
+import { ReturnSequenceOfAiParticipants } from "aiAgents/support/ReturnSequenceOfAiParticipants"
 
-class ThrowingIterator<TEntityToReturn> {
+export class ThrowingIterator<TEntityToReturn> {
 	private iterator: Iterator<TEntityToReturn>
 
 	constructor(
-		private readonly entities: TEntityToReturn[],
+		private readonly entities: readonly TEntityToReturn[],
 		private readonly entityName: string,
 	) {
 		this.iterator = entities[Symbol.iterator]()
@@ -24,25 +22,6 @@ class ThrowingIterator<TEntityToReturn> {
 		if (done) throw new Error(`No more entities of type ${this.entityName} to return`)
 
 		return currentEntity
-	}
-}
-
-class ReturnSequenceOfAiParticipants extends AiParticipantFactory {
-	private gameOptionsIterator: ThrowingIterator<AiParticipant>
-
-	constructor(private readonly aiParticipants: AiParticipant[]) {
-		super()
-		this.gameOptionsIterator = new ThrowingIterator(aiParticipants, "AiParticipant")
-	}
-
-	createAiAgent(): AiParticipant {
-		return this.gameOptionsIterator.next()
-	}
-}
-
-class AnyAiParticipantFactory extends AiParticipantFactory {
-	createAiAgent(): AiParticipant {
-		return aiParticipantFactory.build()
 	}
 }
 
