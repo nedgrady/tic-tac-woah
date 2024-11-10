@@ -9,7 +9,7 @@ test.each([
 	{ x: 0, y: 0 },
 	{ x: 19, y: 19 },
 ])("When the underlying model returns '%s' the agent returns the move", async move => {
-	const model2 = new ReturnSequenceOfGenerateContentResultsGeneratriveModel(
+	const model = new ReturnSequenceOfGenerateContentResultsGeneratriveModel(
 		generateContentResultFactory.build({
 			response: {
 				text: () => JSON.stringify(move),
@@ -17,7 +17,7 @@ test.each([
 		}),
 	)
 
-	const aiAgentUnderTest = new GoogleGenerativeModelAiPariticpantFactory(model2).createAiAgent()
+	const aiAgentUnderTest = new GoogleGenerativeModelAiPariticpantFactory(model).createAiAgent()
 
 	const receivedMove = await aiAgentUnderTest.nextMove()
 
@@ -27,7 +27,7 @@ test.each([
 test.each([{ a: 1, b: 2 }, "not an object", [], [{ x: 1, y: 1 }], {}, { x: 1 }, { y: 1 }])(
 	"When the underlying model returns '%s' the agent throws an error",
 	async move => {
-		const model2 = new ReturnSequenceOfGenerateContentResultsGeneratriveModel(
+		const model = new ReturnSequenceOfGenerateContentResultsGeneratriveModel(
 			generateContentResultFactory.build({
 				response: {
 					text: () => JSON.stringify(move),
@@ -35,7 +35,7 @@ test.each([{ a: 1, b: 2 }, "not an object", [], [{ x: 1, y: 1 }], {}, { x: 1 }, 
 			}),
 		)
 
-		const aiAgentUnderTest = new GoogleGenerativeModelAiPariticpantFactory(model2).createAiAgent()
+		const aiAgentUnderTest = new GoogleGenerativeModelAiPariticpantFactory(model).createAiAgent()
 
 		expect(async () => await aiAgentUnderTest.nextMove()).rejects.toThrowError()
 	},
