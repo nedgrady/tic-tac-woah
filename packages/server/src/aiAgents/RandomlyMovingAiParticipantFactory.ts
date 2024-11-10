@@ -1,5 +1,6 @@
 import { AiParticipant } from "aiAgents/AiParticipant"
 import { AiParticipantFactory } from "aiAgents/AiParticipantFactory"
+import { Move } from "domain/Move"
 
 export class RandomlyMovingAiParticipantFactory extends AiParticipantFactory {
 	createAiAgent(): AiParticipant {
@@ -7,14 +8,26 @@ export class RandomlyMovingAiParticipantFactory extends AiParticipantFactory {
 		return {
 			id: crypto.randomUUID(),
 			nextMove: () => {
-				return {
+				return Promise.resolve({
 					placement: {
 						x: Math.floor(Math.min(Math.random() * 20)),
 						y: Math.floor(Math.min(Math.random() * 20)),
 					},
 					mover: id,
-				}
+				})
 			},
+		}
+	}
+}
+
+class RandomlyMovingAiParticipant extends AiParticipant {
+	async nextMove(): Promise<Move> {
+		return {
+			placement: {
+				x: Math.floor(Math.min(Math.random() * 20)),
+				y: Math.floor(Math.min(Math.random() * 20)),
+			},
+			mover: this.id,
 		}
 	}
 }

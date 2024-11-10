@@ -74,7 +74,7 @@ export function addConnectionToQueue(queue: TicTacWoahQueue): TicTacWoahSocketSe
 			}
 
 			queue.addItem(queueItem)
-			console.log(queue.items)
+
 			callback && callback(0)
 		})
 

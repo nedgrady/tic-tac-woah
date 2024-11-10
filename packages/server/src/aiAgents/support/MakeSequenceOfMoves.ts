@@ -13,7 +13,7 @@ export class MakeSequenceOfMoves implements AiParticipant {
 		this.coordinatesIterator = new ThrowingIterator(coordinates, "Coordinates")
 	}
 
-	nextMove(): Move {
+	async nextMove(): Promise<Move> {
 		return {
 			placement: this.coordinatesIterator.next(),
 			// well maybe AiParticipant should only return a placement, since clients calling nextMove already have access to its id

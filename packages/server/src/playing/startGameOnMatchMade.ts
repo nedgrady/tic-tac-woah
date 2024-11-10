@@ -19,8 +19,8 @@ export function startGameOnMatchMade(
 		activeGames.set(gameId, newGame)
 
 		madeMatch.aiParticipants.forEach(aiParticipant => {
-			newGame.onParticipantMayMove(aiParticipant.id, () => {
-				const aiMove = aiParticipant.nextMove()
+			newGame.onParticipantMayMove(aiParticipant.id, async () => {
+				const aiMove = await aiParticipant.nextMove()
 				newGame.submitMove({
 					mover: aiParticipant.id,
 					placement: aiMove.placement,

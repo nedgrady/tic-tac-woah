@@ -8,6 +8,7 @@ import { AiParticipant } from "aiAgents/AiParticipant"
 import { QueueItem } from "queue/addConnectionToQueue"
 import { GameStartDto, JoinQueueRequest, PendingMoveDto } from "types"
 import { vi } from "vitest"
+import { GenerateContentResult } from "@google/generative-ai"
 
 export const joinQueueRequestFactory = Factory.define<JoinQueueRequest>(() => ({
 	humanCount: faker.number.int(),
@@ -67,4 +68,19 @@ export const queueItemFactory = Factory.define<QueueItem>(() => ({
 export const aiParticipantFactory = Factory.define<AiParticipant>(() => ({
 	id: faker.string.uuid(),
 	nextMove: vi.fn(),
+}))
+
+export const generateContentResultFactory = Factory.define<GenerateContentResult>(() => ({
+	response: {
+		functionCalls: () => {
+			throw new Error("Not implemented")
+		},
+		functionCall: () => {
+			throw new Error("Not implemented")
+		},
+		text: () => faker.lorem.sentence(),
+		candidates: [],
+		promptFeedback: undefined,
+		usageMetadata: undefined,
+	},
 }))
