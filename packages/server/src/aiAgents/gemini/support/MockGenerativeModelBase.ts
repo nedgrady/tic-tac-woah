@@ -38,35 +38,35 @@ export abstract class MockGenerativeModelBase extends GenerativeModel {
 	}
 
 	generateContent(
-		request: GenerateContentRequest | string | Array<string | Part>,
-		requestOptions?: SingleRequestOptions,
+		_request: GenerateContentRequest | string | Array<string | Part>,
+		_requestOptions?: SingleRequestOptions,
 	): Promise<GenerateContentResult> {
 		throw new Error("Method not implemented.")
 	}
 	generateContentStream(
-		request: GenerateContentRequest | string | Array<string | Part>,
-		requestOptions?: SingleRequestOptions,
+		_request: GenerateContentRequest | string | Array<string | Part>,
+		_requestOptions?: SingleRequestOptions,
 	): Promise<GenerateContentStreamResult> {
 		throw new Error("Method not implemented.")
 	}
-	startChat(startChatParams?: StartChatParams): ChatSession {
+	startChat(_startChatParams?: StartChatParams): ChatSession {
 		throw new Error("Method not implemented.")
 	}
 	countTokens(
-		request: CountTokensRequest | string | Array<string | Part>,
-		requestOptions?: SingleRequestOptions,
+		_request: CountTokensRequest | string | Array<string | Part>,
+		_requestOptions?: SingleRequestOptions,
 	): Promise<CountTokensResponse> {
 		throw new Error("Method not implemented.")
 	}
 	embedContent(
-		request: EmbedContentRequest | string | Array<string | Part>,
-		requestOptions?: SingleRequestOptions,
+		_request: EmbedContentRequest | string | Array<string | Part>,
+		_requestOptions?: SingleRequestOptions,
 	): Promise<EmbedContentResponse> {
 		throw new Error("Method not implemented.")
 	}
 	batchEmbedContents(
-		batchEmbedContentRequest: BatchEmbedContentsRequest,
-		requestOptions?: SingleRequestOptions,
+		_batchEmbedContentRequest: BatchEmbedContentsRequest,
+		_requestOptions?: SingleRequestOptions,
 	): Promise<BatchEmbedContentsResponse> {
 		throw new Error("Method not implemented.")
 	}

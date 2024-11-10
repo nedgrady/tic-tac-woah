@@ -1,7 +1,7 @@
 import { test, expect } from "vitest"
 import { generateContentResultFactory } from "testingUtilities/factories"
-import { GoogleGenerativeModelAiPariticpantFactory } from "./GoogleGenerativeModelAiPariticpantFactory"
 import { ReturnSequenceOfGenerateContentResultsGeneratriveModel } from "./support/ReturnSequenceOfGenerateContentResultsGeneratriveModel"
+import { GeminiAiAgent } from "./GeminiAiAgent"
 
 test.each([
 	{ x: 1, y: 2 },
@@ -17,7 +17,7 @@ test.each([
 		}),
 	)
 
-	const aiAgentUnderTest = new GoogleGenerativeModelAiPariticpantFactory(model).createAiAgent()
+	const aiAgentUnderTest = new GeminiAiAgent(model)
 
 	const receivedMove = await aiAgentUnderTest.nextMove()
 
@@ -35,7 +35,7 @@ test.each([{ a: 1, b: 2 }, "not an object", [], [{ x: 1, y: 1 }], {}, { x: 1 }, 
 			}),
 		)
 
-		const aiAgentUnderTest = new GoogleGenerativeModelAiPariticpantFactory(model).createAiAgent()
+		const aiAgentUnderTest = new GeminiAiAgent(model)
 
 		expect(async () => await aiAgentUnderTest.nextMove()).rejects.toThrowError()
 	},

@@ -9,6 +9,7 @@ import { QueueItem } from "queue/addConnectionToQueue"
 import { GameStartDto, JoinQueueRequest, PendingMoveDto } from "types"
 import { vi } from "vitest"
 import { GenerateContentResult } from "@google/generative-ai"
+import { CreateGameOptions } from "domain/Game"
 
 export const joinQueueRequestFactory = Factory.define<JoinQueueRequest>(() => ({
 	humanCount: faker.number.int(),
@@ -83,4 +84,14 @@ export const generateContentResultFactory = Factory.define<GenerateContentResult
 		promptFeedback: undefined,
 		usageMetadata: undefined,
 	},
+}))
+
+export const createGameOptionsFactory = Factory.define<CreateGameOptions>(() => ({
+	decideWhoMayMoveNext: vi.fn(),
+	endConditions: [],
+	participants: [],
+	rules: [],
+	winConditions: [],
+	boardSize: faker.number.int(),
+	consecutiveTarget: faker.number.int(),
 }))
