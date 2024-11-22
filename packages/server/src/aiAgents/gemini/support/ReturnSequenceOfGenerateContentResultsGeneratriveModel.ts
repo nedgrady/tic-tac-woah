@@ -1,17 +1,11 @@
 import {
 	GenerateContentResult,
 	GenerateContentRequest,
-	BatchEmbedContentsRequest,
 	BatchEmbedContentsResponse,
 	ChatSession,
-	CountTokensRequest,
 	CountTokensResponse,
-	EmbedContentRequest,
 	EmbedContentResponse,
 	GenerateContentStreamResult,
-	Part,
-	SingleRequestOptions,
-	StartChatParams,
 	GenerativeModel,
 } from "@google/generative-ai"
 import { ThrowingIterator } from "matchmaking/Matchmaking.test"

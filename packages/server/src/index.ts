@@ -26,6 +26,7 @@ import { StandardMathcmakingStrategy } from "matchmaking/StandardMathcmakingStra
 import { MadeMatch } from "matchmaking/MatchmakingStrategy"
 import { moveMustBeMadeByTheCorrectPlayer, moveMustBeWithinTheBoard } from "domain/gameRules/gameRules"
 import { RandomlyMovingAiParticipantFactory } from "aiAgents/RandomlyMovingAiParticipantFactory"
+import { GeminiAiAgent } from "aiAgents/gemini/GeminiAiAgent"
 
 const app = express()
 const httpServer = createServer(app)
@@ -210,3 +211,6 @@ httpServer.on("listening", () => {
 })
 
 httpServer.listen(8080)
+
+// TODO - split out so there aren't dirty random exports
+export { GeminiAiAgent }

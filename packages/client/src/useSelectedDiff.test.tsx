@@ -1,6 +1,7 @@
-import { renderHook, act } from "@testing-library/react"
-import { expect, test } from "vitest"
+import { renderHook, act, render, screen } from "@testing-library/react"
+import { beforeAll, beforeEach, expect, test } from "vitest"
 import { useSelectedDiff, SelectionState } from "./useSelectedDiff"
+import { Button } from "@mui/material"
 
 test("initially returns nothing selected or hovered", () => {
 	const { result } = renderHook(() => useSelectedDiff(3))
@@ -199,3 +200,61 @@ test("allow an optional initial index", () => {
 		"remainsUnselected",
 	])
 })
+
+// test("When the 'cancel' button is clicked, onClose is called", () => {
+// 	render(
+// 		<CustomModal
+// 			onClose={reason => {
+// 				expect(reason).toBe("clicked cancel")
+// 			}}
+// 		/>,
+// 	)
+
+// 	const button = screen.getByRole("button", { name: /Cancel/i })
+// 	userEvent.click(button)
+// })
+
+// test("When the 'cancel' button is clicked, onClose is called", () => {
+// 	const mockOnClose = vi.fn()
+
+// 	render(<CustomModal onClose={mockOnClose} />)
+
+// 	const button = screen.getByRole("button", { name: /Cancel/i })
+// 	userEvent.click(button)
+
+// 	expect(mockOnClose).toHaveBeenCalledWith("clicked cancel")
+// })
+
+// type ModalResponse = "clicked ok" | "clicked cancel"
+// interface CustomModalProps {
+// 	onClose: (reason: ModalResponse) => void
+// }
+// function CustomModal({ onClose }: CustomModalProps) {
+// 	return (
+// 		<div>
+// 			<div>Some modal content</div>
+// 			<div>
+// 				<button onClick={onClose}>OK</button>
+// 				<button onClick={onClose}>Cancel</button>
+// 			</div>
+// 		</div>
+// 	)
+// }
+
+beforeEach(() => {
+	const webSocketManager = new WebSocketManager()
+
+	expect(webSocketManager.connectedSockets).toEqual([])
+})
+
+function calculate(input: string) {
+	if (input === "") {
+		return 4
+	}
+	return 4
+}
+
+class WebSocketManager {
+	public connectedSockets: WebSocket[] = []
+	constructor() {}
+}

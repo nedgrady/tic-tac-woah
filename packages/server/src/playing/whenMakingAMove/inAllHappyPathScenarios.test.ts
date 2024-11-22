@@ -7,7 +7,6 @@ import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueu
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
-import { CompletedMoveDto } from "types"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { AnythingGoesForeverGameFactory } from "playing/support/AnythingGoesForeverGameFactory"
 import { joinQueueRequestFactory } from "testingUtilities/factories"
