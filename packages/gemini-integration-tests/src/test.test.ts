@@ -2,7 +2,6 @@ import { it, expect } from "vitest"
 import { GenerativeModel } from "@google/generative-ai"
 import { GeminiAiAgent } from "@tic-tac-woah/server"
 import { CreateGameOptions } from "@tic-tac-woah/server/src/domain/Game"
-import { anyMoveIsAllowed } from "@tic-tac-woah/server/src/domain/gameRules/support/anyMoveIsAllowed"
 import { anyParticipantMayMoveNext } from "@tic-tac-woah/server/src/domain/moveOrderRules/support/anyParticipantMayMoveNext"
 import { Game } from "@tic-tac-woah/server/src/domain/Game"
 import {
@@ -25,7 +24,7 @@ it("Can successfully respond with a move", async () => {
 	await expect(agentUnderTest.nextMove()).resolves.not.toThrowError()
 })
 
-it("Picks the final square 1", () => {
+it("Picks the final square 1", async () => {
 	const model = new GenerativeModel(import.meta.env.VITE_GOOGLE_GEMINI_API_KEY, {
 		model: "gemini-1.5-flash",
 	})
@@ -55,10 +54,10 @@ it("Picks the final square 1", () => {
 		[x, x, ""],
 	])
 
-	expect(agentUnderTest.nextMove(game)).resolves.toEqual({ mover: "TODO", placement: { x: 2, y: 1 } })
+	expect(await agentUnderTest.nextMove(game)).toEqual({ mover: "TODO", placement: { x: 2, y: 1 } })
 })
 
-it("Picks the final square 2", () => {
+it("Picks the final square 2", async () => {
 	const model = new GenerativeModel(import.meta.env.VITE_GOOGLE_GEMINI_API_KEY, {
 		model: "gemini-1.5-flash",
 	})
@@ -88,5 +87,38 @@ it("Picks the final square 2", () => {
 		[o, o, ""],
 	])
 
-	expect(agentUnderTest.nextMove(game)).resolves.toEqual({ mover: "TODO", placement: { x: 2, y: 0 } })
+	expect(await agentUnderTest.nextMove(game)).toEqual({ mover: "TODO", placement: { x: 2, y: 0 } })
+})
+
+it("Picks the final square 3", async () => {
+	const model = new GenerativeModel(import.meta.env.VITE_GOOGLE_GEMINI_API_KEY, {
+		model: "gemini-1.5-flash",
+	})
+
+	const agentUnderTest = new GeminiAiAgent(model)
+	const x = agentUnderTest.id
+	const o = "O"
+
+	const gameOptions: CreateGameOptions = {
+		participants: [x, o],
+		rules: [moveMustBeMadeIntoAFreeSquare],
+		winConditions: [
+			winByConsecutiveVerticalPlacements,
+			winByConsecutiveDiagonalPlacements,
+			winByConsecutiveDiagonalPlacements,
+		],
+		endConditions: [],
+		decideWhoMayMoveNext: anyParticipantMayMoveNext,
+		boardSize: 3,
+		consecutiveTarget: 3,
+	}
+
+	const game = new Game(gameOptions)
+
+	makeMoves(game, [
+		[x, o, ""],
+		[x, o, ""],
+	])
+
+	expect(await agentUnderTest.nextMove(game)).toEqual({ mover: "TODO", placement: { x: 0, y: 2 } })
 })

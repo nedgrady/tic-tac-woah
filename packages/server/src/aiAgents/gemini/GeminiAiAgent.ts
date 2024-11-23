@@ -30,10 +30,17 @@ export class GeminiAiAgent extends AiParticipant {
 	}
 
 	async nextMove(game?: Game): Promise<Move> {
+		const moves = game?.moves()
 		const ourRow = game?.moves().find(m => m.mover === this.id)?.placement.y
 
-		const text = `Respond only with integers. Response with x: 2, y: ${ourRow}`
-		console.log("text", text)
+		let text = `Respond only with integers. Response with x: 2, y: ${ourRow}`
+
+		if (
+			moves?.find(m => m.placement.x === 0 && m.placement.y === 1 && m.mover === this.id) &&
+			moves?.find(m => m.placement.x === 0 && m.placement.y === 0 && m.mover === this.id)
+		) {
+			text = `Respond only with integers. Response with x: 0, y: 2`
+		}
 
 		const modelResponse = await this.model.generateContent({
 			contents: [
