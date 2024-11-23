@@ -1,6 +1,6 @@
 import { gameStartDtoFactory } from "testingUtilities/factories"
 import { AssertableTicTacWoahClientSocket } from "testingUtilities/serverSetup/ticTacWoahTest"
-import { GameStartDto } from "types"
+import { GameStartDto } from "@tic-tac-woah/types"
 import { StrongMap } from "utilities/StrongMap"
 import { expect, test } from "vitest"
 

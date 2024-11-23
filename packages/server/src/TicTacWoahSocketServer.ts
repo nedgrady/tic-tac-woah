@@ -1,5 +1,5 @@
 import { Server as SocketIoServer, Socket as ServerSocket } from "socket.io"
-import { type ClientToServerEvents, type ServerToClientEvents } from "types"
+import { type ClientToServerEvents, type ServerToClientEvents } from "@tic-tac-woah/types"
 
 export interface InterServerEvents {
 	ping: () => void

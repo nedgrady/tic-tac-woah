@@ -9,7 +9,7 @@ import { expect, beforeAll, describe, it, vi } from "vitest"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { ReturnSingleGameFactory } from "playing/support/ReturnSingleGameFactory"
 import { noMoveIsAllowed } from "domain/gameRules/support/noMoveIsAllowed"
-import { PendingMoveDto } from "types"
+import { PendingMoveDto } from "@tic-tac-woah/types"
 import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {

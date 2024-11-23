@@ -1,4 +1,4 @@
-import { CoordinatesDto, PendingMoveDto } from "types"
+import { CoordinatesDto, PendingMoveDto } from "@tic-tac-woah/types"
 import { Coordinate } from "./redux/gameSlice"
 import { useTicTacWoahSocket } from "./ticTacWoahSocket"
 

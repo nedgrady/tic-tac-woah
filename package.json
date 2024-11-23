@@ -1,11 +1,13 @@
 {
-	"name": "tic-tac-woah",
+	"name": "@tic-tac-woah/base",
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.js",
 	"scripts": {
 		"start": "concurrently \"npm run dev -w client\"  \"npm run start:dev -w server\"",
-		"clean": "concurrently \"npm exec --workspaces -- npx rimraf node_modules\" \"npx rimraf node_modules\""
+
+		 "clean": " npx concurrently \"npm exec --workspaces -- rimraf node_modules\" \"npm exec rimraf node_modules\""
+
 	},
 	"repository": {
 		"type": "git",
@@ -18,10 +20,7 @@
 	},
 	"homepage": "https://github.com/nedgrady/tic-tac-woah#readme",
 	"workspaces": [
-		"packages\\client",
-		"packages\\types",
-		"packages\\server",
-		"packages/gemini-integration-tests"
+		"packages/*"
 	],
 	"devDependencies": {
 		"@faker-js/faker": "^8.2.0",

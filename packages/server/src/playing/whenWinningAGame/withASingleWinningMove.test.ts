@@ -7,7 +7,7 @@ import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueu
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
-import { GameWinDto } from "types"
+import { GameWinDto } from "@tic-tac-woah/types"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { ReturnSingleGameFactory } from "playing/support/ReturnSingleGameFactory"
 import { alwaysWinWithMoves } from "domain/winConditions/support/alwaysWinWithMoves"
@@ -34,16 +34,16 @@ describe("it", () => {
 					twoUsers.map(handle => ({
 						connections: new Set(),
 						uniqueIdentifier: handle,
-					}))
-				)
+					})),
+				),
 			)
 			.use(addConnectionToQueue(queue))
 			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchFirstTwoParticipants()))
 			.use(
 				startGameOnMatchMade(
 					matchmakingBroker,
-					new ReturnSingleGameFactory({ winConditions: [alwaysWinWithMoves([winningMove])] })
-				)
+					new ReturnSingleGameFactory({ winConditions: [alwaysWinWithMoves([winningMove])] }),
+				),
 			)
 	}
 

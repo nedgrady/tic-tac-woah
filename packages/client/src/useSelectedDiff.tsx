@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ArrayIndex } from "types"
+import { ArrayIndex } from "@tic-tac-woah/types"
 
 export type SelectionState = "remainsUnselected" | "remainsSelected" | "tentativelySelected" | "tentativelyUnselected"
 

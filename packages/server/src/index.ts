@@ -5,7 +5,7 @@ import cors from "cors"
 import { Server } from "socket.io"
 import path from "path"
 import { instrument } from "@socket.io/admin-ui"
-import { QueueResponse } from "types"
+import { QueueResponse } from "@tic-tac-woah/types"
 // import applicationInsights from "./logging/applicationInsights"
 import { TicTacWoahSocketServer, TicTacWoahSocketServerMiddleware, TicTacWoahUserHandle } from "TicTacWoahSocketServer"
 import { identifySocketsByWebSocketId } from "auth/socketIdentificationStrategies"
@@ -26,7 +26,7 @@ import { StandardMathcmakingStrategy } from "matchmaking/StandardMathcmakingStra
 import { MadeMatch } from "matchmaking/MatchmakingStrategy"
 import { moveMustBeMadeByTheCorrectPlayer, moveMustBeWithinTheBoard } from "domain/gameRules/gameRules"
 import { RandomlyMovingAiParticipantFactory } from "aiAgents/RandomlyMovingAiParticipantFactory"
-import { GeminiAiAgent } from "aiAgents/gemini/GeminiAiAgent"
+export * from "./aiAgents/gemini/GeminiAiAgent"
 
 const app = express()
 const httpServer = createServer(app)
@@ -211,6 +211,3 @@ httpServer.on("listening", () => {
 })
 
 httpServer.listen(8080)
-
-// TODO - split out so there aren't dirty random exports
-export { GeminiAiAgent }

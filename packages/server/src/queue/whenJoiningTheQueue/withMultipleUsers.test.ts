@@ -3,7 +3,7 @@ import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
 import { QueueItem, TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
 import { joinQueueRequestFactory } from "testingUtilities/factories"
 import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
-import { JoinQueueRequest } from "types"
+import { JoinQueueRequest } from "@tic-tac-woah/types"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 
 describe("it", () => {

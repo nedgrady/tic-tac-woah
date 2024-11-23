@@ -1,5 +1,5 @@
 {
-	"name": "client",
+	"name": "@tic-tac-woah/client",
 	"private": true,
 	"version": "0.0.0",
 	"type": "module",
@@ -43,7 +43,6 @@
 		"@types/react-dom": "^18.0.10",
 		"@vitejs/plugin-react-swc": "^3.0.0",
 		"happy-dom": "^9.18.3",
-		"types": "file:../types",
 		"typescript": "^5.4.2",
 		"vite": "^5.0.12",
 		"vite-plugin-svgr": "^4.2.0",

@@ -6,7 +6,7 @@ import { Server as SocketIoServer } from "socket.io"
 import { TicTacWoahEventMap, TicTacWoahRemoteServerSocket, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { instrument } from "@socket.io/admin-ui"
 import { StrongMap } from "utilities/StrongMap"
-import { TicTacWoahClientSocket } from "types"
+import { TicTacWoahClientSocket } from "@tic-tac-woah/types"
 
 export type AssertableTicTacWoahRemoteServerSocket = Omit<TicTacWoahRemoteServerSocket, "omit"> & {
 	emit: vitest.MockedFunction<TicTacWoahRemoteServerSocket["emit"]>

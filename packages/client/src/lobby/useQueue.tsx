@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { QueueResponse, QueueSchema } from "types"
+import { QueueResponse, QueueSchema } from "@tic-tac-woah/types"
 import axios from "axios"
 
 const baseUrl = new URL(import.meta.env.VITE_API_URL)

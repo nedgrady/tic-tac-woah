@@ -13,7 +13,7 @@ import { ReturnSingleGameFactory } from "playing/support/ReturnSingleGameFactory
 import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
 import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
 import { gameIsAlwaysDrawn } from "domain/drawConditions/support/gameIsAlwaysDrawn"
-import { GameDrawDto } from "types"
+import { GameDrawDto } from "@tic-tac-woah/types"
 import { joinQueueRequestFactory } from "testingUtilities/factories"
 
 describe("it", () => {
@@ -37,8 +37,8 @@ describe("it", () => {
 					twoUsers.map(handle => ({
 						connections: new Set(),
 						uniqueIdentifier: handle,
-					}))
-				)
+					})),
+				),
 			)
 			.use(addConnectionToQueue(queue))
 			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchFirstTwoParticipants()))
@@ -47,8 +47,8 @@ describe("it", () => {
 					matchmakingBroker,
 					new ReturnSingleGameFactory({
 						endConditions: [gameIsAlwaysDrawn],
-					})
-				)
+					}),
+				),
 			)
 	}
 

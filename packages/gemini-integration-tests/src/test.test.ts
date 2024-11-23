@@ -1,6 +1,6 @@
-import { GeminiAiAgent } from "server/src/aiAgents/gemini/GeminiAiAgent"
 import { it, expect } from "vitest"
 import { GenerativeModel } from "@google/generative-ai"
+import { GeminiAiAgent } from "@tic-tac-woah/server"
 
 it("Can successfully respond with a move", async () => {
 	const model = new GenerativeModel(import.meta.env.VITE_GOOGLE_GEMINI_API_KEY, {

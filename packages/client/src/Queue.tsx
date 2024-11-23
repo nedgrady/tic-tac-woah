@@ -1,5 +1,5 @@
 import { useEffectOnce } from "react-use"
-import { GameStartDtoSchema, JoinQueueRequest } from "types"
+import { GameStartDtoSchema, JoinQueueRequest } from "@tic-tac-woah/types"
 import { useAppDispatch } from "./redux/hooks"
 import { startGame } from "./redux/gameSlice"
 import { useTicTacWoahSocket } from "./ticTacWoahSocket"

@@ -3,7 +3,7 @@ import { useEffectOnce } from "react-use"
 import { io } from "socket.io-client"
 import { PropsWithChildren } from "react"
 import { useTicTacWoahAuth } from "./auth/UsernameMustBePresent"
-import { TicTacWoahClientSocket } from "types"
+import { TicTacWoahClientSocket } from "@tic-tac-woah/types"
 import { StrongMap } from "./StrongMap"
 import { TicTacWoahClientToServerEventMap } from "./eventTypes"
 

@@ -1,4 +1,4 @@
-import { ClientToServerEvents } from "types"
+import { ClientToServerEvents } from "@tic-tac-woah/types"
 
 export type TicTacWoahClientToServerEventName = keyof ClientToServerEvents
 export type TicTacWoahEventPayload<EventName extends TicTacWoahClientToServerEventName> = Parameters<
