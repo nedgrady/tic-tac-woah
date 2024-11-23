@@ -1,5 +1,6 @@
 import { GenerativeModel, SchemaType } from "@google/generative-ai"
 import { AiParticipant } from "aiAgents/AiParticipant"
+import { Game } from "domain/Game"
 import { Move } from "domain/Move"
 import { z } from "zod"
 
@@ -22,18 +23,25 @@ const geminiMoveResponseSchema = {
 }
 
 export class GeminiAiAgent extends AiParticipant {
+	// TODO - why does this appear to get dropped by intellisence cross module boundaries??
+	readonly id: string = crypto.randomUUID()
 	constructor(private readonly model: Readonly<GenerativeModel>) {
 		super()
 	}
 
-	async nextMove(): Promise<Move> {
+	async nextMove(game?: Game): Promise<Move> {
+		const ourRow = game?.moves().find(m => m.mover === this.id)?.placement.y
+
+		const text = `Respond only with integers. Response with x: 2, y: ${ourRow}`
+		console.log("text", text)
+
 		const modelResponse = await this.model.generateContent({
 			contents: [
 				{
 					role: "user",
 					parts: [
 						{
-							text: "Respond only with integers",
+							text,
 						},
 					],
 				},
