@@ -12,7 +12,12 @@ import {
 	winByConsecutiveDiagonalPlacements,
 	winByConsecutiveVerticalPlacements,
 } from "@tic-tac-woah/server/src/domain/winConditions/winConditions"
-import { makeMoves } from "@tic-tac-woah/server/src/domain/gameTestHelpers"
+import { makeMoves, PlacementSpecification, Empty } from "@tic-tac-woah/server/src/domain/gameTestHelpers"
+import { Participant } from "@tic-tac-woah/server/src/domain/Participant"
+
+// Why is PlacementSpecification typed as any[][] instead of (Participant | Empty)[][]
+// (which is just string[]) under the hood
+const placementSpecification: PlacementSpecification = [[1], [{}], [{ a: "anything" }]]
 
 it("Can successfully respond with a move", async () => {
 	const model = new GenerativeModel(import.meta.env.VITE_GOOGLE_GEMINI_API_KEY, {
