@@ -26,6 +26,12 @@ import { StandardMathcmakingStrategy } from "matchmaking/StandardMathcmakingStra
 import { MadeMatch } from "matchmaking/MatchmakingStrategy"
 import { moveMustBeMadeByTheCorrectPlayer, moveMustBeWithinTheBoard } from "domain/gameRules/gameRules"
 import { RandomlyMovingAiParticipantFactory } from "aiAgents/RandomlyMovingAiParticipantFactory"
+import { GeminiAiParticipantFactory } from "aiAgents/GeminiAiParticipantFactory"
+import {
+	winByConsecutiveDiagonalPlacements,
+	winByConsecutiveHorizontalPlacements,
+	winByConsecutiveVerticalPlacements,
+} from "domain/winConditions/winConditions"
 export * from "./aiAgents/gemini/GeminiAiAgent"
 
 const app = express()
@@ -91,7 +97,11 @@ class StandardGameFactory extends GameFactory {
 			boardSize: 20,
 			consecutiveTarget: 5,
 			rules: [moveMustBeMadeByTheCorrectPlayer, moveMustBeWithinTheBoard, moveMustBeWithinTheBoard],
-			winConditions: [gameIsWonOnMoveNumber(6)],
+			winConditions: [
+				winByConsecutiveDiagonalPlacements,
+				winByConsecutiveHorizontalPlacements,
+				winByConsecutiveVerticalPlacements,
+			],
 			endConditions: [gameIsDrawnWhenBoardIsFull],
 			decideWhoMayMoveNext: singleParticipantInSequence,
 		})
@@ -104,7 +114,7 @@ const ttQueue = new TicTacWoahQueue()
 const matchmakingBroker = new MatchmakingBroker()
 const standardMathcmakingStrategy = new StandardMathcmakingStrategy(
 	queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}-${queueItem.aiCount}`,
-	new RandomlyMovingAiParticipantFactory(),
+	new GeminiAiParticipantFactory(),
 )
 
 io.use(identifySocketsByWebSocketId)

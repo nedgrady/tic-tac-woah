@@ -11,11 +11,11 @@ export type GameWonListener = (winningMoves: readonly Move[]) => void
 export type GameDrawListener = () => void
 
 export class Game {
-	readonly #consecutiveTarget: number
+	public readonly consecutiveTarget: number
 	readonly #movesReal: Move[] = []
 	readonly #participants: readonly Participant[]
 	readonly #emitter: EventEmitter = new EventEmitter()
-	readonly #boardSize: number
+	public readonly boardSize: number
 	readonly #rules: readonly GameRuleFunction[]
 	readonly #winConditions: readonly GameWinCondition[]
 	readonly #endConditions: readonly GameDrawCondition[]
@@ -63,8 +63,8 @@ export class Game {
 
 	submitMove(newMove: Move) {
 		const gameConfiguration: GameConfiguration = {
-			boardSize: this.#boardSize,
-			consecutiveTarget: this.#consecutiveTarget,
+			boardSize: this.boardSize,
+			consecutiveTarget: this.consecutiveTarget,
 		}
 
 		const gameState: GameState = {
@@ -77,12 +77,15 @@ export class Game {
 			participants: this.#participants,
 		})
 
+		console.log(`newMove: ${newMove}`)
 		if (!nextAvailableMovers.includes(newMove.mover)) {
 			return
 		}
 
+		console.log(`checking rules`)
 		for (const rule of this.#rules) {
 			if (!rule(newMove, gameState, gameConfiguration)) {
+				console.log(`rule failed: ${rule}`)
 				return
 			}
 		}
@@ -90,9 +93,11 @@ export class Game {
 		this.#movesReal.push(newMove)
 		this.#emitter.emit("Move", newMove)
 
+		console.log("checking wins")
 		for (const winCondition of this.#winConditions) {
 			const thing = winCondition(newMove, gameState, gameConfiguration)
 			if (thing.result === "win") {
+				console.log("winning move")
 				this.#emitter.emit("Winning Move", thing.winningMoves)
 				return
 			}
@@ -120,8 +125,8 @@ export class Game {
 
 	constructor(options: CreateGameOptions) {
 		this.#participants = options.participants
-		this.#boardSize = options.boardSize ?? 20
-		this.#consecutiveTarget = options.consecutiveTarget ?? 999
+		this.boardSize = options.boardSize ?? 20
+		this.consecutiveTarget = options.consecutiveTarget ?? 999
 		this.#rules = options.rules
 		this.#winConditions = options.winConditions
 		this.#endConditions = options.endConditions

@@ -4,11 +4,13 @@ import { Game } from "domain/Game"
 import { Move } from "domain/Move"
 import { Participant } from "domain/Participant"
 import { z } from "zod"
-
+import retry from "async-retry"
 export const AiModelMoveResponseSchema = z.object({
 	x: z.number().int(),
 	y: z.number().int(),
 })
+
+const tokensModelUsedDuringTraining = ["🟥", "🟦", "🟧", "🟨", "🟩", "🟪", "🟫"]
 
 const geminiMoveResponseSchema = {
 	description: "AiModelMoveResponseSchema",
@@ -48,32 +50,49 @@ export class GeminiAiAgent extends AiParticipant {
 		super()
 	}
 
-	async nextMove(game?: Game, participant?: Participant): Promise<Move> {
-		const moves = game?.moves()
-		const ourRow = game?.moves().find(m => m.mover === participant)?.placement.y
+	async nextMove(game: Game, participant: Participant): Promise<Move> {
+		// const moves = game?.moves()
+		// const ourRow = game?.moves().find(m => m.mover === participant)?.placement.y
 
-		const boardText = generateBoardText(game!)
-		const ourMoves = game
-			?.moves()
-			.filter(m => m.mover === participant)
-			.map(m => `(${m.placement.x}, ${m.placement.y})`)
-			.join(",")
+		// const boardText = generateBoardText(game!)
+		// const ourMoves = game
+		// 	?.moves()
+		// 	.filter(m => m.mover === participant)
+		// 	.map(m => `(${m.placement.x}, ${m.placement.y})`)
+		// 	.join(",")
 
-		const theirMoves = game
+		// const tokensForParcipants = new Map<string, string>()
+
+		// const tokensByParticipant: readonly [string, string][] = game.participants.map((mover, index) => {
+		// 	return [mover, tokensModelUsedDuringTraining[index]]
+		// })
+		const tokensForParticipants = new Map<string, string>(
+			game.participants.map((mover, index) => {
+				return [mover, tokensModelUsedDuringTraining[index]]
+			}),
+		)
+
+		const allMoves = game
 			?.moves()
-			.filter(m => m.mover !== participant)
 			.map(m => `(${m.placement.x}, ${m.placement.y})`)
 			.join(",")
 
 		const text = `
-		Respond only with integers.
-		Given this set of coordinates ${ourMoves}.
-		Find the next coordinate that will create a run of 3 adjacent coordinates.
-		You may not use any of these coordinates either (which also do not count for runs of 3): ${theirMoves}.
-		Don't forget to look 'inside' runs, e.g. X . X can be a run of 3 if we pick the middle square.
-		Coordinates can be adjacent horizontally, vertically, or diagonally.
+		You are playing extended tic tac toe
+		==================================================================
+		This is very important:
+		Do not respond with any of the following coordinates: ${allMoves}
+		==================================================================
+		Consider blocking your opponent's strong moves
+		Board size: ${game.boardSize}
+		${[...tokensForParticipants.values()]}
+		${JSON.stringify(game.moves().map(m => ({ position: m.placement, player: tokensForParticipants.get(m.mover) })))}
+		You are ${tokensForParticipants.get(participant)}
+
+		One in 2 times respond with a random legal move.
 		`
 
+		console.log(text)
 		// if (
 		// 	moves?.find(m => m.placement.x === 0 && m.placement.y === 1 && m.mover === participant) &&
 		// 	moves?.find(m => m.placement.x === 0 && m.placement.y === 0 && m.mover === participant)
@@ -81,7 +100,7 @@ export class GeminiAiAgent extends AiParticipant {
 		// 	text = `Respond only with integers. Response with x: 0, y: 2`
 		// }
 
-		console.log("GeminiAiAgent.nextMove", text)
+		// console.log("GeminiAiAgent.nextMove", text)
 
 		const modelResponse = await this.model.generateContent({
 			contents: [
@@ -94,9 +113,57 @@ export class GeminiAiAgent extends AiParticipant {
 					],
 				},
 			],
-			generationConfig: { responseMimeType: "application/json", responseSchema: geminiMoveResponseSchema },
+			// generationConfig: { responseMimeType: "application/json", responseSchema: geminiMoveResponseSchema },
+			generationConfig: {
+				temperature: 2.0,
+			},
 		})
-		const move = AiModelMoveResponseSchema.parse(JSON.parse(modelResponse.response.text()))
-		return { mover: participant, placement: move } as Move
+
+		const coordinateResponse = modelResponse.response.text().match(/^\d+|\d+\b|\d+(?=\w)/g)
+
+		console.log("GeminiAiAgent.nextMove coordinateResponse", coordinateResponse)
+
+		const response = AiModelMoveResponseSchema.parse({
+			x: parseInt(coordinateResponse![0]),
+			y: parseInt(coordinateResponse![1]),
+		})
+
+		console.log("GeminiAiAgent.nextMove", response)
+
+		return { mover: participant, placement: response } as Move
+	}
+}
+
+export class RetryingAiAgent<TAgent extends AiParticipant> extends AiParticipant {
+	readonly id: string = crypto.randomUUID()
+	constructor(private readonly agent: TAgent) {
+		super()
+	}
+
+	async nextMove(game: Game, participant: Participant): Promise<Move> {
+		return await retry(
+			async () => {
+				const move = await this.agent.nextMove(game, participant)
+
+				// TODO - should game return a success/failure for move instead of void?
+				const moveAlreadyMade = game
+					.moves()
+					.some(
+						existingMove =>
+							existingMove.placement.x === move.placement.x &&
+							existingMove.placement.y === move.placement.y,
+					)
+
+				if (moveAlreadyMade) {
+					throw new Error("Move already made")
+				}
+				return move
+			},
+			{
+				retries: 5,
+				maxRetryTime: 30000,
+				factor: 1,
+			},
+		)
 	}
 }

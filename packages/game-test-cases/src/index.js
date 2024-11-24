@@ -1,5 +1,8 @@
 import { faker } from "@faker-js/faker"
 import readline from "readline"
+import jsonToCsvExport from "json-to-csv-export"
+import data from "./data.json"
+
 // interface MadeMove {
 // 	player: string
 // 	position: {
