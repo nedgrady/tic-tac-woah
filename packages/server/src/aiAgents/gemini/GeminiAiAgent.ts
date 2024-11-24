@@ -51,21 +51,6 @@ export class GeminiAiAgent extends AiParticipant {
 	}
 
 	async nextMove(game: Game, participant: Participant): Promise<Move> {
-		// const moves = game?.moves()
-		// const ourRow = game?.moves().find(m => m.mover === participant)?.placement.y
-
-		// const boardText = generateBoardText(game!)
-		// const ourMoves = game
-		// 	?.moves()
-		// 	.filter(m => m.mover === participant)
-		// 	.map(m => `(${m.placement.x}, ${m.placement.y})`)
-		// 	.join(",")
-
-		// const tokensForParcipants = new Map<string, string>()
-
-		// const tokensByParticipant: readonly [string, string][] = game.participants.map((mover, index) => {
-		// 	return [mover, tokensModelUsedDuringTraining[index]]
-		// })
 		const tokensForParticipants = new Map<string, string>(
 			game.participants.map((mover, index) => {
 				return [mover, tokensModelUsedDuringTraining[index]]
@@ -92,16 +77,6 @@ export class GeminiAiAgent extends AiParticipant {
 		One in 2 times respond with a random legal move.
 		`
 
-		console.log(text)
-		// if (
-		// 	moves?.find(m => m.placement.x === 0 && m.placement.y === 1 && m.mover === participant) &&
-		// 	moves?.find(m => m.placement.x === 0 && m.placement.y === 0 && m.mover === participant)
-		// ) {
-		// 	text = `Respond only with integers. Response with x: 0, y: 2`
-		// }
-
-		// console.log("GeminiAiAgent.nextMove", text)
-
 		const modelResponse = await this.model.generateContent({
 			contents: [
 				{
@@ -113,9 +88,10 @@ export class GeminiAiAgent extends AiParticipant {
 					],
 				},
 			],
-			// generationConfig: { responseMimeType: "application/json", responseSchema: geminiMoveResponseSchema },
 			generationConfig: {
 				temperature: 2.0,
+				topK: 40,
+				topP: 0.9,
 			},
 		})
 
