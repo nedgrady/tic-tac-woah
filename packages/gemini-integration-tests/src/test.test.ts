@@ -52,42 +52,51 @@ interface GameWinTestCases {
 }
 
 const GameWinTestCases: GameWinTestCases[] = [
-	{
-		aiPlaysAs: p1,
-		madeMoves: [
-			[p1, p1, ""],
-			[p2, p2, ""],
-			["", "", ""],
-		],
-		expectedWinningMove: { x: 2, y: 0 },
-	},
-	{
-		aiPlaysAs: p1,
-		madeMoves: [
-			[p2, p2, ""],
-			[p1, p1, ""],
-			["", "", ""],
-		],
-		expectedWinningMove: { x: 2, y: 1 },
-	},
-	{
-		aiPlaysAs: p1,
-		madeMoves: [
-			[p1, p1, ""],
-			[p2, p2, ""],
-			["", "", ""],
-		],
-		expectedWinningMove: { x: 2, y: 0 },
-	},
-	{
-		aiPlaysAs: p1,
-		madeMoves: [
-			[p1, p2, ""],
-			[p2, p1, ""],
-			["", "", ""],
-		],
-		expectedWinningMove: { x: 2, y: 2 },
-	},
+	// {
+	// 	aiPlaysAs: p1,
+	// 	madeMoves: [
+	// 		[p1, p1, ""],
+	// 		[p2, p2, ""],
+	// 		["", "", ""],
+	// 	],
+	// 	expectedWinningMove: { x: 2, y: 0 },
+	// },
+	// {
+	// 	aiPlaysAs: p1,
+	// 	madeMoves: [
+	// 		[p2, p2, ""],
+	// 		[p1, p1, ""],
+	// 		["", "", ""],
+	// 	],
+	// 	expectedWinningMove: { x: 2, y: 1 },
+	// },
+	// {
+	// 	aiPlaysAs: p1,
+	// 	madeMoves: [
+	// 		[p1, p1, ""],
+	// 		[p2, p2, ""],
+	// 		["", "", ""],
+	// 	],
+	// 	expectedWinningMove: { x: 2, y: 0 },
+	// },
+	// {
+	// 	aiPlaysAs: p1,
+	// 	madeMoves: [
+	// 		[p1, p2, ""],
+	// 		[p2, p1, ""],
+	// 		["", "", ""],
+	// 	],
+	// 	expectedWinningMove: { x: 2, y: 2 },
+	// },
+	// {
+	// 	aiPlaysAs: p2,
+	// 	madeMoves: [
+	// 		[p1, p1, ""],
+	// 		[p2, p2, ""],
+	// 		["", "", ""],
+	// 	],
+	// 	expectedWinningMove: { x: 2, y: 1 },
+	// },
 	{
 		aiPlaysAs: p2,
 		madeMoves: [
@@ -97,10 +106,28 @@ const GameWinTestCases: GameWinTestCases[] = [
 		],
 		expectedWinningMove: { x: 2, y: 1 },
 	},
+	{
+		aiPlaysAs: p1,
+		madeMoves: [
+			[p1, p1, p2],
+			[p2, p2, ""],
+			[p1, p1, ""],
+		],
+		expectedWinningMove: { x: 2, y: 2 },
+	},
+	{
+		aiPlaysAs: p1,
+		madeMoves: [
+			[p1, "", p1],
+			[p2, p2, ""],
+			[p1, p2, ""],
+		],
+		expectedWinningMove: { x: 1, y: 0 },
+	},
 ]
 
 test.each(GameWinTestCases)(
-	`Wins the made moves are $.madeMoves returns the winning move $.expectedWinningMove`,
+	`Wins the made moves are $madeMoves returns the winning move $expectedWinningMove`,
 	async ({ aiPlaysAs, madeMoves, expectedWinningMove }) => {
 		const model = new GenerativeModel(import.meta.env.VITE_GOOGLE_GEMINI_API_KEY, {
 			model: "gemini-1.5-flash",

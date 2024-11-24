@@ -4,10 +4,8 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"start": "concurrently \"npm run dev -w client\"  \"npm run start:dev -w server\"",
-
-		 "clean": " npx concurrently \"npm exec --workspaces -- rimraf node_modules\" \"npm exec rimraf node_modules\""
-
+		"start": "concurrently \"npm run dev -w @tic-tac-woah/client\"  \"npm run start:dev -w @tic-tac-woah/server\"",
+		"clean": " npx concurrently \"npm exec --workspaces -- rimraf node_modules\" \"npm exec rimraf node_modules\""
 	},
 	"repository": {
 		"type": "git",

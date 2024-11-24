@@ -1,0 +1,10 @@
+{
+	"name": "@tic-tac-woah/game-test-cases",
+	"version": "1.0.0",
+	"description": "",
+	"private": true,
+	"type": "module",
+	"scripts": {},
+	"author": "",
+	"license": "ISC"
+}

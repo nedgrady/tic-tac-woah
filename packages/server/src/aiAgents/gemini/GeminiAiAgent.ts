@@ -67,8 +67,10 @@ export class GeminiAiAgent extends AiParticipant {
 
 		const text = `
 		Respond only with integers.
-		Given this set of coordinates ${ourMoves},
+		Given this set of coordinates ${ourMoves}.
 		Find the next coordinate that will create a run of 3 adjacent coordinates.
+		You may not use any of these coordinates either (which also do not count for runs of 3): ${theirMoves}.
+		Don't forget to look 'inside' runs, e.g. X . X can be a run of 3 if we pick the middle square.
 		Coordinates can be adjacent horizontally, vertically, or diagonally.
 		`
 
