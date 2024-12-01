@@ -106,7 +106,7 @@ class AgentStrengthBenchmark {
 	) {}
 
 	async run() {
-		const results = this._gameWinTestCases.map(this.runSingle)
+		const results = this._gameWinTestCases.map(this.runSingle.bind(this))
 		return results
 	}
 
@@ -143,11 +143,11 @@ class AgentStrengthBenchmark {
 
 const agentsUnderTest = [
 	new RandomlyMovingAiParticipantFactory().createAiAgent(),
-	new GeminiAiAgent(
-		new GenerativeModel(import.meta.env.VITE_GOOGLE_GEMINI_API_KEY, {
-			model: "tunedModels/tictacwoahhumandata1-r59fet8nx4cw",
-		}),
-	),
+	// new GeminiAiAgent(
+	// 	new GenerativeModel(import.meta.env.VITE_GOOGLE_GEMINI_API_KEY, {
+	// 		model: "tunedModels/tictacwoahhumandata1-r59fet8nx4cw",
+	// 	}),
+	// ),
 ]
 
 agentsUnderTest.forEach(agent => {

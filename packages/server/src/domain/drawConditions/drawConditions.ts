@@ -1,6 +1,6 @@
-import { Move } from "domain/Move"
-import { GameState, GameConfiguration } from "domain/gameRules/gameRules"
-import { GameContinues } from "domain/winConditions/winConditions"
+import { GameState, GameConfiguration } from "../gameRules/gameRules"
+import { Move } from "../Move"
+import { GameContinues } from "../winConditions/winConditions"
 
 type GameDrawConditionResult = GameDraw | GameContinues
 export type GameDrawCondition = (

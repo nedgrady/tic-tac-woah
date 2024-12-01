@@ -1,5 +1,5 @@
-import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
-import { TicTacWoahQueue } from "queue/addConnectionToQueue"
+import { TicTacWoahSocketServerMiddleware } from "../TicTacWoahSocketServer"
+import { TicTacWoahQueue } from "./addConnectionToQueue"
 
 export function removeConnectionFromQueueWhenRequested(queue: TicTacWoahQueue): TicTacWoahSocketServerMiddleware {
 	return (socket, next) => {

@@ -8,10 +8,12 @@ import {
 	GenerateContentStreamResult,
 	GenerativeModel,
 } from "@google/generative-ai"
-import { ThrowingIterator } from "matchmaking/Matchmaking.test"
+
 import { MockGenerativeModelBase } from "./MockGenerativeModelBase"
 import { vi } from "vitest"
-import { generateContentResultFactory } from "testingUtilities/factories"
+
+import { ThrowingIterator } from "../../../testingUtilities/ThrowingIterator"
+import { generateContentResultFactory } from "../../../testingUtilities/factories"
 
 export class ReturnSequenceOfGenerateContentResultsGeneratriveModel extends MockGenerativeModelBase {
 	private _resultsToReturn: ThrowingIterator<GenerateContentResult>

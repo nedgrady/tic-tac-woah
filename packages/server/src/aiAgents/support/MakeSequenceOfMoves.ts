@@ -1,10 +1,12 @@
-import { AiParticipant } from "aiAgents/AiParticipant"
-import Coordinates from "domain/Coordinates"
-import { Move } from "domain/Move"
-import { ThrowingIterator } from "matchmaking/Matchmaking.test"
+import Coordinates from "../../domain/Coordinates"
+import { Move } from "../../domain/Move"
+import { ThrowingIterator } from "../../testingUtilities/ThrowingIterator"
+
+import { AiParticipant } from "../AiParticipant"
 
 export class MakeSequenceOfMoves implements AiParticipant {
 	private readonly coordinatesIterator: ThrowingIterator<Coordinates>
+	name: string = "MakeSequenceOfMoves"
 
 	constructor(
 		coordinates: readonly Coordinates[],

@@ -1,6 +1,6 @@
-import { ActiveUser } from "TicTacWoahSocketServer"
 import { Socket } from "socket.io"
 import { test, expect } from "vitest"
+import { ActiveUser } from "../../../TicTacWoahSocketServer"
 
 test("Array contains only specified users", () => {
 	const users: ActiveUser[] = [

@@ -1,10 +1,10 @@
-import { TicTacWoahSocketServer, ActiveUser } from "TicTacWoahSocketServer"
-import { identifyAllSocketsAsTheSameUser } from "auth/socketIdentificationStrategies"
-import { QueueItem, TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
-import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
-import { joinQueueRequestFactory } from "testingUtilities/factories"
+import { expect, beforeAll, describe, it, vi } from "vitest"
+import { identifyAllSocketsAsTheSameUser } from "../../auth/socketIdentificationStrategies"
+import { joinQueueRequestFactory } from "../../testingUtilities/factories"
+import { StartAndConnectLifetime } from "../../testingUtilities/serverSetup/ticTacWoahTest"
+import { ActiveUser, TicTacWoahSocketServer } from "../../TicTacWoahSocketServer"
+import { TicTacWoahQueue, addConnectionToQueue, QueueItem } from "../addConnectionToQueue"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()

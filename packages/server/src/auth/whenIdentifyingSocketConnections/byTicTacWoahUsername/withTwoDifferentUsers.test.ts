@@ -1,6 +1,6 @@
-import { identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
-import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { beforeAll, expect, describe, it } from "vitest"
+import { StartAndConnectLifetime } from "../../../testingUtilities/serverSetup/ticTacWoahTest"
+import { identifyByTicTacWoahUsername } from "../../socketIdentificationStrategies"
 
 describe("it", () => {
 	const testLifetime = new StartAndConnectLifetime(server => server.use(identifyByTicTacWoahUsername), 2)
@@ -21,7 +21,7 @@ describe("it", () => {
 		const activeSockets = await testLifetime.serverIo.fetchSockets()
 
 		const activeUserConnections = activeSockets.flatMap(socket =>
-			[...socket.data.activeUser.connections].map(c => c.id)
+			[...socket.data.activeUser.connections].map(c => c.id),
 		)
 
 		expect(activeUserConnections).toContain(testLifetime.clientSockets[socketIndex].id)

@@ -1,16 +1,16 @@
-import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
-import { matchmaking } from "matchmaking/matchmaking"
-import { AlwaysMatchFirstTwoParticipants } from "matchmaking/support/AlwaysMatchFirstTwoParticipants"
-import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
-import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
 import { faker } from "@faker-js/faker"
-import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { ReturnSequenceOfGamesFactory } from "playing/support/ReturnSequenceOfGamesFactory"
-import { gameIsWonOnMoveNumber } from "domain/winConditions/support/gameIsWonOnMoveNumber"
-import { joinQueueRequestFactory } from "testingUtilities/factories"
+import { identifySocketsInSequence } from "../../auth/socketIdentificationStrategies"
+import { gameIsWonOnMoveNumber } from "../../domain/winConditions/support/gameIsWonOnMoveNumber"
+import { matchmaking } from "../../matchmaking/matchmaking"
+import { MatchmakingBroker } from "../../matchmaking/MatchmakingBroker"
+import { AlwaysMatchFirstTwoParticipants } from "../../matchmaking/support/AlwaysMatchFirstTwoParticipants"
+import { TicTacWoahQueue, addConnectionToQueue } from "../../queue/addConnectionToQueue"
+import { joinQueueRequestFactory } from "../../testingUtilities/factories"
+import { StartAndConnectLifetime } from "../../testingUtilities/serverSetup/ticTacWoahTest"
+import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "../../TicTacWoahSocketServer"
+import { startGameOnMatchMade } from "../startGameOnMatchMade"
+import { ReturnSequenceOfGamesFactory } from "../support/ReturnSequenceOfGamesFactory"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -38,8 +38,8 @@ describe("it", () => {
 					fourParticipants.map(handle => ({
 						connections: new Set(),
 						uniqueIdentifier: handle,
-					}))
-				)
+					})),
+				),
 			)
 			.use(addConnectionToQueue(queue))
 			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchFirstTwoParticipants()))
@@ -50,9 +50,9 @@ describe("it", () => {
 						{ winConditions: [gameIsWonOnMoveNumber(1)] },
 						{
 							/* we don't really care about how this game is configured */
-						}
-					)
-				)
+						},
+					),
+				),
 			)
 	}
 

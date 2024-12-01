@@ -1,5 +1,8 @@
 import { test, expect, it } from "vitest"
 
+import { faker } from "@faker-js/faker"
+import { createParticipants, createMoves } from "../gameTestHelpers"
+import { Move } from "../Move"
 import {
 	GameContinuesTestCase,
 	diagonalNonWinningTestCases,
@@ -8,9 +11,6 @@ import {
 } from "./continuingGameTestCases"
 import { GameWin, winByConsecutiveDiagonalPlacements } from "./winConditions"
 import { horizontalWinTestCases, diagonalWinTestCases, verticalWinTestCases } from "./winningGameTestCases"
-import { Move } from "domain/Move"
-import { createParticipants, createMoves } from "domain/gameTestHelpers"
-import { faker } from "@faker-js/faker"
 
 const [p1, p2] = createParticipants(2)
 
@@ -37,11 +37,11 @@ test.each(allTheNonWinningTestCases)(
 			{
 				boardSize: 5,
 				consecutiveTarget: consecutiveTarget,
-			}
+			},
 		)
 
 		expect(result).toBe("continues")
-	}
+	},
 )
 
 const allTheWinTestCases = [...horizontalWinTestCases, ...diagonalWinTestCases, ...verticalWinTestCases]
@@ -58,11 +58,11 @@ test.each(allTheWinTestCases)(
 			{
 				boardSize: 4,
 				consecutiveTarget: consecutiveTarget,
-			}
+			},
 		)
 
 		expect(type).toEqual("win")
-	}
+	},
 )
 
 test.each(allTheWinTestCases)(
@@ -77,11 +77,11 @@ test.each(allTheWinTestCases)(
 			{
 				boardSize: 4,
 				consecutiveTarget: consecutiveTarget,
-			}
+			},
 		)
 
 		expect((result as GameWin).winningMoves).toHaveLength(consecutiveTarget)
-	}
+	},
 )
 
 test.each(allTheWinTestCases)(
@@ -96,11 +96,11 @@ test.each(allTheWinTestCases)(
 			{
 				boardSize: 4,
 				consecutiveTarget: consecutiveTarget,
-			}
+			},
 		)
 
 		expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(expectedWinningMoves as Move[]))
-	}
+	},
 )
 
 it("Even if the moves aren't ordered wins are still reported correctly nw-se", () => {
@@ -123,7 +123,7 @@ it("Even if the moves aren't ordered wins are still reported correctly nw-se", (
 		{
 			boardSize: 4,
 			consecutiveTarget: 4,
-		}
+		},
 	)
 
 	expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(winningMoves as Move[]))
@@ -149,7 +149,7 @@ it("Even if the moves aren't ordered wins are still reported correctly sw-ne", (
 		{
 			boardSize: 4,
 			consecutiveTarget: 4,
-		}
+		},
 	)
 
 	expect((result as GameWin).winningMoves).toEqual(expect.arrayContaining(winningMoves as Move[]))

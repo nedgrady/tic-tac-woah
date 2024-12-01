@@ -1,6 +1,6 @@
-import { identifyByTicTacWoahUsername } from "auth/socketIdentificationStrategies"
-import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { beforeAll, expect, describe, it } from "vitest"
+import { StartAndConnectLifetime } from "../../../testingUtilities/serverSetup/ticTacWoahTest"
+import { identifyByTicTacWoahUsername } from "../../socketIdentificationStrategies"
 
 describe("it", () => {
 	const testLifetime = new StartAndConnectLifetime(server => server.use(identifyByTicTacWoahUsername), 2)

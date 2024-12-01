@@ -1,12 +1,12 @@
-import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { TicTacWoahQueue } from "queue/addConnectionToQueue"
-import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
+import { TicTacWoahQueue } from "../queue/addConnectionToQueue"
+import { TicTacWoahSocketServerMiddleware } from "../TicTacWoahSocketServer"
+import { MatchmakingBroker } from "./MatchmakingBroker"
 import { MatchmakingStrategy } from "./MatchmakingStrategy"
 
 export function matchmaking(
 	queue: TicTacWoahQueue,
 	matchmakingBroker: MatchmakingBroker,
-	matchmakingStrategy: MatchmakingStrategy
+	matchmakingStrategy: MatchmakingStrategy,
 ): TicTacWoahSocketServerMiddleware {
 	queue.onAdded(queueItems => {
 		const madeMatches = matchmakingStrategy.doTheThing(queueItems)

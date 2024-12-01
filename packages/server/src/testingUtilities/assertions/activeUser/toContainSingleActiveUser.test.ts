@@ -1,6 +1,6 @@
-import { ActiveUser, TicTacWoahServerSocket } from "TicTacWoahSocketServer"
 import { Socket } from "socket.io"
 import { expect, test } from "vitest"
+import { ActiveUser, TicTacWoahServerSocket } from "../../../TicTacWoahSocketServer"
 test("Array contains single user", () => {
 	const a: ActiveUser = {
 		uniqueIdentifier: "123",

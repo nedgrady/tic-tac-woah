@@ -1,6 +1,6 @@
-import { TicTacWoahEventName, TicTacWoahEventMap } from "TicTacWoahSocketServer"
-import { AssertableTicTacWoahClientSocket } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect } from "vitest"
+import { TicTacWoahEventName, TicTacWoahEventMap } from "../../../TicTacWoahSocketServer"
+import { AssertableTicTacWoahClientSocket } from "../../serverSetup/ticTacWoahTest"
 
 export const matchers: Parameters<(typeof expect)["extend"]>[0] = {
 	toHaveReceivedPayload(

@@ -1,6 +1,6 @@
-import { AiParticipant } from "aiAgents/AiParticipant"
-import { AiParticipantFactory } from "aiAgents/AiParticipantFactory"
-import { Move } from "domain/Move"
+import { AiParticipant } from ".."
+import { Move } from "../domain/Move"
+import { AiParticipantFactory } from "./AiParticipantFactory"
 
 export class RandomlyMovingAiParticipantFactory extends AiParticipantFactory {
 	createAiAgent(): AiParticipant {
@@ -21,16 +21,16 @@ export class RandomlyMovingAiParticipantFactory extends AiParticipantFactory {
 	}
 }
 
-class RandomlyMovingAiParticipant extends AiParticipant {
-	readonly id = crypto.randomUUID()
-	readonly name = "RandomlyMovingAiParticipant"
-	async nextMove(): Promise<Move> {
-		return {
-			placement: {
-				x: Math.floor(Math.min(Math.random() * 20)),
-				y: Math.floor(Math.min(Math.random() * 20)),
-			},
-			mover: this.id,
-		}
-	}
-}
+// class RandomlyMovingAiParticipant extends AiParticipant {
+// 	readonly id = crypto.randomUUID()
+// 	readonly name = "RandomlyMovingAiParticipant"
+// 	async nextMove(): Promise<Move> {
+// 		return {
+// 			placement: {
+// 				x: Math.floor(Math.min(Math.random() * 20)),
+// 				y: Math.floor(Math.min(Math.random() * 20)),
+// 			},
+// 			mover: this.id,
+// 		}
+// 	}
+// }

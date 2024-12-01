@@ -1,11 +1,12 @@
-import { Move } from "./Move"
-import { Participant } from "./Participant"
-import { EventEmitter } from "events"
 import _ from "lodash"
-import { GameConfiguration, GameRuleFunction, GameState } from "./gameRules/gameRules"
-import { GameWinCondition } from "./winConditions/winConditions"
+
 import { GameDrawCondition } from "./drawConditions/drawConditions"
+import { GameRuleFunction, GameConfiguration, GameState } from "./gameRules/gameRules"
+import { Move } from "./Move"
 import { DecideWhoMayMoveNext } from "./moveOrderRules/moveOrderRules"
+import { Participant } from "./Participant"
+import { GameWinCondition } from "./winConditions/winConditions"
+import { EventEmitter } from "events"
 
 export type GameWonListener = (winningMoves: readonly Move[]) => void
 export type GameDrawListener = () => void
@@ -77,15 +78,12 @@ export class Game {
 			participants: this.#participants,
 		})
 
-		console.log(`newMove: ${newMove}`)
 		if (!nextAvailableMovers.includes(newMove.mover)) {
 			return
 		}
 
-		console.log(`checking rules`)
 		for (const rule of this.#rules) {
 			if (!rule(newMove, gameState, gameConfiguration)) {
-				console.log(`rule failed: ${rule}`)
 				return
 			}
 		}
@@ -93,11 +91,9 @@ export class Game {
 		this.#movesReal.push(newMove)
 		this.#emitter.emit("Move", newMove)
 
-		console.log("checking wins")
 		for (const winCondition of this.#winConditions) {
 			const thing = winCondition(newMove, gameState, gameConfiguration)
 			if (thing.result === "win") {
-				console.log("winning move")
 				this.#emitter.emit("Winning Move", thing.winningMoves)
 				return
 			}

@@ -1,4 +1,4 @@
-import { GameState } from "domain/gameRules/gameRules"
-import { Participant } from "domain/Participant"
+import { GameState } from "../gameRules/gameRules"
+import { Participant } from "../Participant"
 
 export type DecideWhoMayMoveNext = (gameState: GameState) => readonly Participant[]

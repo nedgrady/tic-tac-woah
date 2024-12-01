@@ -1,8 +1,8 @@
-import { gameStartDtoFactory } from "testingUtilities/factories"
-import { AssertableTicTacWoahClientSocket } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { GameStartDto } from "@tic-tac-woah/types"
-import { StrongMap } from "utilities/StrongMap"
 import { expect, test } from "vitest"
+import { StrongMap } from "../../../utilities/StrongMap"
+import { gameStartDtoFactory } from "../../factories"
+import { AssertableTicTacWoahClientSocket } from "../../serverSetup/ticTacWoahTest"
 
 test("Some payloads work", () => {
 	const mockEvents: AssertableTicTacWoahClientSocket["events"] = new StrongMap()

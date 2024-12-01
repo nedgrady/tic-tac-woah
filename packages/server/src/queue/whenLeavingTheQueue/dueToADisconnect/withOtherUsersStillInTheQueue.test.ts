@@ -1,10 +1,10 @@
-import { ActiveUser, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identifyAllSocketsAsTheSameUser } from "auth/socketIdentificationStrategies"
-import { QueueItem, TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
-import { removeConnectionFromQueueOnDisconnect } from "queue/removeConnectionFromQueueOnDisconnect"
-import { joinQueueRequestFactory, queueItemFactory } from "testingUtilities/factories"
+import { identifyAllSocketsAsTheSameUser } from "../../../auth/socketIdentificationStrategies"
+import { joinQueueRequestFactory, queueItemFactory } from "../../../testingUtilities/factories"
+import { StartAndConnectLifetime } from "../../../testingUtilities/serverSetup/ticTacWoahTest"
+import { ActiveUser, TicTacWoahSocketServer } from "../../../TicTacWoahSocketServer"
+import { TicTacWoahQueue, QueueItem, addConnectionToQueue } from "../../addConnectionToQueue"
+import { removeConnectionFromQueueOnDisconnect } from "../../removeConnectionFromQueueOnDisconnect"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()

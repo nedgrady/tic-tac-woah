@@ -1,11 +1,11 @@
-import { PlacementSpecification, createParticipants } from "domain/gameTestHelpers"
-import { Move } from "domain/Move"
-import { Participant } from "domain/Participant"
+import { PlacementSpecification, createParticipants } from "../gameTestHelpers"
+import { Move } from "../Move"
+import { Participant } from "../Participant"
 import {
 	GameWinCondition,
 	winByConsecutiveDiagonalPlacements,
-	winByConsecutiveHorizontalPlacements,
 	winByConsecutiveVerticalPlacements,
+	winByConsecutiveHorizontalPlacements,
 } from "./winConditions"
 
 export interface GameWinTestCase {

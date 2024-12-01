@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker"
+import { Game } from "./Game"
 import { Move } from "./Move"
 import { Participant } from "./Participant"
-import { Game } from "./Game"
 
 export type PlacementSpecification = (Participant | Empty)[][]
 export type Empty = ""

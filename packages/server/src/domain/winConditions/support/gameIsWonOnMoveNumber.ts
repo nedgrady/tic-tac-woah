@@ -1,5 +1,5 @@
-import { Move } from "domain/Move"
-import { GameConfiguration, GameState } from "domain/gameRules/gameRules"
+import { GameState, GameConfiguration } from "../../gameRules/gameRules"
+import { Move } from "../../Move"
 import { GameWinCondition, continueGame } from "../winConditions"
 
 export const gameIsWonOnMoveNumber: (moveNumber: number) => GameWinCondition =

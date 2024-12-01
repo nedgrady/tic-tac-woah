@@ -1,12 +1,11 @@
 import { expect, test } from "vitest"
-
+import { createMoves } from "../gameTestHelpers"
 import {
 	GameRuleTestCase,
 	moveOrderTestCases,
 	moveBoundsTestCases,
 	moveMustBeMadeIntoAFreeSquareTestCases,
 } from "./gameRuleTestCases"
-import { createMoves } from "domain/gameTestHelpers"
 
 export const moveRuleTestCases: readonly GameRuleTestCase[] = [
 	...moveOrderTestCases,
@@ -23,9 +22,9 @@ test.each(moveRuleTestCases)(
 				moves: createMoves(board),
 				participants: participants,
 			},
-			{ boardSize: boardSize, consecutiveTarget: 3 }
+			{ boardSize: boardSize, consecutiveTarget: 3 },
 		)
 
 		expect(isMoveAllowed).toBe(expectedRuleResult)
-	}
+	},
 )

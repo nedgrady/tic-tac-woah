@@ -1,6 +1,6 @@
-import { QueueItem } from "queue/addConnectionToQueue"
-import { ActiveUser } from "TicTacWoahSocketServer"
 import { AiParticipant } from "../aiAgents/AiParticipant"
+import { QueueItem } from "../queue/addConnectionToQueue"
+import { ActiveUser } from "../TicTacWoahSocketServer"
 
 export interface MadeMatch {
 	readonly participants: readonly ActiveUser[]

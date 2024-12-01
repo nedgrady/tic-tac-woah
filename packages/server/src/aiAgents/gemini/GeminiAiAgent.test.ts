@@ -1,7 +1,7 @@
 import { test, expect } from "vitest"
-import { generateContentResultFactory } from "testingUtilities/factories"
-import { ReturnSequenceOfGenerateContentResultsGeneratriveModel } from "./support/ReturnSequenceOfGenerateContentResultsGeneratriveModel"
+import { generateContentResultFactory } from "../../testingUtilities/factories"
 import { GeminiAiAgent } from "./GeminiAiAgent"
+import { ReturnSequenceOfGenerateContentResultsGeneratriveModel } from "./support/ReturnSequenceOfGenerateContentResultsGeneratriveModel"
 
 test.each([
 	{ x: 1, y: 2 },

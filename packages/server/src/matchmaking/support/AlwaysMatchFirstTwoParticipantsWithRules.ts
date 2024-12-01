@@ -1,4 +1,4 @@
-import { QueueItem } from "queue/addConnectionToQueue"
+import { QueueItem } from "../../queue/addConnectionToQueue"
 import { MatchmakingStrategy, MadeMatchRules, MadeMatch } from "../MatchmakingStrategy"
 
 export class AlwaysMatchFirstTwoParticipantsWithRules extends MatchmakingStrategy {

@@ -1,15 +1,8 @@
-import { Game } from "domain/Game"
-import { GameFactory } from "playing/GameFactory"
-import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
-import {
-	GameWinDto,
-	CompletedMoveDto,
-	GameDrawDto,
-	GameStartDto,
-	CompletedMoveDtoSchema,
-	PendingMoveDto,
-} from "@tic-tac-woah/types"
+import { CompletedMoveDto, GameWinDto, GameDrawDto, GameStartDto } from "@tic-tac-woah/types"
+import { Game } from "../domain/Game"
+import { MatchmakingBroker } from "../matchmaking/MatchmakingBroker"
+import { TicTacWoahSocketServerMiddleware } from "../TicTacWoahSocketServer"
+import { GameFactory } from "./GameFactory"
 
 export function startGameOnMatchMade(
 	matchmakingBroker: MatchmakingBroker,

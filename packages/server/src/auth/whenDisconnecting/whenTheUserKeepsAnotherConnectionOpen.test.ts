@@ -1,8 +1,9 @@
 import { faker } from "@faker-js/faker"
-import { ActiveUser } from "TicTacWoahSocketServer"
-import { identifyAllSocketsAsTheSameUser, removeConnectionFromActiveUser } from "auth/socketIdentificationStrategies"
-import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
+
 import { beforeAll, expect, describe, it, vi } from "vitest"
+import { StartAndConnectLifetime } from "../../testingUtilities/serverSetup/ticTacWoahTest"
+import { ActiveUser } from "../../TicTacWoahSocketServer"
+import { identifyAllSocketsAsTheSameUser, removeConnectionFromActiveUser } from "../socketIdentificationStrategies"
 
 describe("it", () => {
 	const activeUser: ActiveUser = {
@@ -12,7 +13,7 @@ describe("it", () => {
 
 	const testLifetime = new StartAndConnectLifetime(
 		server => server.use(identifyAllSocketsAsTheSameUser(activeUser)).use(removeConnectionFromActiveUser),
-		2
+		2,
 	)
 
 	beforeAll(async () => {

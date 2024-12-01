@@ -1,8 +1,7 @@
-import { ActiveUser, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
 import { EventEmitter } from "events"
 import _ from "lodash"
+import { ActiveUser, TicTacWoahSocketServerMiddleware } from "../TicTacWoahSocketServer"
 import TypedEmitter from "typed-emitter"
-import { JoinQueueRequestSchema } from "@tic-tac-woah/types"
 
 export type QueueAddedListener = (queueState: readonly QueueItem[]) => void
 

@@ -1,6 +1,6 @@
-import { AiParticipant } from "aiAgents/AiParticipant"
-import { AiParticipantFactory } from "aiAgents/AiParticipantFactory"
-import { ThrowingIterator } from "matchmaking/Matchmaking.test"
+import { ThrowingIterator } from "../../testingUtilities/ThrowingIterator"
+import { AiParticipant } from "../AiParticipant"
+import { AiParticipantFactory } from "../AiParticipantFactory"
 
 export class ReturnSequenceOfAiParticipants extends AiParticipantFactory {
 	private gameOptionsIterator: ThrowingIterator<AiParticipant>

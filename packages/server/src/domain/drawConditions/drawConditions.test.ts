@@ -1,6 +1,6 @@
-import { Move } from "domain/Move"
-import { createMoves, createParticipants } from "domain/gameTestHelpers"
 import { expect, it } from "vitest"
+import { createParticipants, createMoves } from "../gameTestHelpers"
+import { Move } from "../Move"
 import { gameIsDrawnWhenBoardIsFull } from "./drawConditions"
 
 it("When the board is full, the game is a draw", () => {
@@ -26,7 +26,7 @@ it("When the board is full, the game is a draw", () => {
 		{
 			boardSize: 3,
 			consecutiveTarget: 3,
-		}
+		},
 	)
 
 	expect(result).toBe("draw")
@@ -54,7 +54,7 @@ it("When the board is full, the game is a draw 2", () => {
 		{
 			boardSize: 2,
 			consecutiveTarget: 2,
-		}
+		},
 	)
 
 	expect(result).toBe("draw")
@@ -83,7 +83,7 @@ it("When the board is full, the game continues", () => {
 		{
 			boardSize: 3,
 			consecutiveTarget: 3,
-		}
+		},
 	)
 
 	expect(result).toBe("continues")

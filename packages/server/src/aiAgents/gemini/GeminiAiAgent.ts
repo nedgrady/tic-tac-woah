@@ -1,10 +1,10 @@
-import { GenerativeModel, SchemaType } from "@google/generative-ai"
-import { AiParticipant } from "aiAgents/AiParticipant"
-import { Game } from "domain/Game"
-import { Move } from "domain/Move"
-import { Participant } from "domain/Participant"
 import { z } from "zod"
 import retry from "async-retry"
+import { GenerativeModel, SchemaType } from "@google/generative-ai"
+import { Game } from "../../domain/Game"
+import { Move } from "../../domain/Move"
+import { Participant } from "../../domain/Participant"
+import { AiParticipant } from "../AiParticipant"
 export const AiModelMoveResponseSchema = z.object({
 	x: z.number().int(),
 	y: z.number().int(),

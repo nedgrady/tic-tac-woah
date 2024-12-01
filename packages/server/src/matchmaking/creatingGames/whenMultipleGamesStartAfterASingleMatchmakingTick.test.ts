@@ -1,15 +1,16 @@
-import { TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identifySocketsByWebSocketId } from "auth/socketIdentificationStrategies"
-import { matchmaking } from "matchmaking/matchmaking"
-import { MatchTwoGamesOfTwo } from "matchmaking/support/MatchTwoGamesOfTwo"
-import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
-import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { vi, expect, beforeAll, describe, it } from "vitest"
-import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { AnythingGoesForeverGameFactory } from "playing/support/AnythingGoesForeverGameFactory"
-import { joinQueueRequestFactory } from "testingUtilities/factories"
+
 import _ from "lodash"
+import { identifySocketsByWebSocketId } from "../../auth/socketIdentificationStrategies"
+import { startGameOnMatchMade } from "../../playing/startGameOnMatchMade"
+import { AnythingGoesForeverGameFactory } from "../../playing/support/AnythingGoesForeverGameFactory"
+import { TicTacWoahQueue, addConnectionToQueue } from "../../queue/addConnectionToQueue"
+import { joinQueueRequestFactory } from "../../testingUtilities/factories"
+import { StartAndConnectLifetime } from "../../testingUtilities/serverSetup/ticTacWoahTest"
+import { TicTacWoahSocketServer } from "../../TicTacWoahSocketServer"
+import { matchmaking } from "../matchmaking"
+import { MatchmakingBroker } from "../MatchmakingBroker"
+import { MatchTwoGamesOfTwo } from "../support/MatchTwoGamesOfTwo"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()

@@ -1,8 +1,8 @@
-import { CreateGameOptions, Game } from "domain/Game"
-import { anyMoveIsAllowed } from "domain/gameRules/support/anyMoveIsAllowed"
-import { anyParticipantMayMoveNext } from "domain/moveOrderRules/support/anyParticipantMayMoveNext"
+import { CreateGameOptions, Game } from "../../domain/Game"
+import { anyMoveIsAllowed } from "../../domain/gameRules/support/anyMoveIsAllowed"
+import { anyParticipantMayMoveNext } from "../../domain/moveOrderRules/support/anyParticipantMayMoveNext"
+import { MadeMatch } from "../../matchmaking/MatchmakingStrategy"
 import { GameFactory } from "../GameFactory"
-import { MadeMatch } from "matchmaking/MatchmakingStrategy"
 
 export class ReturnSingleGameFactory extends GameFactory {
 	constructor(private readonly gameOptions: Partial<CreateGameOptions> = {}) {

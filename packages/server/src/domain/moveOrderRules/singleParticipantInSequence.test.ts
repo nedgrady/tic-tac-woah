@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker"
-import { GameState } from "domain/gameRules/gameRules"
 import { expect, test } from "vitest"
+import { GameState } from "../gameRules/gameRules"
 import { singleParticipantInSequence } from "./singleParticipantInSequence"
 
 test("Single participant in sequence returns the first participant after no moves", () => {

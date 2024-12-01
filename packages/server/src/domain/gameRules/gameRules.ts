@@ -1,5 +1,5 @@
-import { Move } from "domain/Move"
-import { Participant } from "domain/Participant"
+import { Move } from "../Move"
+import { Participant } from "../Participant"
 
 export type GameRuleFunction = (newMove: Move, gameState: GameState, gameConfiguration: GameConfiguration) => boolean
 

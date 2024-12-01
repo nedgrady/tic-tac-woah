@@ -1,5 +1,5 @@
-import { QueueItem } from "queue/addConnectionToQueue"
-import { madeMatchRulesFactory } from "testingUtilities/factories"
+import { QueueItem } from "../../queue/addConnectionToQueue"
+import { madeMatchRulesFactory } from "../../testingUtilities/factories"
 import { MatchmakingStrategy, MadeMatch } from "../MatchmakingStrategy"
 
 export class MatchTwoGamesOfTwo extends MatchmakingStrategy {

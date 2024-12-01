@@ -1,4 +1,4 @@
-import { Move } from "domain/Move"
+import { Move } from "../../Move"
 import { GameWinCondition } from "../winConditions"
 
 export const alwaysWinWithMoves: (moves: Move[]) => GameWinCondition = (moves: Move[]) => () => {

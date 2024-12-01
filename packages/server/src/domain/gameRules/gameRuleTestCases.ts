@@ -1,6 +1,6 @@
-import { Move } from "domain/Move"
-import { Participant } from "domain/Participant"
-import { PlacementSpecification, createParticipants } from "domain/gameTestHelpers"
+import { PlacementSpecification, createParticipants } from "../gameTestHelpers"
+import { Move } from "../Move"
+import { Participant } from "../Participant"
 import {
 	GameRuleFunction,
 	moveMustBeMadeByTheCorrectPlayer,

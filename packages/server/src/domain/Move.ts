@@ -1,4 +1,4 @@
-import Coordinates from "./Coordinates"
+import { Coordinates } from ".."
 import { Participant } from "./Participant"
 
 export interface Move {

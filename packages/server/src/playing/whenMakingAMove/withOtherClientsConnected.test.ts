@@ -1,14 +1,14 @@
-import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
-import { matchmaking } from "matchmaking/matchmaking"
-import { AlwaysMatchFirstTwoParticipants } from "matchmaking/support/AlwaysMatchFirstTwoParticipants"
-import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
-import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { expect, beforeAll, describe, it, vi } from "vitest"
-import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { AnythingGoesForeverGameFactory } from "playing/support/AnythingGoesForeverGameFactory"
-import { joinQueueRequestFactory } from "testingUtilities/factories"
+import { identifySocketsInSequence } from "../../auth/socketIdentificationStrategies"
+import { matchmaking } from "../../matchmaking/matchmaking"
+import { MatchmakingBroker } from "../../matchmaking/MatchmakingBroker"
+import { AlwaysMatchFirstTwoParticipants } from "../../matchmaking/support/AlwaysMatchFirstTwoParticipants"
+import { TicTacWoahQueue, addConnectionToQueue } from "../../queue/addConnectionToQueue"
+import { joinQueueRequestFactory } from "../../testingUtilities/factories"
+import { StartAndConnectLifetime } from "../../testingUtilities/serverSetup/ticTacWoahTest"
+import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "../../TicTacWoahSocketServer"
+import { startGameOnMatchMade } from "../startGameOnMatchMade"
+import { AnythingGoesForeverGameFactory } from "../support/AnythingGoesForeverGameFactory"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -25,8 +25,8 @@ describe("it", () => {
 					threeParticipants.map(handle => ({
 						connections: new Set(),
 						uniqueIdentifier: handle,
-					}))
-				)
+					})),
+				),
 			)
 			.use(addConnectionToQueue(queue))
 			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchFirstTwoParticipants()))

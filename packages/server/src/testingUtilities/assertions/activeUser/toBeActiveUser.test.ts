@@ -1,6 +1,6 @@
-import { ActiveUser } from "TicTacWoahSocketServer"
 import { Socket } from "socket.io"
 import { test, expect } from "vitest"
+import { ActiveUser } from "../../../TicTacWoahSocketServer"
 
 test("Same user", () => {
 	const a: ActiveUser = {
@@ -21,12 +21,12 @@ test("Same user with socket ids", () => {
 
 	const a: ActiveUser = {
 		uniqueIdentifier: "123",
-		connections: new Set(connectionIds.map(id => ({ id } as Socket))),
+		connections: new Set(connectionIds.map(id => ({ id }) as Socket)),
 	}
 
 	const b: ActiveUser = {
 		uniqueIdentifier: "123",
-		connections: new Set(connectionIds.map(id => ({ id } as Socket))),
+		connections: new Set(connectionIds.map(id => ({ id }) as Socket)),
 	}
 
 	expect(a).toBeActiveUser(b)
@@ -35,12 +35,12 @@ test("Same user with socket ids", () => {
 test("Differnt user by socket ids", () => {
 	const a: ActiveUser = {
 		uniqueIdentifier: "123",
-		connections: new Set(["ABC123", "DEF456", "GHI789"].map(id => ({ id } as Socket))),
+		connections: new Set(["ABC123", "DEF456", "GHI789"].map(id => ({ id }) as Socket)),
 	}
 
 	const b: ActiveUser = {
 		uniqueIdentifier: "123",
-		connections: new Set(["HIJ123", "KLM111", "CBA823"].map(id => ({ id } as Socket))),
+		connections: new Set(["HIJ123", "KLM111", "CBA823"].map(id => ({ id }) as Socket)),
 	}
 
 	expect(a).not.toBeActiveUser(b)

@@ -1,29 +1,10 @@
 import { expect, test } from "vitest"
-import { MadeMatch } from "./MatchmakingStrategy"
-import { QueueItem } from "queue/addConnectionToQueue"
-import { activeUserFactory, aiParticipantFactory, queueItemFactory } from "testingUtilities/factories"
-import { QueueItemCompatibilityFunction, StandardMathcmakingStrategy } from "./StandardMathcmakingStrategy"
 import { AnyAiParticipantFactory } from "../aiAgents/support/AnyAiParticipantFactory"
-import { ReturnSequenceOfAiParticipants } from "aiAgents/support/ReturnSequenceOfAiParticipants"
-
-export class ThrowingIterator<TEntityToReturn> {
-	private iterator: Iterator<TEntityToReturn>
-
-	constructor(
-		private readonly entities: readonly TEntityToReturn[],
-		private readonly entityName: string,
-	) {
-		this.iterator = entities[Symbol.iterator]()
-	}
-
-	next(): TEntityToReturn {
-		const { value: currentEntity, done } = this.iterator.next()
-
-		if (done) throw new Error(`No more entities of type ${this.entityName} to return`)
-
-		return currentEntity
-	}
-}
+import { ReturnSequenceOfAiParticipants } from "../aiAgents/support/ReturnSequenceOfAiParticipants"
+import { QueueItem } from "../queue/addConnectionToQueue"
+import { queueItemFactory, activeUserFactory, aiParticipantFactory } from "../testingUtilities/factories"
+import { MadeMatch } from "./MatchmakingStrategy"
+import { StandardMathcmakingStrategy, QueueItemCompatibilityFunction } from "./StandardMathcmakingStrategy"
 
 type NoMatchesTestCase = readonly QueueItem[]
 

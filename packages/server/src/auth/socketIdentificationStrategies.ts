@@ -1,4 +1,4 @@
-import { ActiveUser, TicTacWoahServerSocket, TicTacWoahSocketServerMiddleware } from "TicTacWoahSocketServer"
+import { ActiveUser, TicTacWoahServerSocket, TicTacWoahSocketServerMiddleware } from "../TicTacWoahSocketServer"
 
 const activeUsers: Map<string, ActiveUser> = new Map<string, ActiveUser>()
 
@@ -19,7 +19,7 @@ export const identifyByTicTacWoahUsername: TicTacWoahSocketServerMiddleware = (s
 }
 
 export const identifyAllSocketsAsTheSameUser: (
-	activeUser?: ActiveUser
+	activeUser?: ActiveUser,
 ) => TicTacWoahSocketServerMiddleware = activeUser => {
 	const singleActiveUser = activeUser ?? {
 		uniqueIdentifier: "Single user from identifyAllSocketsAsTheSameUser",
@@ -36,7 +36,7 @@ export const identifyAllSocketsAsTheSameUser: (
 }
 
 export const identifySocketsInSequence: (
-	activeUsers: ActiveUser[]
+	activeUsers: ActiveUser[],
 ) => TicTacWoahSocketServerMiddleware = activeUsers => {
 	let index = 0
 

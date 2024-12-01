@@ -1,7 +1,7 @@
-import { MadeMatch, MatchmakingStrategy } from "./MatchmakingStrategy"
-import { QueueItem } from "queue/addConnectionToQueue"
 import _ from "lodash"
-import { AiParticipantFactory } from "aiAgents/AiParticipantFactory"
+import { AiParticipantFactory } from "../aiAgents/AiParticipantFactory"
+import { QueueItem } from "../queue/addConnectionToQueue"
+import { MatchmakingStrategy, MadeMatch } from "./MatchmakingStrategy"
 
 function groupBy<TKey, TValue>(list: readonly TValue[], keyGetter: (item: TValue) => TKey) {
 	const map = new Map<TKey, TValue[]>()

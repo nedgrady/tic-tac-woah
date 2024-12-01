@@ -1,5 +1,5 @@
-import { ActiveUser } from "TicTacWoahSocketServer"
 import { expect } from "vitest"
+import { ActiveUser } from "../../../TicTacWoahSocketServer"
 
 type ActiveUserEqualityContract = Pick<ActiveUser, "uniqueIdentifier"> & { connectionIds: string[] }
 

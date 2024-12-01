@@ -1,14 +1,14 @@
-import { ReturnSingleGameFactory } from "playing/support/ReturnSingleGameFactory"
-import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
-import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
-import { identifySocketsInSequence } from "auth/socketIdentificationStrategies"
-import { matchmaking } from "matchmaking/matchmaking"
-import { AlwaysMatchFirstTwoParticipants } from "matchmaking/support/AlwaysMatchFirstTwoParticipants"
-import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
-import { TicTacWoahQueue, addConnectionToQueue } from "queue/addConnectionToQueue"
-import { StartAndConnectLifetime } from "testingUtilities/serverSetup/ticTacWoahTest"
 import { vi, expect, beforeAll, describe, it } from "vitest"
-import { joinQueueRequestFactory } from "testingUtilities/factories"
+import { identifySocketsInSequence } from "../../auth/socketIdentificationStrategies"
+import { startGameOnMatchMade } from "../../playing/startGameOnMatchMade"
+import { ReturnSingleGameFactory } from "../../playing/support/ReturnSingleGameFactory"
+import { TicTacWoahQueue, addConnectionToQueue } from "../../queue/addConnectionToQueue"
+import { joinQueueRequestFactory } from "../../testingUtilities/factories"
+import { StartAndConnectLifetime } from "../../testingUtilities/serverSetup/ticTacWoahTest"
+import { TicTacWoahUserHandle, TicTacWoahSocketServer } from "../../TicTacWoahSocketServer"
+import { matchmaking } from "../matchmaking"
+import { MatchmakingBroker } from "../MatchmakingBroker"
+import { AlwaysMatchFirstTwoParticipants } from "../support/AlwaysMatchFirstTwoParticipants"
 
 describe("it", () => {
 	const queue = new TicTacWoahQueue()
@@ -23,8 +23,8 @@ describe("it", () => {
 					twoUsers.map(handle => ({
 						connections: new Set(),
 						uniqueIdentifier: handle,
-					}))
-				)
+					})),
+				),
 			)
 			.use(addConnectionToQueue(queue))
 			.use(matchmaking(queue, matchmakingBroker, new AlwaysMatchFirstTwoParticipants()))

@@ -1,4 +1,4 @@
-import { createParticipants } from "domain/gameTestHelpers"
+import { createParticipants } from "../gameTestHelpers"
 import {
 	winByConsecutiveHorizontalPlacements,
 	winByConsecutiveDiagonalPlacements,

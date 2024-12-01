@@ -1,15 +1,15 @@
 import express from "express"
 import http, { createServer } from "http"
-import vitest, { expect, vi } from "vitest"
+import { expect, vi, MockedFunction } from "vitest"
 import { io as clientIo } from "socket.io-client"
 import { Server as SocketIoServer } from "socket.io"
-import { TicTacWoahEventMap, TicTacWoahRemoteServerSocket, TicTacWoahSocketServer } from "TicTacWoahSocketServer"
 import { instrument } from "@socket.io/admin-ui"
-import { StrongMap } from "utilities/StrongMap"
 import { TicTacWoahClientSocket } from "@tic-tac-woah/types"
+import { TicTacWoahRemoteServerSocket, TicTacWoahEventMap, TicTacWoahSocketServer } from "../../TicTacWoahSocketServer"
+import { StrongMap } from "../../utilities/StrongMap"
 
 export type AssertableTicTacWoahRemoteServerSocket = Omit<TicTacWoahRemoteServerSocket, "omit"> & {
-	emit: vitest.MockedFunction<TicTacWoahRemoteServerSocket["emit"]>
+	emit: MockedFunction<TicTacWoahRemoteServerSocket["emit"]>
 }
 
 export type AssertableTicTacWoahClientSocket = TicTacWoahClientSocket & {

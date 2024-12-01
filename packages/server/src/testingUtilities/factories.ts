@@ -1,15 +1,15 @@
 import { faker } from "@faker-js/faker"
-import { ActiveUser } from "TicTacWoahSocketServer"
-import Coordinates from "domain/Coordinates"
-import { Move } from "domain/Move"
 import { Factory } from "fishery"
-import { MadeMatchRules } from "matchmaking/MatchmakingStrategy"
-import { AiParticipant } from "aiAgents/AiParticipant"
-import { QueueItem } from "queue/addConnectionToQueue"
-import { GameStartDto, JoinQueueRequest, PendingMoveDto } from "@tic-tac-woah/types"
 import { vi } from "vitest"
 import { GenerateContentResult } from "@google/generative-ai"
-import { CreateGameOptions } from "domain/Game"
+import { JoinQueueRequest, GameStartDto, PendingMoveDto } from "@tic-tac-woah/types"
+import { AiParticipant } from "../aiAgents/AiParticipant"
+import Coordinates from "../domain/Coordinates"
+import { CreateGameOptions } from "../domain/Game"
+import { Move } from "../domain/Move"
+import { MadeMatchRules } from "../matchmaking/MatchmakingStrategy"
+import { QueueItem } from "../queue/addConnectionToQueue"
+import { ActiveUser } from "../TicTacWoahSocketServer"
 
 export const joinQueueRequestFactory = Factory.define<JoinQueueRequest>(() => ({
 	humanCount: faker.number.int(),
@@ -67,6 +67,7 @@ export const queueItemFactory = Factory.define<QueueItem>(() => ({
 }))
 
 export const aiParticipantFactory = Factory.define<AiParticipant>(() => ({
+	name: "AiParticipant from Faker",
 	id: faker.string.uuid(),
 	nextMove: vi.fn(),
 }))
