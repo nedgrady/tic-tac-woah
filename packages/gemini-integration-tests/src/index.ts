@@ -150,8 +150,8 @@ const agentsUnderTest = [
 	// ),
 ]
 
-agentsUnderTest.forEach(agent => {
+agentsUnderTest.forEach(async agent => {
 	const benchmark = new AgentStrengthBenchmark(agent, GameWinTestCases)
-	const results = benchmark.run()
+	const results = await benchmark.run()
 	console.log(results)
 })
