@@ -46,6 +46,7 @@ function generateBoardText(game: Game): string {
 export class GeminiAiAgent extends AiParticipant {
 	// TODO - why does this appear to get dropped by intellisence cross module boundaries??
 	readonly id: string = crypto.randomUUID()
+	readonly name = "GeminiAiAgent"
 	constructor(private readonly model: Readonly<GenerativeModel>) {
 		super()
 	}
@@ -112,6 +113,7 @@ export class GeminiAiAgent extends AiParticipant {
 
 export class RetryingAiAgent<TAgent extends AiParticipant> extends AiParticipant {
 	readonly id: string = crypto.randomUUID()
+	readonly name = this.agent.name + "Retrying"
 	constructor(private readonly agent: TAgent) {
 		super()
 	}

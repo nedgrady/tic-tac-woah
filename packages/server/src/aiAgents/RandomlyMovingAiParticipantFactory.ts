@@ -7,6 +7,7 @@ export class RandomlyMovingAiParticipantFactory extends AiParticipantFactory {
 		const id = crypto.randomUUID()
 		return {
 			id: crypto.randomUUID(),
+			name: "RandomlyMovingAiParticipant",
 			nextMove: () => {
 				return Promise.resolve({
 					placement: {
@@ -21,6 +22,8 @@ export class RandomlyMovingAiParticipantFactory extends AiParticipantFactory {
 }
 
 class RandomlyMovingAiParticipant extends AiParticipant {
+	readonly id = crypto.randomUUID()
+	readonly name = "RandomlyMovingAiParticipant"
 	async nextMove(): Promise<Move> {
 		return {
 			placement: {

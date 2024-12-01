@@ -4,6 +4,7 @@ import { Participant } from "domain/Participant"
 
 // TODO - move to domain folder?
 export abstract class AiParticipant {
+	abstract readonly name: string
 	readonly id: string = crypto.randomUUID()
 	abstract nextMove(game: Game, participant: Participant): Promise<Move>
 }

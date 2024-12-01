@@ -18,21 +18,31 @@ import { startGameOnMatchMade } from "playing/startGameOnMatchMade"
 import { MatchmakingBroker } from "matchmaking/MatchmakingBroker"
 import { GameFactory } from "playing/GameFactory"
 import { Game } from "domain/Game"
-import { gameIsWonOnMoveNumber } from "domain/winConditions/support/gameIsWonOnMoveNumber"
 import { removeConnectionFromQueueWhenRequested } from "queue/removeConnectionFromQueueWhenRequested"
 import { gameIsDrawnWhenBoardIsFull } from "domain/drawConditions/drawConditions"
 import { singleParticipantInSequence } from "domain/moveOrderRules/singleParticipantInSequence"
 import { StandardMathcmakingStrategy } from "matchmaking/StandardMathcmakingStrategy"
 import { MadeMatch } from "matchmaking/MatchmakingStrategy"
 import { moveMustBeMadeByTheCorrectPlayer, moveMustBeWithinTheBoard } from "domain/gameRules/gameRules"
-import { RandomlyMovingAiParticipantFactory } from "aiAgents/RandomlyMovingAiParticipantFactory"
 import { GeminiAiParticipantFactory } from "aiAgents/GeminiAiParticipantFactory"
 import {
 	winByConsecutiveDiagonalPlacements,
 	winByConsecutiveHorizontalPlacements,
 	winByConsecutiveVerticalPlacements,
 } from "domain/winConditions/winConditions"
+
 export * from "./aiAgents/gemini/GeminiAiAgent"
+export { CreateGameOptions, Game } from "./domain/Game"
+export { anyParticipantMayMoveNext } from "./domain/moveOrderRules/support/anyParticipantMayMoveNext"
+export { moveMustBeMadeIntoAFreeSquare } from "./domain/gameRules/gameRules"
+export {
+	winByConsecutiveDiagonalPlacements,
+	winByConsecutiveVerticalPlacements,
+} from "./domain/winConditions/winConditions"
+export { makeMoves, PlacementSpecification } from "./domain/gameTestHelpers"
+export { default as Coordinates } from "./domain/Coordinates"
+export { RandomlyMovingAiParticipantFactory } from "./aiAgents/RandomlyMovingAiParticipantFactory"
+export { AiParticipant } from "./aiAgents/AiParticipant"
 
 const app = express()
 const httpServer = createServer(app)
@@ -221,3 +231,18 @@ httpServer.on("listening", () => {
 })
 
 httpServer.listen(8080)
+
+// import { GenerativeModel } from "@google/generative-ai"
+// import { GeminiAiAgent } from "@tic-tac-woah/server"
+// import { CreateGameOptions } from "@tic-tac-woah/server/src/domain/Game"
+// import { anyParticipantMayMoveNext } from "@tic-tac-woah/server/src/domain/moveOrderRules/support/anyParticipantMayMoveNext"
+// import { Game } from "@tic-tac-woah/server/src/domain/Game"
+// import { moveMustBeMadeIntoAFreeSquare } from "@tic-tac-woah/server/src/domain/gameRules/gameRules"
+// import {
+// 	winByConsecutiveDiagonalPlacements,
+// 	winByConsecutiveVerticalPlacements,
+// } from "@tic-tac-woah/server/src/domain/winConditions/winConditions"
+// import { makeMoves, PlacementSpecification } from "@tic-tac-woah/server/src/domain/gameTestHelpers"
+// import Coordinates from "@tic-tac-woah/server/src/domain/Coordinates"
+// import { RandomlyMovingAiParticipantFactory } from "@tic-tac-woah/server/src/aiAgents/RandomlyMovingAiParticipantFactory"
+// import { AiParticipant } from "@tic-tac-woah/server/src/aiAgents/AiParticipant"
