@@ -106,15 +106,11 @@ class AgentStrengthBenchmark {
 	) {}
 
 	async run() {
-		const results = this._gameWinTestCases.map(this.runSingle.bind(this))
-		return results
+		const runs = this._gameWinTestCases.map(this.runSingle.bind(this))
+		return Promise.all(runs)
 	}
 
-	private async runSingle({
-		aiPlaysAs,
-		madeMoves,
-		expectedWinningMove,
-	}: GameWinTestCase): Promise<AgentStrengthTestCaseResult> {
+	private async runSingle({ aiPlaysAs, madeMoves, expectedWinningMove }: GameWinTestCase) {
 		const gameOptions: CreateGameOptions = {
 			participants: allParticipants,
 			rules: [moveMustBeMadeIntoAFreeSquare],
@@ -150,8 +146,28 @@ const agentsUnderTest = [
 	// ),
 ]
 
-agentsUnderTest.forEach(async agent => {
-	const benchmark = new AgentStrengthBenchmark(agent, GameWinTestCases)
-	const results = await benchmark.run()
-	console.log(results)
-})
+async function f(): Promise<number> {
+	return 1
+}
+
+f().then(console.log)
+
+async function runBenchmarks() {
+	const benchmarkPromises = agentsUnderTest.map(async agent => {
+		const benchmark = new AgentStrengthBenchmark(agent, GameWinTestCases)
+		const results = await benchmark.run()
+		console.log(results)
+		return results
+	})
+
+	const allResults = await Promise.all(benchmarkPromises)
+	return allResults
+}
+
+runBenchmarks()
+	.then(allResults => {
+		console.log("All benchmark results:", allResults)
+	})
+	.catch(error => {
+		console.error("Error running benchmarks:", error)
+	})

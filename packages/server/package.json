@@ -6,7 +6,7 @@
 	"main": "src/index.ts",
 	"types": "src/index.ts",
 	"scripts": {
-		"start:dev": "npx vite-node --watch ./src/index.ts",
+		"start:dev": "npx vite-node --watch ./src/server.ts",
 		"start:prod": "npx vite-node ./src/index.ts",
 		"build": "tsc",
 		"test": "vitest"
