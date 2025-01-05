@@ -1,7 +1,9 @@
 import { test, expect } from "vitest"
-import { generateContentResultFactory } from "../../testingUtilities/factories"
+import { createGameOptionsFactory, generateContentResultFactory } from "../../testingUtilities/factories"
 import { GeminiAiAgent } from "./GeminiAiAgent"
 import { ReturnSequenceOfGenerateContentResultsGeneratriveModel } from "./support/ReturnSequenceOfGenerateContentResultsGeneratriveModel"
+import { GameFactory } from "../../playing/GameFactory"
+import { Game } from "../../domain/Game"
 
 test.each([
 	{ x: 1, y: 2 },
@@ -19,7 +21,7 @@ test.each([
 
 	const aiAgentUnderTest = new GeminiAiAgent(model)
 
-	const receivedMove = await aiAgentUnderTest.nextMove()
+	const receivedMove = await aiAgentUnderTest.nextMove(new Game(createGameOptionsFactory.build()), "Any Player")
 
 	expect(receivedMove.placement).toEqual(move)
 })
@@ -37,6 +39,8 @@ test.each([{ a: 1, b: 2 }, "not an object", [], [{ x: 1, y: 1 }], {}, { x: 1 }, 
 
 		const aiAgentUnderTest = new GeminiAiAgent(model)
 
-		expect(async () => await aiAgentUnderTest.nextMove()).rejects.toThrowError()
+		expect(
+			async () => await aiAgentUnderTest.nextMove(new Game(createGameOptionsFactory.build()), "Any Player"),
+		).rejects.toThrowError()
 	},
 )
