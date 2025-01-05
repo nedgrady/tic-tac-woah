@@ -10,12 +10,14 @@ import {
 	winByConsecutiveHorizontalPlacements,
 	winByConsecutiveVerticalPlacements,
 } from "../../domain/winConditions/winConditions"
+import { DecideWhoMayMoveNext } from "../../domain/moveOrderRules/moveOrderRules"
+import { singleParticipantInSequence } from "../../domain/moveOrderRules/singleParticipantInSequence"
 
 export class HandCraftedAgent extends AiParticipant {
 	name: string = "HandCraftedAgent"
 
 	async nextMove(game: Game, participant: Participant): Promise<Move> {
-		const gameTree = new GameTree(game)
+		const gameTree = new GameTree(game, singleParticipantInSequence)
 		const winningMove = gameTree.bestMoveForParticipant(participant)
 		return { mover: participant, placement: winningMove }
 	}
@@ -72,12 +74,15 @@ export class HandCraftedAgent extends AiParticipant {
 
 // For now assuming we're rotating players in sequence from the last move supplied in the ctor
 class GameTree {
-	private depth: number = 5
+	readonly maxDepth: number = 5
 
 	readonly root: GameTreeNode
 
-	constructor(readonly game: Game) {
-		this.root = new GameTreeNode(this, game.moves())
+	constructor(
+		readonly game: Game,
+		readonly moveOrder: DecideWhoMayMoveNext,
+	) {
+		this.root = new GameTreeNode(this, game.moves(), 0)
 	}
 
 	bestMoveForParticipant(participant: Participant): Coordinates {
@@ -90,6 +95,7 @@ class GameTreeNode {
 	constructor(
 		private readonly gameTree: GameTree,
 		private readonly madeMoves: readonly Move[],
+		private readonly depth: number,
 	) {}
 
 	directlyWinningMoves(participant: Participant): Coordinates[] {
@@ -135,6 +141,17 @@ class GameTreeNode {
 	}
 
 	nextPossibleNodes(): GameTreeNode[] {
+		if (this.depth >= this.gameTree.maxDepth) {
+			return []
+		}
+
+		const nextAvailableMovers = this.gameTree.moveOrder({
+			moves: this.madeMoves,
+			participants: this.gameTree.game.participants,
+		})
+
+		const freeSquares = this.freeSquares()
+
 		return []
 	}
 }

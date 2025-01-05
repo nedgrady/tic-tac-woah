@@ -13,12 +13,44 @@ import {
 import { HandCraftedAgent } from "@tic-tac-woah/server/src/aiAgents/handCrafted/HandCraftedAgent"
 import { GameConfiguration } from "@tic-tac-woah/server/src/domain/gameRules/gameRules"
 import { singleParticipantInSequence } from "@tic-tac-woah/server/src/domain/moveOrderRules/singleParticipantInSequence"
+import _ from "lodash"
+import { Move } from "../../client/src/redux/gameSlice"
 
 const [p1, p2, p3, p4, p5] = ["X", "O", "A", "B", "C"]
 const twoParticipants = [p1, p2]
 const allParticipants = [p1, p2, p3, p4, p5]
 
-type AgentStrengthTestCaseResult = "Pass" | "Fail"
+class AgentStrengthTestCaseResult {
+	constructor(
+		private readonly gameWinTestCase: GameWinTestCase,
+		private readonly receivedMove: Move,
+		private readonly agentUnderTest: AiParticipant,
+	) {}
+
+	status(): "Pass" | "Fail" {
+		if (
+			this.gameWinTestCase.expectedWinningMove.x === this.receivedMove.placement.x &&
+			this.gameWinTestCase.expectedWinningMove.y === this.receivedMove.placement.y
+		) {
+			return "Pass"
+		} else {
+			return "Fail"
+		}
+	}
+
+	prettyPrint() {
+		return `
+		Ai Agent: ${this.agentUnderTest.name}
+		Index: ${this.gameWinTestCase.index}
+		Description: ${this.gameWinTestCase.description}
+		Status: ${this.status()}
+		Expected: ${JSON.stringify(this.gameWinTestCase.expectedWinningMove)}
+		Received: ${JSON.stringify(this.receivedMove.placement)}
+
+		${this.gameWinTestCase}
+		`
+	}
+}
 
 interface GameWinTestCase {
 	aiPlaysAs: string
@@ -26,6 +58,8 @@ interface GameWinTestCase {
 	participants: string[]
 	gameConfiguration: GameConfiguration
 	expectedWinningMove: Coordinates
+	index?: number
+	description?: string
 }
 
 const Depth1GameWinTestCases: GameWinTestCase[] = [
@@ -80,31 +114,35 @@ const Depth1GameWinTestCases: GameWinTestCase[] = [
 		madeMoves: [
 			[p1, p1, ""],
 			[p2, p2, ""],
-			["", "", ""],
+			["", "", p1],
 		],
 		expectedWinningMove: { x: 2, y: 1 },
+		description: "D1 3x3 p2 to win horizontally",
 	},
 	{
 		aiPlaysAs: p2,
 		participants: twoParticipants,
 		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
 		madeMoves: [
-			[p1, p1, ""],
-			[p2, p2, ""],
-			["", "", ""],
-		],
-		expectedWinningMove: { x: 2, y: 1 },
-	},
-	{
-		aiPlaysAs: p1,
-		participants: twoParticipants,
-		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
-		madeMoves: [
-			[p1, p1, p2],
-			[p2, p2, ""],
-			[p1, p1, ""],
+			[p2, p1, ""],
+			[p1, p2, ""],
+			["", p1, ""],
 		],
 		expectedWinningMove: { x: 2, y: 2 },
+		description: "D1 3x3 p2 to win diagonally",
+	},
+	{
+		aiPlaysAs: p2,
+		participants: twoParticipants,
+		gameConfiguration: { consecutiveTarget: 4, boardSize: 4 },
+		madeMoves: [
+			[p1, p1, p2, ""],
+			[p2, p2, "", p2],
+			[p1, p1, "", ""],
+			["", p1, "", ""],
+		],
+		expectedWinningMove: { x: 2, y: 1 },
+		description: "D1 4x4 p2 to win",
 	},
 	{
 		aiPlaysAs: p1,
@@ -147,7 +185,7 @@ const Depth2GameWinTestCases: GameWinTestCase[] = [
 		participants: twoParticipants,
 		gameConfiguration: { consecutiveTarget: 4, boardSize: 4 },
 		madeMoves: [
-			["", p1, "", ""],
+			[p2, p1, "", ""],
 			[p1, "", p1, ""],
 			["", p1, "", p2],
 			["", "", p2, p2],
@@ -163,20 +201,17 @@ class AgentStrengthBenchmark {
 	) {}
 
 	async run() {
-		const runs = this._gameWinTestCases.map(this.runSingle.bind(this))
+		const runs = this._gameWinTestCases.map((testCase, testCaseIndex) =>
+			this.runSingle({ ...testCase, index: testCaseIndex }),
+		)
 		return Promise.all(runs)
 	}
 
-	private async runSingle({
-		aiPlaysAs,
-		madeMoves,
-		expectedWinningMove,
-		gameConfiguration,
-	}: GameWinTestCase): Promise<AgentStrengthTestCaseResult> {
+	private async runSingle(testCase: GameWinTestCase): Promise<AgentStrengthTestCaseResult> {
 		let setupComplete = false
 
 		const gameOptions: CreateGameOptions = {
-			participants: allParticipants,
+			participants: twoParticipants,
 			rules: [moveMustBeMadeIntoAFreeSquare],
 			winConditions: [
 				winByConsecutiveVerticalPlacements,
@@ -188,21 +223,30 @@ class AgentStrengthBenchmark {
 				// Allow any move order when we setup to avoid having to as the moves
 				// are made in coordinate order, rather than respecting player order during setup
 				setupComplete ? singleParticipantInSequence(gameState) : anyParticipantMayMoveNext(gameState),
-			boardSize: gameConfiguration.boardSize,
-			consecutiveTarget: gameConfiguration.consecutiveTarget,
+			boardSize: testCase.gameConfiguration.boardSize,
+			consecutiveTarget: testCase.gameConfiguration.consecutiveTarget,
 		}
 		const game = new Game(gameOptions)
-		makeMoves(game, madeMoves)
+		makeMoves(game, testCase.madeMoves)
 
 		setupComplete = true
 
-		const madeMove = await this._agentUnderTest.nextMove(game, aiPlaysAs)
+		if (game.nextAvailableMovers()[0] !== testCase.aiPlaysAs) {
+			throw new Error(
+				`Expected '${testCase.aiPlaysAs}' to move next but got '${game.nextAvailableMovers()}'
 
-		if (madeMove.placement.x === expectedWinningMove.x && madeMove.placement.y === expectedWinningMove.y) {
-			return "Pass"
-		} else {
-			return "Fail"
+				Agent: ${this._agentUnderTest.name}
+				Index: ${testCase.index}
+				Description: ${testCase.description}
+
+				${testCase}
+				`,
+			)
 		}
+
+		const madeMove = await this._agentUnderTest.nextMove(game, testCase.aiPlaysAs)
+
+		return new AgentStrengthTestCaseResult(testCase, madeMove, this._agentUnderTest)
 	}
 }
 
@@ -218,11 +262,18 @@ const agentsUnderTest = [
 
 async function runBenchmarks() {
 	const benchmarkPromises = agentsUnderTest.map(async agent => {
-		const benchmark = new AgentStrengthBenchmark(agent, Depth1GameWinTestCases)
+		const benchmark = new AgentStrengthBenchmark(agent, _.union(Depth1GameWinTestCases))
 		const results = await benchmark.run()
 		console.log("Results for agent:", agent.name)
-		console.log("Passes:", results.filter(r => r === "Pass").length)
-		console.log("Fails:", results.filter(r => r === "Fail").length)
+		console.log("Passes:", results.filter(r => r.status() === "Pass").length)
+		console.log("Fails:", results.filter(r => r.status() === "Fail").length)
+
+		results
+			.filter(r => r.status() === "Fail")
+			.forEach(r => {
+				console.log(r.prettyPrint())
+			})
+
 		return results
 	})
 
