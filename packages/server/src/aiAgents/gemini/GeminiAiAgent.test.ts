@@ -2,7 +2,6 @@ import { test, expect } from "vitest"
 import { createGameOptionsFactory, generateContentResultFactory } from "../../testingUtilities/factories"
 import { GeminiAiAgent } from "./GeminiAiAgent"
 import { ReturnSequenceOfGenerateContentResultsGeneratriveModel } from "./support/ReturnSequenceOfGenerateContentResultsGeneratriveModel"
-import { GameFactory } from "../../playing/GameFactory"
 import { Game } from "../../domain/Game"
 
 test.each([

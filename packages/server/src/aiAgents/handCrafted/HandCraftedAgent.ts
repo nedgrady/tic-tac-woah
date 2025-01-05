@@ -15,48 +15,126 @@ export class HandCraftedAgent extends AiParticipant {
 	name: string = "HandCraftedAgent"
 
 	async nextMove(game: Game, participant: Participant): Promise<Move> {
-		const winningMoves = findDirectWinningMoves(game, participant)
-		console.log("winningMoves", winningMoves)
-		return { mover: participant, placement: winningMoves[0] ?? findFreeSquares(game)[0] }
+		const gameTree = new GameTree(game)
+		const winningMove = gameTree.bestMoveForParticipant(participant)
+		return { mover: participant, placement: winningMove }
 	}
 }
 
-// create iterator function returning all free squares
-function findFreeSquares(game: Game): Coordinates[] {
-	const allSquares = _.product(_.range(game.boardSize), _.range(game.boardSize)).map(([x, y]) => ({
-		x,
-		y,
-	})) as Coordinates[]
+// function findWinningMoves(game: Game, moves: Move[], participant: Participant) {
+// 	const directlyWinningMoves = findDirectWinningMoves(game, participant)
+// 	if (directlyWinningMoves.length > 0) {
+// 		return directlyWinningMoves
+// 	}
 
-	return _.differenceWith(
-		allSquares,
-		game.moves().map(m => m.placement),
-		_.isEqual,
-	)
+// 	const nextAvailableMovers = game.nextAvailableMovers()
+// }
+
+// // create iterator function returning all free squares
+// function findFreeSquares(game: Game): Coordinates[] {
+// 	const allSquares = _.product(_.range(game.boardSize), _.range(game.boardSize)).map(([x, y]) => ({
+// 		x,
+// 		y,
+// 	})) as Coordinates[]
+
+// 	return _.differenceWith(
+// 		allSquares,
+// 		game.moves().map(m => m.placement),
+// 		_.isEqual,
+// 	)
+// }
+
+// function findDirectWinningMoves(game: Game, participant: Participant) {
+// 	const freeSquares = findFreeSquares(game)
+
+// 	const winRules = [
+// 		winByConsecutiveHorizontalPlacements,
+// 		winByConsecutiveDiagonalPlacements,
+// 		winByConsecutiveVerticalPlacements,
+// 	]
+
+// 	const winningMoves = winRules.flatMap(rule =>
+// 		freeSquares.filter(
+// 			square =>
+// 				rule(
+// 					{ mover: participant, placement: square },
+// 					{
+// 						moves: [...game.moves(), { mover: participant, placement: square }],
+// 						participants: game.participants,
+// 					},
+// 					game.gameConfiguration,
+// 				).result === "win",
+// 		),
+// 	)
+
+// 	return winningMoves
+// }
+
+// For now assuming we're rotating players in sequence from the last move supplied in the ctor
+class GameTree {
+	private depth: number = 5
+
+	readonly root: GameTreeNode
+
+	constructor(readonly game: Game) {
+		this.root = new GameTreeNode(this, game.moves())
+	}
+
+	bestMoveForParticipant(participant: Participant): Coordinates {
+		const winningMoves = this.root.directlyWinningMoves(participant)
+		return winningMoves[0] ?? this.root.freeSquares()[0]
+	}
 }
 
-function findDirectWinningMoves(game: Game, participant: Participant) {
-	const freeSquares = findFreeSquares(game)
+class GameTreeNode {
+	constructor(
+		private readonly gameTree: GameTree,
+		private readonly madeMoves: readonly Move[],
+	) {}
 
-	const winRules = [
-		winByConsecutiveHorizontalPlacements,
-		winByConsecutiveDiagonalPlacements,
-		winByConsecutiveVerticalPlacements,
-	]
+	directlyWinningMoves(participant: Participant): Coordinates[] {
+		const freeSquares = this.freeSquares()
 
-	const winningMoves = winRules.flatMap(rule =>
-		freeSquares.filter(
-			square =>
-				rule(
-					{ mover: participant, placement: square },
-					{
-						moves: [...game.moves(), { mover: participant, placement: square }],
-						participants: game.participants,
-					},
-					game.gameConfiguration,
-				).result === "win",
-		),
-	)
+		const winRules = [
+			winByConsecutiveHorizontalPlacements,
+			winByConsecutiveDiagonalPlacements,
+			winByConsecutiveVerticalPlacements,
+		]
 
-	return winningMoves
+		const winningMoves = winRules.flatMap(rule =>
+			freeSquares.filter(
+				square =>
+					rule(
+						{ mover: participant, placement: square },
+						{
+							moves: [...this.madeMoves, { mover: participant, placement: square }],
+							participants: this.gameTree.game.participants,
+						},
+						this.gameTree.game.gameConfiguration,
+					).result === "win",
+			),
+		)
+
+		return winningMoves
+	}
+
+	freeSquares(): Coordinates[] {
+		const allSquares = _.product(
+			_.range(this.gameTree.game.boardSize),
+			_.range(this.gameTree.game.consecutiveTarget),
+		).map(([x, y]) => ({
+			x,
+			y,
+		})) as Coordinates[]
+
+		return _.differenceWith(
+			allSquares,
+			this.madeMoves.map(madeMove => madeMove.placement),
+			_.isEqual,
+		)
+	}
+
+	nextPossibleNodes(): GameTreeNode[] {
+		return []
+	}
 }

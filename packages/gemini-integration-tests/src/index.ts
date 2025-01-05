@@ -11,9 +11,11 @@ import {
 	AiParticipant,
 } from "@tic-tac-woah/server"
 import { HandCraftedAgent } from "@tic-tac-woah/server/src/aiAgents/handCrafted/HandCraftedAgent"
+import { GameConfiguration } from "@tic-tac-woah/server/src/domain/gameRules/gameRules"
 import { singleParticipantInSequence } from "@tic-tac-woah/server/src/domain/moveOrderRules/singleParticipantInSequence"
 
 const [p1, p2, p3, p4, p5] = ["X", "O", "A", "B", "C"]
+const twoParticipants = [p1, p2]
 const allParticipants = [p1, p2, p3, p4, p5]
 
 type AgentStrengthTestCaseResult = "Pass" | "Fail"
@@ -21,12 +23,16 @@ type AgentStrengthTestCaseResult = "Pass" | "Fail"
 interface GameWinTestCase {
 	aiPlaysAs: string
 	madeMoves: PlacementSpecification
+	participants: string[]
+	gameConfiguration: GameConfiguration
 	expectedWinningMove: Coordinates
 }
 
-const SimpleGameWinTestCases: GameWinTestCase[] = [
+const Depth1GameWinTestCases: GameWinTestCase[] = [
 	{
 		aiPlaysAs: p1,
+		participants: twoParticipants,
+		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
 		madeMoves: [
 			[p1, p1, ""],
 			[p2, p2, ""],
@@ -36,6 +42,8 @@ const SimpleGameWinTestCases: GameWinTestCase[] = [
 	},
 	{
 		aiPlaysAs: p1,
+		participants: twoParticipants,
+		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
 		madeMoves: [
 			[p2, p2, ""],
 			[p1, p1, ""],
@@ -45,6 +53,8 @@ const SimpleGameWinTestCases: GameWinTestCase[] = [
 	},
 	{
 		aiPlaysAs: p1,
+		participants: twoParticipants,
+		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
 		madeMoves: [
 			[p1, p1, ""],
 			[p2, p2, ""],
@@ -54,6 +64,8 @@ const SimpleGameWinTestCases: GameWinTestCase[] = [
 	},
 	{
 		aiPlaysAs: p1,
+		participants: twoParticipants,
+		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
 		madeMoves: [
 			[p1, p2, ""],
 			[p2, p1, ""],
@@ -63,6 +75,8 @@ const SimpleGameWinTestCases: GameWinTestCase[] = [
 	},
 	{
 		aiPlaysAs: p2,
+		participants: twoParticipants,
+		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
 		madeMoves: [
 			[p1, p1, ""],
 			[p2, p2, ""],
@@ -72,6 +86,8 @@ const SimpleGameWinTestCases: GameWinTestCase[] = [
 	},
 	{
 		aiPlaysAs: p2,
+		participants: twoParticipants,
+		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
 		madeMoves: [
 			[p1, p1, ""],
 			[p2, p2, ""],
@@ -81,6 +97,8 @@ const SimpleGameWinTestCases: GameWinTestCase[] = [
 	},
 	{
 		aiPlaysAs: p1,
+		participants: twoParticipants,
+		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
 		madeMoves: [
 			[p1, p1, p2],
 			[p2, p2, ""],
@@ -90,12 +108,51 @@ const SimpleGameWinTestCases: GameWinTestCase[] = [
 	},
 	{
 		aiPlaysAs: p1,
+		participants: twoParticipants,
+		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
 		madeMoves: [
 			[p1, "", p1],
 			[p2, p2, ""],
 			[p1, p2, ""],
 		],
 		expectedWinningMove: { x: 1, y: 0 },
+	},
+]
+
+const Depth2GameWinTestCases: GameWinTestCase[] = [
+	{
+		aiPlaysAs: p1,
+		participants: twoParticipants,
+		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
+		madeMoves: [
+			[p2, "", ""],
+			["", p1, ""],
+			["", p2, p1],
+		],
+		expectedWinningMove: { x: 3, y: 1 },
+	},
+	{
+		aiPlaysAs: p1,
+		participants: twoParticipants,
+		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
+		madeMoves: [
+			[p2, "", ""],
+			["", p1, ""],
+			[p1, p2, ""],
+		],
+		expectedWinningMove: { x: 3, y: 1 },
+	},
+	{
+		aiPlaysAs: p1,
+		participants: twoParticipants,
+		gameConfiguration: { consecutiveTarget: 4, boardSize: 4 },
+		madeMoves: [
+			["", p1, "", ""],
+			[p1, "", p1, ""],
+			["", p1, "", p2],
+			["", "", p2, p2],
+		],
+		expectedWinningMove: { x: 1, y: 1 },
 	},
 ]
 
@@ -114,6 +171,7 @@ class AgentStrengthBenchmark {
 		aiPlaysAs,
 		madeMoves,
 		expectedWinningMove,
+		gameConfiguration,
 	}: GameWinTestCase): Promise<AgentStrengthTestCaseResult> {
 		let setupComplete = false
 
@@ -130,8 +188,8 @@ class AgentStrengthBenchmark {
 				// Allow any move order when we setup to avoid having to as the moves
 				// are made in coordinate order, rather than respecting player order during setup
 				setupComplete ? singleParticipantInSequence(gameState) : anyParticipantMayMoveNext(gameState),
-			boardSize: 3,
-			consecutiveTarget: 3,
+			boardSize: gameConfiguration.boardSize,
+			consecutiveTarget: gameConfiguration.consecutiveTarget,
 		}
 		const game = new Game(gameOptions)
 		makeMoves(game, madeMoves)
@@ -160,7 +218,7 @@ const agentsUnderTest = [
 
 async function runBenchmarks() {
 	const benchmarkPromises = agentsUnderTest.map(async agent => {
-		const benchmark = new AgentStrengthBenchmark(agent, SimpleGameWinTestCases)
+		const benchmark = new AgentStrengthBenchmark(agent, Depth1GameWinTestCases)
 		const results = await benchmark.run()
 		console.log("Results for agent:", agent.name)
 		console.log("Passes:", results.filter(r => r === "Pass").length)

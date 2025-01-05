@@ -47,11 +47,15 @@ export class Game {
 		this.#onParticipantMayMoveEmitters.set(participant, emitter)
 	}
 
-	private fireAvailableMovers() {
-		const nextAvailableMovers = this.#decideWhoMayMoveNext({
+	nextAvailableMovers(): readonly Participant[] {
+		return this.#decideWhoMayMoveNext({
 			moves: this.#movesReal,
 			participants: this.#participants,
 		})
+	}
+
+	private fireAvailableMovers() {
+		const nextAvailableMovers = this.nextAvailableMovers()
 
 		nextAvailableMovers.forEach(mover => {
 			this.#onParticipantMayMoveEmitters.get(mover)?.emit("Participant May Move")
