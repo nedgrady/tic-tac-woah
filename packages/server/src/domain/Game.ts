@@ -21,6 +21,7 @@ export class Game {
 	readonly #winConditions: readonly GameWinCondition[]
 	readonly #endConditions: readonly GameDrawCondition[]
 	readonly #decideWhoMayMoveNext: DecideWhoMayMoveNext
+	readonly gameConfiguration: GameConfiguration
 
 	readonly #onParticipantMayMoveEmitters = new Map<string, EventEmitter>()
 
@@ -63,11 +64,6 @@ export class Game {
 	}
 
 	submitMove(newMove: Move) {
-		const gameConfiguration: GameConfiguration = {
-			boardSize: this.boardSize,
-			consecutiveTarget: this.consecutiveTarget,
-		}
-
 		const gameState: GameState = {
 			moves: this.#movesReal,
 			participants: this.#participants,
@@ -83,7 +79,7 @@ export class Game {
 		}
 
 		for (const rule of this.#rules) {
-			if (!rule(newMove, gameState, gameConfiguration)) {
+			if (!rule(newMove, gameState, this.gameConfiguration)) {
 				return
 			}
 		}
@@ -92,7 +88,7 @@ export class Game {
 		this.#emitter.emit("Move", newMove)
 
 		for (const winCondition of this.#winConditions) {
-			const thing = winCondition(newMove, gameState, gameConfiguration)
+			const thing = winCondition(newMove, gameState, this.gameConfiguration)
 			if (thing.result === "win") {
 				this.#emitter.emit("Winning Move", thing.winningMoves)
 				return
@@ -100,7 +96,7 @@ export class Game {
 		}
 
 		for (const endCondition of this.#endConditions) {
-			const thing = endCondition(newMove, gameState, gameConfiguration)
+			const thing = endCondition(newMove, gameState, this.gameConfiguration)
 			if (thing.result === "draw") {
 				this.#emitter.emit("Draw")
 				return
@@ -127,6 +123,10 @@ export class Game {
 		this.#winConditions = options.winConditions
 		this.#endConditions = options.endConditions
 		this.#decideWhoMayMoveNext = options.decideWhoMayMoveNext
+		this.gameConfiguration = {
+			boardSize: this.boardSize,
+			consecutiveTarget: this.consecutiveTarget,
+		}
 	}
 }
 

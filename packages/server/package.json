@@ -49,6 +49,7 @@
 		"express": "^4.16.4",
 		"json-to-csv-export": "^3.1.0",
 		"lodash": "^4.17.21",
+		"lodash.product": "^18.10.0",
 		"redis": "^4.6.13",
 		"socket.io": "^4.7.4",
 		"ws": "^8.12.1",
