@@ -12,7 +12,13 @@ import {
 } from "../../domain/winConditions/winConditions"
 import { DecideWhoMayMoveNext } from "../../domain/moveOrderRules/moveOrderRules"
 import { singleParticipantInSequence } from "../../domain/moveOrderRules/singleParticipantInSequence"
-import { vi } from "vitest"
+import { AiParticipantFactory } from "../AiParticipantFactory"
+
+export class HandCraftedAgentParticipantFactory extends AiParticipantFactory {
+	createAiAgent(): AiParticipant {
+		return new HandCraftedAgent()
+	}
+}
 
 export class HandCraftedAgent extends AiParticipant {
 	name: string = "HandCraftedAgent"
@@ -20,13 +26,127 @@ export class HandCraftedAgent extends AiParticipant {
 	async nextMove(game: Game, participant: Participant): Promise<Move> {
 		const gameTree = new GameTree(game, singleParticipantInSequence)
 
-		return { mover: participant, placement: { x: 0, y: 1 } }
+		// const minMaxVal = this.minimax(gameTree.root, 0, true)
+		// console.log(minMaxVal.node.moves())
+		// console.log(minMaxVal.value)
+
+		// console.log(this.minimax(gameTree.root, 0, true))
+
+		// gameTree.root.nextPossibleNodes().forEach(node => {
+		// 	// console.log(node.moves())
+		// 	console.log("1 ", this.minimax(node, 0, true).value, this.minimax(node, 0, true).node.moves())
+		// })
+
+		// console.log("root")
+		// console.log(this.minimax(gameTree.root as GameTreeNode, 0, false).value)
+		// console.log(this.minimax(gameTree.root as GameTreeNode, 0, false).node.moves())
+
+		const nextEvaluations = gameTree.root
+			.nextPossibleNodes()
+			// { mover: 'X', placement: { x: 0, y: 2 } },
+			.map(node => {
+				// console.log(this.minimax(node as GameTreeNode, 0, false).value)
+				return this.minimax(node as GameTreeNode, 0, false)
+			})
+
+		// const bfs = new BreadthFirstSearchVisitor()
+		// bfs.visit(nextEvaluations[0].node, (node, depth) => {
+		// 	console.log(depth, node.lineOfMovesToGetToNode(), this.minimax(node, 0, depth % 2 == 0).value)
+		// })
+
+		// console.log()
+
+		// console.log(best?.node.lineOfMovesToGetToNode(), best?.value)
+
+		// console.log("0 " + gameTree.root.staticEvaluation(false))
+		// console.log("-----")
+
+		// gameTree.root.nextPossibleNodes().forEach(node => {
+		// 	console.log("1 " + node.staticEvaluation(true))
+		// })
+
+		// console.log("-------")
+
+		// gameTree.root
+		// 	.nextPossibleNodes()
+		// 	.flatMap(node => node.nextPossibleNodes())
+		// 	.forEach(node => {
+		// 		console.log("===")
+		// 		console.log("2 ", node.staticEvaluation(false), node.moves())
+		// 	})
+
+		// console.log("-------")
+
+		// gameTree.root
+		// 	.nextPossibleNodes()
+		// 	.flatMap(node => node.nextPossibleNodes())
+		// 	.flatMap(node => node.nextPossibleNodes())
+		// 	.forEach(node => {
+		// 		console.log("***")
+		// 		if (_.last(node.moves())?.placement.x === 2 && _.last(node.moves())?.placement.y === 0)
+		// 			console.log("3 ", node.staticEvaluation(true), node.moves())
+		// 	})
+
+		// for (const evaluation of _.orderBy(nextEvaluations, "value", "desc")) {
+		// 	console.log(evaluation.node.moves(), evaluation.value)
+		// }
+		const ret = _.orderBy(nextEvaluations, "value", "asc")[0].node.lineOfMovesToGetToNode()[0]
+		console.log("Returning move", ret)
+		return ret
 	}
+
+	prettyPrintGameTree(node: GameTreeNode, depth: number, isMaximizing: boolean): void {
+		const indent = " ".repeat(depth * 2)
+		const evaluation = this.minimax(node, 0, isMaximizing)
+		console.log(`${indent}Move: ${JSON.stringify(node.madeMove())}, Evaluation: ${evaluation.value}`)
+		for (const child of node.nextPossibleNodes()) {
+			this.prettyPrintGameTree(child, depth + 1, !isMaximizing)
+		}
+	}
+
+	minimax(node: GameTreeNode, depth: number, isMaximizing: boolean): Evaluation {
+		if (node.isTerminalNode()) {
+			return { node, value: node.staticEvaluation(isMaximizing) }
+		}
+
+		if (isMaximizing) {
+			let bestEvaluation = { node, value: -Infinity }
+
+			for (const child of node.nextPossibleNodes()) {
+				const evaluation = this.minimax(child, depth + 1, false)
+
+				if (evaluation.value > bestEvaluation.value) {
+					bestEvaluation = evaluation
+				}
+			}
+
+			return bestEvaluation
+		} else {
+			let bestEvaluation = { node, value: Infinity }
+
+			const evaluations = node.nextPossibleNodes().map(child => this.minimax(child, depth + 1, true))
+
+			for (const child of node.nextPossibleNodes()) {
+				const evaluation = this.minimax(child, depth + 1, true)
+
+				if (evaluation.value < bestEvaluation.value) {
+					bestEvaluation = evaluation
+				}
+			}
+
+			return bestEvaluation
+		}
+	}
+}
+
+interface Evaluation {
+	readonly node: GameTreeNode
+	readonly value: number
 }
 
 // For now assuming we're rotating players in sequence from the last move supplied in the ctor
 class GameTree {
-	readonly maxDepth: number = 2
+	readonly maxDepth: number = 8
 
 	readonly root: GameTreeNode
 
@@ -102,6 +222,10 @@ class GameTreeNode {
 			return []
 		}
 
+		if (this.isTerminalNode()) {
+			return []
+		}
+
 		const nextAvailableMovers = this.gameTree.moveOrder({
 			moves: this.madeMoves,
 			participants: this.gameTree.game.participants,
@@ -132,6 +256,37 @@ class GameTreeNode {
 
 	moves(): Move[] {
 		return [...this.madeMoves]
+	}
+
+	madeMove(): Move {
+		return _.last(this.madeMoves)!
+	}
+
+	isTerminalNode(): boolean {
+		if (this.freeSquares().length === 0) return true
+
+		for (const participant of this.gameTree.game.participants) {
+			if (this.isWinningStateForParticipant(participant)) return true
+		}
+
+		return false
+	}
+
+	staticEvaluation(isMaximizing: boolean): number {
+		const mover = isMaximizing ? this.gameTree.game.participants[0] : this.gameTree.game.participants[1]
+		const win = this.isWinningStateForParticipant(mover)
+
+		if (win) {
+			const ret = isMaximizing ? 1000 - this.depth : -1000 + this.depth
+			// if (_.last(this.madeMoves)?.placement.x === 2 && _.last(this.madeMoves)?.placement.y === 1) {
+			// 	console.log("here")
+			// 	console.log("2,2 val", ret)
+			// }
+
+			return ret
+		}
+
+		return 0
 	}
 }
 

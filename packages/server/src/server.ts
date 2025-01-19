@@ -31,6 +31,7 @@ import {
 	TicTacWoahSocketServerMiddleware,
 	TicTacWoahUserHandle,
 } from "./TicTacWoahSocketServer"
+import { HandCraftedAgent, HandCraftedAgentParticipantFactory } from "./aiAgents/handCrafted/HandCraftedAgent"
 
 const app = express()
 const httpServer = createServer(app)
@@ -92,8 +93,8 @@ class StandardGameFactory extends GameFactory {
 				...madeMatch.participants.map(participant => participant.uniqueIdentifier),
 				...madeMatch.aiParticipants.map(ai => ai.id),
 			],
-			boardSize: 20,
-			consecutiveTarget: 5,
+			boardSize: 3,
+			consecutiveTarget: 3,
 			rules: [moveMustBeMadeByTheCorrectPlayer, moveMustBeWithinTheBoard, moveMustBeWithinTheBoard],
 			winConditions: [
 				winByConsecutiveDiagonalPlacements,
@@ -112,7 +113,7 @@ const ttQueue = new TicTacWoahQueue()
 const matchmakingBroker = new MatchmakingBroker()
 const standardMathcmakingStrategy = new StandardMathcmakingStrategy(
 	queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}-${queueItem.aiCount}`,
-	new GeminiAiParticipantFactory(),
+	new HandCraftedAgentParticipantFactory(),
 )
 
 io.use(identifySocketsByWebSocketId)

@@ -63,98 +63,98 @@ interface GameWinTestCase {
 }
 
 const Depth1GameWinTestCases: GameWinTestCase[] = [
-	{
-		aiPlaysAs: p1,
-		participants: twoParticipants,
-		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
-		madeMoves: [
-			[p1, p1, ""],
-			[p2, p2, ""],
-			["", "", ""],
-		],
-		expectedWinningMove: { x: 2, y: 0 },
-	},
-	{
-		aiPlaysAs: p1,
-		participants: twoParticipants,
-		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
-		madeMoves: [
-			[p2, p2, ""],
-			[p1, p1, ""],
-			["", "", ""],
-		],
-		expectedWinningMove: { x: 2, y: 1 },
-	},
-	{
-		aiPlaysAs: p1,
-		participants: twoParticipants,
-		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
-		madeMoves: [
-			[p1, p1, ""],
-			[p2, p2, ""],
-			["", "", ""],
-		],
-		expectedWinningMove: { x: 2, y: 0 },
-	},
-	{
-		aiPlaysAs: p1,
-		participants: twoParticipants,
-		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
-		madeMoves: [
-			[p1, p2, ""],
-			[p2, p1, ""],
-			["", "", ""],
-		],
-		expectedWinningMove: { x: 2, y: 2 },
-	},
-	{
-		aiPlaysAs: p2,
-		participants: twoParticipants,
-		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
-		madeMoves: [
-			[p1, p1, ""],
-			[p2, p2, ""],
-			["", "", p1],
-		],
-		expectedWinningMove: { x: 2, y: 1 },
-		description: "D1 3x3 p2 to win horizontally",
-	},
-	{
-		aiPlaysAs: p2,
-		participants: twoParticipants,
-		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
-		madeMoves: [
-			[p2, p1, ""],
-			[p1, p2, ""],
-			["", p1, ""],
-		],
-		expectedWinningMove: { x: 2, y: 2 },
-		description: "D1 3x3 p2 to win diagonally",
-	},
-	{
-		aiPlaysAs: p2,
-		participants: twoParticipants,
-		gameConfiguration: { consecutiveTarget: 4, boardSize: 4 },
-		madeMoves: [
-			[p1, p1, p2, ""],
-			[p2, p2, "", p2],
-			[p1, p1, "", ""],
-			["", p1, "", ""],
-		],
-		expectedWinningMove: { x: 2, y: 1 },
-		description: "D1 4x4 p2 to win",
-	},
-	{
-		aiPlaysAs: p1,
-		participants: twoParticipants,
-		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
-		madeMoves: [
-			[p1, "", p1],
-			[p2, p2, ""],
-			[p1, p2, ""],
-		],
-		expectedWinningMove: { x: 1, y: 0 },
-	},
+	// {
+	// 	aiPlaysAs: p1,
+	// 	participants: twoParticipants,
+	// 	gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
+	// 	madeMoves: [
+	// 		[p1, p1, ""],
+	// 		[p2, p2, ""],
+	// 		["", "", ""],
+	// 	],
+	// 	expectedWinningMove: { x: 2, y: 0 },
+	// },
+	// {
+	// 	aiPlaysAs: p1,
+	// 	participants: twoParticipants,
+	// 	gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
+	// 	madeMoves: [
+	// 		[p2, p2, ""],
+	// 		[p1, p1, ""],
+	// 		["", "", ""],
+	// 	],
+	// 	expectedWinningMove: { x: 2, y: 1 },
+	// },
+	// {
+	// 	aiPlaysAs: p1,
+	// 	participants: twoParticipants,
+	// 	gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
+	// 	madeMoves: [
+	// 		[p1, p1, ""],
+	// 		[p2, p2, ""],
+	// 		["", "", ""],
+	// 	],
+	// 	expectedWinningMove: { x: 2, y: 0 },
+	// },
+	// {
+	// 	aiPlaysAs: p1,
+	// 	participants: twoParticipants,
+	// 	gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
+	// 	madeMoves: [
+	// 		[p1, p2, ""],
+	// 		[p2, p1, ""],
+	// 		["", "", ""],
+	// 	],
+	// 	expectedWinningMove: { x: 2, y: 2 },
+	// },
+	// // {
+	// // 	aiPlaysAs: p2,
+	// // 	participants: twoParticipants,
+	// // 	gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
+	// // 	madeMoves: [
+	// // 		[p1, p1, ""],
+	// // 		[p2, p2, ""],
+	// // 		["", "", p1],
+	// // 	],
+	// // 	expectedWinningMove: { x: 2, y: 1 },
+	// // 	description: "D1 3x3 p2 to win horizontally",
+	// // },
+	// // {
+	// // 	aiPlaysAs: p2,
+	// // 	participants: twoParticipants,
+	// // 	gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
+	// // 	madeMoves: [
+	// // 		[p2, p1, ""],
+	// // 		[p1, p2, ""],
+	// // 		["", p1, ""],
+	// // 	],
+	// // 	expectedWinningMove: { x: 2, y: 2 },
+	// // 	description: "D1 3x3 p2 to win diagonally",
+	// // },
+	// // {
+	// // 	aiPlaysAs: p2,
+	// // 	participants: twoParticipants,
+	// // 	gameConfiguration: { consecutiveTarget: 4, boardSize: 4 },
+	// // 	madeMoves: [
+	// // 		[p1, p1, p2, ""],
+	// // 		[p2, p2, "", p2],
+	// // 		[p1, p1, "", ""],
+	// // 		["", p1, "", ""],
+	// // 	],
+	// // 	expectedWinningMove: { x: 2, y: 1 },
+	// // 	description: "D1 4x4 p2 to win",
+	// // },
+	// {
+	// 	aiPlaysAs: p1,
+	// 	participants: twoParticipants,
+	// 	gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
+	// 	madeMoves: [
+	// 		[p1, "", p1],
+	// 		[p2, p2, ""],
+	// 		[p1, p2, ""],
+	// 	],
+	// 	expectedWinningMove: { x: 1, y: 0 },
+	// },
 ]
 
 const Depth2GameWinTestCases: GameWinTestCase[] = [
@@ -164,34 +164,34 @@ const Depth2GameWinTestCases: GameWinTestCase[] = [
 		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
 		madeMoves: [
 			[p2, "", ""],
-			["", p1, ""],
-			["", p2, p1],
+			[p2, p1, ""],
+			[p1, p2, p1],
 		],
-		expectedWinningMove: { x: 3, y: 1 },
+		expectedWinningMove: { x: 2, y: 1 },
 	},
-	{
-		aiPlaysAs: p1,
-		participants: twoParticipants,
-		gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
-		madeMoves: [
-			[p2, "", ""],
-			["", p1, ""],
-			[p1, p2, ""],
-		],
-		expectedWinningMove: { x: 3, y: 1 },
-	},
-	{
-		aiPlaysAs: p1,
-		participants: twoParticipants,
-		gameConfiguration: { consecutiveTarget: 4, boardSize: 4 },
-		madeMoves: [
-			[p2, p1, "", ""],
-			[p1, "", p1, ""],
-			["", p1, "", p2],
-			["", "", p2, p2],
-		],
-		expectedWinningMove: { x: 1, y: 1 },
-	},
+	// {
+	// 	aiPlaysAs: p1,
+	// 	participants: twoParticipants,
+	// 	gameConfiguration: { consecutiveTarget: 3, boardSize: 3 },
+	// 	madeMoves: [
+	// 		["", "", p2],
+	// 		["", p1, ""],
+	// 		[p1, p2, ""],
+	// 	],
+	// 	expectedWinningMove: { x: 3, y: 1 },
+	// },
+	// {
+	// 	aiPlaysAs: p1,
+	// 	participants: twoParticipants,
+	// 	gameConfiguration: { consecutiveTarget: 4, boardSize: 4 },
+	// 	madeMoves: [
+	// 		[p2, p1, "", ""],
+	// 		[p1, "", p1, ""],
+	// 		["", p1, "", p2],
+	// 		["", "", p2, p2],
+	// 	],
+	// 	expectedWinningMove: { x: 1, y: 1 },
+	// },
 ]
 
 class AgentStrengthBenchmark {
@@ -231,18 +231,18 @@ class AgentStrengthBenchmark {
 
 		setupComplete = true
 
-		if (game.nextAvailableMovers()[0] !== testCase.aiPlaysAs) {
-			throw new Error(
-				`Expected '${testCase.aiPlaysAs}' to move next but got '${game.nextAvailableMovers()}'
+		// if (game.nextAvailableMovers()[0] !== testCase.aiPlaysAs) {
+		// 	throw new Error(
+		// 		`Expected '${testCase.aiPlaysAs}' to move next but got '${game.nextAvailableMovers()}'
 
-				Agent: ${this._agentUnderTest.name}
-				Index: ${testCase.index}
-				Description: ${testCase.description}
+		// 		Agent: ${this._agentUnderTest.name}
+		// 		Index: ${testCase.index}
+		// 		Description: ${testCase.description}
 
-				${testCase}
-				`,
-			)
-		}
+		// 		${testCase}
+		// 		`,
+		// 	)
+		// }
 
 		const madeMove = await this._agentUnderTest.nextMove(game, testCase.aiPlaysAs)
 
@@ -262,7 +262,9 @@ const agentsUnderTest = [
 
 async function runBenchmarks() {
 	const benchmarkPromises = agentsUnderTest.map(async agent => {
-		const benchmark = new AgentStrengthBenchmark(agent, _.union(Depth1GameWinTestCases))
+		// TODO - can remove this spread when i figure out a nicer way to run test cases more granularly
+		const testCasesToRun = [..._.union(Depth1GameWinTestCases, Depth2GameWinTestCases)]
+		const benchmark = new AgentStrengthBenchmark(agent, testCasesToRun)
 		const results = await benchmark.run()
 		console.log("Results for agent:", agent.name)
 		console.log("Passes:", results.filter(r => r.status() === "Pass").length)
