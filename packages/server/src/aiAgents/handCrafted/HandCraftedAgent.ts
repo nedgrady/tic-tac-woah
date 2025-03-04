@@ -10,14 +10,36 @@ import {
 	winByConsecutiveHorizontalPlacements,
 	winByConsecutiveVerticalPlacements,
 } from "../../domain/winConditions/winConditions"
+import { minimaxMultiPlayer, TtwGameState } from "./Minimaxer"
+import { singleParticipantInSequence } from "../../domain/moveOrderRules/singleParticipantInSequence"
+import { AiParticipantFactory } from "../AiParticipantFactory"
+
+export class HandCrafterParticipantFactory implements AiParticipantFactory {
+	createAiAgent(): AiParticipant {
+		return new HandCraftedAgent()
+	}
+}
 
 export class HandCraftedAgent extends AiParticipant {
 	name: string = "HandCraftedAgent"
 
 	async nextMove(game: Game, participant: Participant): Promise<Move> {
-		const winningMoves = findDirectWinningMoves(game, participant)
-		console.log("winningMoves", winningMoves)
-		return { mover: participant, placement: winningMoves[0] ?? findFreeSquares(game)[0] }
+		const ttw: TtwGameState = new TtwGameState(game, singleParticipantInSequence, [...game.moves()])
+
+		const possibleMoves = ttw.getPossibleMoves()
+
+		const evaluationsByMove = possibleMoves.map(move => {
+			const ttw: TtwGameState = new TtwGameState(game, singleParticipantInSequence, [...game.moves(), move])
+			return { move: move, evaluation: minimaxMultiPlayer(ttw, 0, participant).get(participant)! }
+		})
+
+		const bestMove = _.maxBy(evaluationsByMove, "evaluation")!.move
+
+		return bestMove
+
+		// const winningMoves = findDirectWinningMoves(game, participant)
+		// console.log("winningMoves", winningMoves)
+		// return { mover: participant, placement: winningMoves[0] ?? findFreeSquares(game)[0] }
 	}
 }
 
