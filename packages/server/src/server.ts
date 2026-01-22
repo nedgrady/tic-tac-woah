@@ -93,8 +93,8 @@ class StandardGameFactory extends GameFactory {
 				...madeMatch.participants.map(participant => participant.uniqueIdentifier),
 				...madeMatch.aiParticipants.map(ai => ai.id),
 			],
-			boardSize: 3,
-			consecutiveTarget: 3,
+			boardSize: 20,
+			consecutiveTarget: madeMatch.rules.consecutiveTarget,
 			rules: [moveMustBeMadeByTheCorrectPlayer, moveMustBeWithinTheBoard, moveMustBeWithinTheBoard],
 			winConditions: [
 				winByConsecutiveDiagonalPlacements,

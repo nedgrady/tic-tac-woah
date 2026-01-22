@@ -8,7 +8,7 @@ import { HumanParticipant } from "./participants/HumanParticipant"
 import { plus, controller, cross, lock } from "./participants/actionIcons"
 
 const maxHumanParticipants = 5
-const maxBotParticipants = 5
+const maxBotParticipants = 2
 
 const Table = styled.table`
 	border-collapse: collapse;

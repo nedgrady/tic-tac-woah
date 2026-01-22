@@ -10,11 +10,11 @@ import {
 	winByConsecutiveHorizontalPlacements,
 	winByConsecutiveVerticalPlacements,
 } from "../../domain/winConditions/winConditions"
-import { DecideWhoMayMoveNext } from "../../domain/moveOrderRules/moveOrderRules"
+import { minimaxMultiPlayer, TtwGameState } from "./Minimaxer"
 import { singleParticipantInSequence } from "../../domain/moveOrderRules/singleParticipantInSequence"
 import { AiParticipantFactory } from "../AiParticipantFactory"
 
-export class HandCraftedAgentParticipantFactory extends AiParticipantFactory {
+export class HandCrafterParticipantFactory implements AiParticipantFactory {
 	createAiAgent(): AiParticipant {
 		return new HandCraftedAgent()
 	}
@@ -24,75 +24,22 @@ export class HandCraftedAgent extends AiParticipant {
 	name: string = "HandCraftedAgent"
 
 	async nextMove(game: Game, participant: Participant): Promise<Move> {
-		const gameTree = new GameTree(game, singleParticipantInSequence)
+		const ttw: TtwGameState = new TtwGameState(game, singleParticipantInSequence, [...game.moves()])
 
-		// const minMaxVal = this.minimax(gameTree.root, 0, true)
-		// console.log(minMaxVal.node.moves())
-		// console.log(minMaxVal.value)
+		const possibleMoves = ttw.getPossibleMoves()
 
-		// console.log(this.minimax(gameTree.root, 0, true))
+		const evaluationsByMove = possibleMoves.map(move => {
+			const ttw: TtwGameState = new TtwGameState(game, singleParticipantInSequence, [...game.moves(), move])
+			return { move: move, evaluation: minimaxMultiPlayer(ttw, 0, participant).get(participant)! }
+		})
 
-		// gameTree.root.nextPossibleNodes().forEach(node => {
-		// 	// console.log(node.moves())
-		// 	console.log("1 ", this.minimax(node, 0, true).value, this.minimax(node, 0, true).node.moves())
-		// })
+		const bestMove = _.maxBy(evaluationsByMove, "evaluation")!.move
 
-		// console.log("root")
-		// console.log(this.minimax(gameTree.root as GameTreeNode, 0, false).value)
-		// console.log(this.minimax(gameTree.root as GameTreeNode, 0, false).node.moves())
+		return bestMove
 
-		const nextEvaluations = gameTree.root
-			.nextPossibleNodes()
-			// { mover: 'X', placement: { x: 0, y: 2 } },
-			.map(node => {
-				// console.log(this.minimax(node as GameTreeNode, 0, false).value)
-				return this.minimax(node as GameTreeNode, 0, false)
-			})
-
-		// const bfs = new BreadthFirstSearchVisitor()
-		// bfs.visit(nextEvaluations[0].node, (node, depth) => {
-		// 	console.log(depth, node.lineOfMovesToGetToNode(), this.minimax(node, 0, depth % 2 == 0).value)
-		// })
-
-		// console.log()
-
-		// console.log(best?.node.lineOfMovesToGetToNode(), best?.value)
-
-		// console.log("0 " + gameTree.root.staticEvaluation(false))
-		// console.log("-----")
-
-		// gameTree.root.nextPossibleNodes().forEach(node => {
-		// 	console.log("1 " + node.staticEvaluation(true))
-		// })
-
-		// console.log("-------")
-
-		// gameTree.root
-		// 	.nextPossibleNodes()
-		// 	.flatMap(node => node.nextPossibleNodes())
-		// 	.forEach(node => {
-		// 		console.log("===")
-		// 		console.log("2 ", node.staticEvaluation(false), node.moves())
-		// 	})
-
-		// console.log("-------")
-
-		// gameTree.root
-		// 	.nextPossibleNodes()
-		// 	.flatMap(node => node.nextPossibleNodes())
-		// 	.flatMap(node => node.nextPossibleNodes())
-		// 	.forEach(node => {
-		// 		console.log("***")
-		// 		if (_.last(node.moves())?.placement.x === 2 && _.last(node.moves())?.placement.y === 0)
-		// 			console.log("3 ", node.staticEvaluation(true), node.moves())
-		// 	})
-
-		// for (const evaluation of _.orderBy(nextEvaluations, "value", "desc")) {
-		// 	console.log(evaluation.node.moves(), evaluation.value)
-		// }
-		const ret = _.orderBy(nextEvaluations, "value", "asc")[0].node.lineOfMovesToGetToNode()[0]
-		console.log("Returning move", ret)
-		return ret
+		// const winningMoves = findDirectWinningMoves(game, participant)
+		// console.log("winningMoves", winningMoves)
+		// return { mover: participant, placement: winningMoves[0] ?? findFreeSquares(game)[0] }
 	}
 
 	prettyPrintGameTree(node: GameTreeNode, depth: number, isMaximizing: boolean): void {
