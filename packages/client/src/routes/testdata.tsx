@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import Board from "../Board"
-import { c } from "vite/dist/node/types.d-aGj9QkWt"
 import { Button } from "@mui/material"
 import _ from "lodash"
 import jsonToCsvExport from "json-to-csv-export"
