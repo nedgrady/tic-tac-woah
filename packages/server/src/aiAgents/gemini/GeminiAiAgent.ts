@@ -113,7 +113,7 @@ export class GeminiAiAgent extends AiParticipant {
 
 export class RetryingAiAgent<TAgent extends AiParticipant> extends AiParticipant {
 	readonly id: string = crypto.randomUUID()
-	readonly name = this.agent.name + "Retrying"
+	readonly name = "Retrying"
 	constructor(private readonly agent: TAgent) {
 		super()
 	}
