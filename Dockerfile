@@ -17,7 +17,7 @@ RUN npm install
 
 # Server
 COPY packages/types/package.json packages/types/package.json
-RUN npm install -w types
+RUN npm install -w packages/types
 COPY packages/types/ packages/types/
 # RUN npm run build -w types
 
@@ -28,16 +28,16 @@ ENV VITE_API_PORT=$RENDER_API_PORT
 
 # Server
 COPY packages/server/package.json packages/server/package.json
-RUN npm install -w server
+RUN npm install -w packages/server
 COPY packages/server/ packages/server/
-RUN npm run build -w server
+RUN npm run build -w packages/server
 
 
 # Client
 COPY packages/client/package.json packages/client/package.json
-RUN npm install -w client
+RUN npm install -w packages/client/
 COPY packages/client/ packages/client/
-RUN npm run build -w client
+RUN npm run build -w packages/client/
 
 ENV PATH_TO_CLIENT_BUILT_FOLDER=/app/packages/client/dist
 ENV NODE_ENV=production
