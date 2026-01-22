@@ -12,11 +12,13 @@ RUN printenv
 # Top level
 COPY package-lock.json .
 COPY package.json .
+COPY tsconfig.json .
 
 RUN npm install
 
 # Server
 COPY packages/types/package.json packages/types/package.json
+COPY packages/types/tsconfig.json packages/types/tsconfig.json
 RUN npm install -w packages/types
 COPY packages/types/ packages/types/
 # RUN npm run build -w types
@@ -28,6 +30,7 @@ ENV VITE_API_PORT=$RENDER_API_PORT
 
 # Server
 COPY packages/server/package.json packages/server/package.json
+COPY packages/server/tsconfig.json packages/server/tsconfig.json
 RUN npm install -w packages/server
 COPY packages/server/ packages/server/
 RUN npm run build -w packages/server
@@ -35,6 +38,8 @@ RUN npm run build -w packages/server
 
 # Client
 COPY packages/client/package.json packages/client/package.json
+COPY packages/client/tsconfig.json packages/client/tsconfig.json
+COPY packages/client/tsconfig.node.json packages/client/tsconfig.node.json
 RUN npm install -w packages/client/
 COPY packages/client/ packages/client/
 RUN npm run build -w packages/client/
