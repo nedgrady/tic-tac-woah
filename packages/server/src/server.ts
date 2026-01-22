@@ -6,7 +6,6 @@ import { Server } from "socket.io"
 import path from "path"
 import { instrument } from "@socket.io/admin-ui"
 import { QueueResponse } from "@tic-tac-woah/types"
-import { GeminiAiParticipantFactory } from "./aiAgents/GeminiAiParticipantFactory"
 import { identifySocketsByWebSocketId, removeConnectionFromActiveUser } from "./auth/socketIdentificationStrategies"
 import { gameIsDrawnWhenBoardIsFull } from "./domain/drawConditions/drawConditions"
 import { Game } from "./domain/Game"
@@ -31,7 +30,7 @@ import {
 	TicTacWoahSocketServerMiddleware,
 	TicTacWoahUserHandle,
 } from "./TicTacWoahSocketServer"
-import { HandCraftedAgent, HandCraftedAgentParticipantFactory } from "./aiAgents/handCrafted/HandCraftedAgent"
+import { HandCraftedParticipantFactory } from "./aiAgents/handCrafted/HandCraftedAgent"
 
 const app = express()
 const httpServer = createServer(app)
@@ -113,7 +112,7 @@ const ttQueue = new TicTacWoahQueue()
 const matchmakingBroker = new MatchmakingBroker()
 const standardMathcmakingStrategy = new StandardMathcmakingStrategy(
 	queueItem => `${queueItem.humanCount}-${queueItem.consecutiveTarget}-${queueItem.aiCount}`,
-	new HandCraftedAgentParticipantFactory(),
+	new HandCraftedParticipantFactory(),
 )
 
 io.use(identifySocketsByWebSocketId)

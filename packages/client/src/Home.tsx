@@ -3,7 +3,7 @@ import { ButtonLink } from "./Link"
 
 export function Home() {
 	return (
-		<Grid container justifyContent="center" height="100%">
+		<Grid flexDirection="column" gap={2} container justifyContent="center" height="100%">
 			<Grid>Tic tac toe, with more ways to go!</Grid>
 			<Grid item>
 				<ButtonLink to="/play" variant="contained" color="success" size="large">

@@ -13,8 +13,9 @@ import {
 import { minimaxMultiPlayer, TtwGameState } from "./Minimaxer"
 import { singleParticipantInSequence } from "../../domain/moveOrderRules/singleParticipantInSequence"
 import { AiParticipantFactory } from "../AiParticipantFactory"
+import { DecideWhoMayMoveNext } from "../../domain/moveOrderRules/moveOrderRules"
 
-export class HandCrafterParticipantFactory implements AiParticipantFactory {
+export class HandCraftedParticipantFactory implements AiParticipantFactory {
 	createAiAgent(): AiParticipant {
 		return new HandCraftedAgent()
 	}

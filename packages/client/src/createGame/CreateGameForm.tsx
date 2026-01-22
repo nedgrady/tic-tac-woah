@@ -222,7 +222,7 @@ export function CreateGameForm({ onCreate }: CreateGameProps) {
 
 			<Button
 				variant="contained"
-				color="primary"
+				color="success"
 				size="large"
 				onClick={() =>
 					onCreate({
