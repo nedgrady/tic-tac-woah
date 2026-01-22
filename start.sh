@@ -1,3 +1,3 @@
 pwd
 
-npm run start:prod -w server
+npm run start:prod -w packages/server
