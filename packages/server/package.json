@@ -7,7 +7,7 @@
 	"types": "src/index.ts",
 	"scripts": {
 		"start:dev": "npx vite-node --watch ./src/server.ts",
-		"start:prod": "npx vite-node ./src/index.ts",
+		"start:prod": "npx vite-node ./src/server.ts",
 		"build": "tsc",
 		"test": "vitest"
 	},
