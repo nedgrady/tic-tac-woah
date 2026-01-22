@@ -32,6 +32,8 @@ import {
 } from "./TicTacWoahSocketServer"
 import { HandCraftedParticipantFactory } from "./aiAgents/handCrafted/HandCraftedAgent"
 
+console.log("==== starting server ====")
+
 const app = express()
 const httpServer = createServer(app)
 
